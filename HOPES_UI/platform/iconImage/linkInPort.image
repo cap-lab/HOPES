@@ -1,0 +1,5 @@
+"./platform/iconImage/linkInPort.image"
+24 8
+Polygon 5 0 0 20 0 24 4 20 8 0 8 -1 true
+Polygon 6 16 0 20 0 24 4 20 8 16 8 20 4 -6697729 true
+Polygon 5 0 0 20 0 24 4 20 8 0 8 -16777216 false

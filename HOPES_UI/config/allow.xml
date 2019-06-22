@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<codesign type='general'>
+	<version>0.2</version>
+	<step> 
+		<name>allow</name>
+		<candidate allow='listed'>
+			<domain type='default' allow='all'> 
+				<name>CGC</name>
+				<target type='default'> 
+					<name>default-CGC</name>
+				</target>
+				<target type='candidate'> 
+					<name>TclTk_Target</name>
+				</target>
+				<target type='candidate'> 
+					<name>CGC-ExTimeEstimation</name>
+				</target>
+				<target type='candidate'> 
+					<name>RangeEstimation</name>
+				</target>
+				<target type='candidate'> 
+					<name>WLOptimization</name>
+				</target>
+				<target type='candidate'> 
+					<name>FixedEstimation</name>
+				</target>
+				<target type='candidate'> 
+					<name>Tasks-CGC</name>
+				</target>
+				<target type='candidate'> 
+					<name>EmbedTask-C</name>
+				</target>
+			</domain>
+
+			<domain type='candidate' allow='listed'> 
+				<name>VHDL</name>
+				<target type='default'> 
+					<name>default-VHDL</name>
+				</target>
+				<target type='candidate'> 
+					<name>ModelSim-VHDL</name>
+				</target>
+			</domain>
+
+			<!--domain type='candidate' allow='all'> 
+				<name>SC</name>
+				<target type='default'> 
+					<name>default-SC</name>
+				</target>
+			</domain-->
+
+			<domain type='candidate' allow='listed'> 
+				<name>Archi</name>
+				<target type='default'> 
+					<name>default-Archi</name>
+				</target>
+				<target type='candidate'> 
+					<name>platform</name>
+				</target>
+			</domain>
+
+			<domain type='candidate' allow='listed'> 
+				<name>DE</name>
+				<target type='default'> 
+					<name>default-DE</name>
+				</target>
+			</domain>
+
+			<domain type='candidate' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>default-BP</name>
+				</target>
+				<target type='candidate'> 
+					<name>HostSimul</name>
+				</target>
+				<target type='candidate'> 
+					<name>DynCodeGen</name>
+				</target>
+			</domain>
+
+			<!--domain type='candidate' allow='all'> 
+				<name>CGM</name>
+				<target type='default'> 
+					<name>default-CGM</name>
+				</target>
+			</domain-->
+
+			<domain type='candidate' allow='all'> 
+				<name>FSM</name>
+				<target type='default'> 
+					<name>default-FSM</name>
+				</target>
+			</domain>
+
+			<domain type='candidate' allow='listed'> 
+				<name>SDF</name>
+				<target type='default'> 
+					<name>default-SDF</name>
+				</target>
+			</domain>
+
+		</candidate>
+	</step>
+</codesign>

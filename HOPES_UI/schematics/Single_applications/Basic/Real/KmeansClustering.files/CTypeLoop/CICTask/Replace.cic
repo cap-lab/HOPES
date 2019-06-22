@@ -1,0 +1,154 @@
+/************************************
+ *
+ * File : Repla.cic
+ * Date : Nov 15, 2016 5:31 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <stdio.h>
+#include <stdlib.h>
+#include <float.h>
+#include <math.h>
+
+//application specific
+#define NUM_OBJECTS 100
+#define NUM_ATTRIBUTES 34
+#define NUM_CLUSTER 5
+#define THRESHOLD 0.001
+
+#define NUM_THREAD 1
+static float out_clusters[NUM_CLUSTER * NUM_ATTRIBUTES];     /* out: [nclusters][nfeatures] */
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_rp;
+STATIC int port_out_rp;
+STATIC int port_in_delta;
+STATIC int port_in_len;
+STATIC int port_out_fb;
+// ##DEFINE_PORT_SECTION::END
+STATIC int loop1;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_rp = PORT_INITIALIZE(TASK_ID, "in_rp");
+    port_out_rp = PORT_INITIALIZE(TASK_ID, "out_rp");
+    port_in_delta = PORT_INITIALIZE(TASK_ID, "in_delta");
+    port_in_len = PORT_INITIALIZE(TASK_ID, "in_len");
+    port_out_fb = PORT_INITIALIZE(TASK_ID, "out_fb");
+// ##INIT_PORT_SECTION::END
+    //loop1 = LOOP_INITIALIZE("Loop1");
+    // TODO: task initialize code
+
+  MQ_SEND(port_out_fb, (unsigned char*)&out_clusters[0], sizeof(float)*NUM_CLUSTER*NUM_ATTRIBUTES); 
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static int ctypeLoop_iteration = 0; 
+static float delta;
+static float delta_array[NUM_OBJECTS];
+static int partial_new_centers_len[NUM_OBJECTS * NUM_CLUSTER];
+static float partial_new_centers[NUM_OBJECTS * NUM_CLUSTER * NUM_ATTRIBUTES];
+
+static int new_centers_len[NUM_CLUSTER]; /* [nclusters]: no. of points in each cluster */
+static float new_centers[NUM_CLUSTER * NUM_ATTRIBUTES];  /* [nclusters][nfeatures] */
+ 
+TASK_GO
+{
+    // TODO: task main code
+  int i, j, k;
+
+  MQ_RECEIVE(port_in_rp, (unsigned char*)&partial_new_centers[0], sizeof(float) * NUM_OBJECTS *  NUM_CLUSTER * NUM_ATTRIBUTES);
+  MQ_RECEIVE(port_in_delta, (unsigned char*)&delta_array[0], sizeof(float)* NUM_OBJECTS);
+  MQ_RECEIVE(port_in_len, (unsigned char*)&partial_new_centers_len[0], sizeof(int)*NUM_OBJECTS*NUM_CLUSTER);
+
+  /* need to initialize new_centers_len and new_centers[0] to all 0 */
+  for(i = 0; i < NUM_CLUSTER; i++)
+    new_centers_len[i] = 0;
+
+  for(i = 0; i < NUM_CLUSTER; i++){
+    for(j = 0; j < NUM_ATTRIBUTES; j++){
+      new_centers[i * NUM_ATTRIBUTES + j] = 0;
+    }
+  }
+
+  // reduction delta
+  delta = 0;
+  for(i = 0; i < NUM_OBJECTS; i++)
+    delta += delta_array[i];
+ 
+  printf("[Replace.cic] >>>>>>>>>>>>>> delta: %f\n", delta); fflush(stdout);
+    
+  // let the main thread perform the array reduction
+  for (j = 0; j < NUM_OBJECTS; j++){
+    for (i = 0; i < NUM_CLUSTER; i++) {
+        new_centers_len[i] += partial_new_centers_len[j * NUM_CLUSTER + i];
+    }
+  }
+
+  for(j = 0; j < NUM_OBJECTS; j++){
+    for (i = 0; i < NUM_CLUSTER; i++) {
+        for (k = 0; k < NUM_ATTRIBUTES; k++) {
+          new_centers[i * NUM_ATTRIBUTES + k] += partial_new_centers[j * NUM_CLUSTER * NUM_ATTRIBUTES + i * NUM_ATTRIBUTES +k];
+        }
+    }
+  }
+
+
+    /* replace old cluster centers with new_centers */
+    for (i = 0; i < NUM_CLUSTER; i++) {
+      for (j = 0; j < NUM_ATTRIBUTES; j++) {
+        if (new_centers_len[i] > 0)
+          out_clusters[i * NUM_ATTRIBUTES +j] = new_centers[i * NUM_ATTRIBUTES + j] / new_centers_len[i];
+        new_centers[i * NUM_ATTRIBUTES + j] = 0.0; /* set back to 0 */
+      }
+      new_centers_len[i] = 0; /* set back to 0 */
+    }
+  
+  //MQ_SEND(port_out_fb, (unsigned char*)&out_clusters[0], sizeof(float)*NUM_CLUSTER*NUM_ATTRIBUTES); 
+  UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &ctypeLoop_iteration);
+  ctypeLoop_iteration++;
+  if(delta > THRESHOLD && ctypeLoop_iteration < 500)//500)//1/*500*/)
+  {
+    MQ_SEND(port_out_fb, (unsigned char*)&out_clusters[0], sizeof(float)*NUM_CLUSTER*NUM_ATTRIBUTES); 
+  }
+  else
+  {
+    printf("********************************************* %d ********************************\n", ctypeLoop_iteration);
+    UFLoop_StopNextIteration(THIS_TASK_ID);
+    MQ_SEND(port_out_rp, (unsigned char*)&out_clusters[0], sizeof(float)*NUM_CLUSTER * NUM_ATTRIBUTES);
+    MQ_SEND(port_out_fb, (unsigned char*)&out_clusters[0], sizeof(float)*NUM_CLUSTER*NUM_ATTRIBUTES);    
+  }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

@@ -1,0 +1,9 @@
+{
+  "mMemoryList": [
+    {
+      "mMemoryType": "SHARED_MEMORY",
+      "mMemorySize": "4000",
+      "mMemorySizeUnit": "MiB"
+    }
+  ]
+}

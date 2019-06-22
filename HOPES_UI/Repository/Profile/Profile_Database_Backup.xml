@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_Profile xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <task name="H264Dec_VP_ReadFileH">
+        <profile value="70224" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_Decode">
+        <profile value="1292544" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_InterPredY">
+        <profile value="2400" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_InterPredU">
+        <profile value="3072" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_InterPredV">
+        <profile value="3120" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_Deblock">
+        <profile value="347107" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_WriteFileH">
+        <profile value="747066" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_IntraPredY">
+        <profile value="2352" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_IntraPredU">
+        <profile value="1800" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_VP_IntraPredV">
+        <profile value="2184" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="x264Enc_ME_0">
+        <profile value="4038012" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="x264Enc_Encoder_1">
+        <profile value="1771902" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="x264Enc_Deblock_2">
+        <profile value="310662" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="x264Enc_Init_3">
+        <profile value="132759" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="x264Enc_VLC_4">
+        <profile value="2990790" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_VLDStream">
+        <profile value="105020" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_DeQ">
+        <profile value="238933" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_Stereo">
+        <profile value="20838" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_Reorder">
+        <profile value="19878" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_Antialias">
+        <profile value="24006" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_Hybrid">
+        <profile value="493950" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_Subband">
+        <profile value="379440" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="MP3Dec_WriteFileM">
+        <profile value="17772" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="G723Dec">
+        <profile value="4455000" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="G723Enc">
+        <profile value="4455000" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="UserInput">
+        <profile value="1" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_ReadFileH">
+        <profile value="70224" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_Decode">
+        <profile value="1292544" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_InterPredY">
+        <profile value="2400" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_InterPredU">
+        <profile value="3072" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_InterPredV">
+        <profile value="3120" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_Deblock">
+        <profile value="347107" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_WriteFileH">
+        <profile value="747066" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_IntraPredY">
+        <profile value="2352" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_IntraPredU">
+        <profile value="1800" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="H264Dec_PHONE_IntraPredV">
+        <profile value="2184" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="Interrupt">
+        <profile value="1" unit="us" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="jhw">
+        <profile value="1" unit="us" processorType="arm926ej-sssss"/>
+        <profile value="1" unit="us" processorType="arm926ej-s-dsp"/>
+    </task>
+    <task name="matrix_gen">
+        <profile value="0" unit="cycle" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="arm926ej-s-dsp"/>
+    </task>
+    <task name="matrix_calc">
+        <profile value="0" unit="cycle" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="arm926ej-s-dsp"/>
+    </task>
+    <task name="matrix_done">
+        <profile value="0" unit="cycle" processorType="arm926ej-s"/>
+        <profile value="0" unit="cycle" processorType="arm926ej-s-dsp"/>
+    </task>
+    <task name="Control">
+        <profile value="1" unit="ms" processorType="arm926ej-s"/>
+        <profile value="5" unit="us" processorType="arm926ej-s-dsp"/>
+        <profile value="0" unit="cycle" processorType="arm926ej-s_0"/>
+        <profile value="0" unit="cycle" processorType="arm926ej-s_1"/>
+        <profile value="0" unit="cycle" processorType="ARM926EJ_S_0"/>
+        <profile value="0" unit="cycle" processorType="ARM926EJ_S_1"/>
+        <profile value="0" unit="cycle" processorType="intel_i7"/>
+    </task>
+    <task name="input">
+        <profile value="0" unit="cycle" processorType="PPE_0"/>
+        <profile value="0" unit="cycle" processorType="SPE_0"/>
+        <profile value="3" unit="cycle" processorType="PPE"/>
+        <profile value="0" unit="cycle" processorType="SPE"/>
+    </task>
+    <task name="calculate">
+        <profile value="0" unit="cycle" processorType="PPE_0"/>
+        <profile value="0" unit="cycle" processorType="SPE_0"/>
+        <profile value="0" unit="cycle" processorType="PPE"/>
+        <profile value="0" unit="cycle" processorType="SPE"/>
+    </task>
+    <task name="output">
+        <profile value="0" unit="cycle" processorType="PPE_0"/>
+        <profile value="0" unit="cycle" processorType="SPE_0"/>
+        <profile value="0" unit="cycle" processorType="PPE"/>
+        <profile value="0" unit="cycle" processorType="SPE"/>
+    </task>
+    <comm timeunit="ms" src="arm926ej-s" sizeunit="B" size="1" settingcost="1" dst="arm926ej-s" cost="1"/>
+    <comm timeunit="us" src="arm926ej-s" sizeunit="B" size="10" settingcost="9" dst="arm926ej-s-dsp" cost="1"/>
+    <comm timeunit="ms" src="arm926ej-s-dsp" sizeunit="B" size="1" settingcost="9999" dst="arm926ej-s-dsp" cost="1"/>
+    <comm timeunit="cycle" src="arm926ej-s-dsp" sizeunit="B" size="4" settingcost="4" dst="arm926ej-s" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s-dsp" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s-dsp" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_1" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_1" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_1" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_1" cost="0"/>
+    <comm timeunit="us" src="PPE_0" sizeunit="B" size="0" settingcost="0" dst="PPE_0" cost="0"/>
+    <comm timeunit="us" src="PPE_0" sizeunit="B" size="0" settingcost="0" dst="SPE_0" cost="0"/>
+    <comm timeunit="us" src="SPE_0" sizeunit="B" size="0" settingcost="0" dst="PPE_0" cost="0"/>
+    <comm timeunit="us" src="SPE_0" sizeunit="B" size="0" settingcost="0" dst="SPE_0" cost="0"/>
+    <comm timeunit="us" src="intel_i7_0" sizeunit="B" size="0" settingcost="0" dst="intel_i7_0" cost="0"/>
+</CIC_Profile>
+

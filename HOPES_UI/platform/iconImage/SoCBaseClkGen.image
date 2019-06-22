@@ -1,0 +1,8 @@
+"./platform/iconImage/SoCBaseClkGen.image"
+68 72
+Rectangle 4 12 56 48 16777198 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "SoCBaseClkGen"
+OutArrowLine 61 28 1 0 0
+OutArrowLine 61 44 1 0 0
+Image "./platform/icon/clk.gif" 16 20 32 32

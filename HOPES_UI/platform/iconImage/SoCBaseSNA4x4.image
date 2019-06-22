@@ -1,0 +1,15 @@
+"./platform/iconImage/SoCBaseSNA4x4.image"
+136 136
+Rectangle 8 8 120 120 16764006 true
+Rectangle 8 8 120 120 0 false
+Text 16 12 11 0 "SoCBaseSNA4x4"
+InArrowLine 4 16 2 0 0
+InArrowLine 4 28 2 0 0
+InArrowLine 4 88 2 0 16763904
+OutArrowLine 7 48 -1 0 16763904
+InArrowLine 48 4 0 2 16763904
+OutArrowLine 88 7 0 -1 16763904
+InArrowLine 48 131 0 2 16763904
+OutArrowLine 88 133 0 -1 16763904
+InArrowLine 131 88 2 0 16763904
+OutArrowLine 133 48 -1 0 16763904

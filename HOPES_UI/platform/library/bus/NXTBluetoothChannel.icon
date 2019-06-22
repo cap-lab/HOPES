@@ -1,0 +1,8 @@
+Platform
+Bus
+"NXTBluetoothChannel"
+101 36
+"./platform/iconImage/NXTBluetoothChannel.image"
+"" ""
+"" ""
+lineport "NXTBluetoothChannel" "NXTBluetoothChannel"

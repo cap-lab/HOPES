@@ -1,0 +1,45 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP,DLCSAS"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING "-I$(QTDIR)/include"
+TargetParameter "linkOptions" STRING "mmt_mini.o moc_mmt_mini.o mmtSel.o moc_mmtSel.o -lm -L$(QTDIR)/lib -lqt -lXext -lX11 -lpthread"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Parameter "nodename" string "ui"
+Parameter "globalstate" stringArray "filename"
+Parameter "filename" string ""
+Star "./icon/QtMMT.icon" I0 124 84 0
+StarParameter 3 "procId" INT "-1" "listname" STRING "list.n" "filename" STRING "filename"
+Star "./library/Peace/Port/outport.ilink" I6 228 60 0
+StarParameter 4 "name" string "start" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I8 244 88 0
+StarParameter 4 "name" string "suspend" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I10 244 108 0
+StarParameter 4 "name" string "stop" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I12 244 136 0
+StarParameter 4 "name" string "connect" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I14 228 160 0
+StarParameter 4 "name" string "text" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I16 "" Star I0 "start" Star I6 "input" 1 180 108 228 76 
+Line I17 "" Star I0 "suspend" Star I8 "input" 1 180 116 244 104 
+Line I18 "" Star I0 "stop" Star I10 "input" 1 180 124 244 124 
+Line I19 "" Star I0 "connect" Star I12 "input" 1 180 132 244 152 
+Line I20 "" Star I0 "text" Star I14 "input" 1 180 140 228 176 

@@ -1,0 +1,72 @@
+/************************************
+ *
+ * File : UserInput.cic
+ * Date : Sep 16, 2014 10:07 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_outMsg;
+STATIC int port_outAck;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_outMsg = PORT_INITIALIZE(TASK_ID, "outMsg");
+    port_outAck = PORT_INITIALIZE(TASK_ID, "outAck");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+STATIC char* data[10] = {"kys4464", "jhw7884", "shkang", "tykim", "hinomk2", "jintaek", "dooseok", "hshong", "junsoo", "nglee"};
+STATIC unsigned char buf[255];
+STATIC int ack = 1;
+STATIC int i=0;
+TASK_GO
+{
+    // TODO: task main code	
+	printf("(UserInput.cic) UserInput: %s\n", data[i%10]);
+	memcpy(buf, data[i%10], strlen(data[i%10]));
+	buf[strlen(data[i%10])] = '\0';
+	MQ_SEND(port_outAck, (unsigned char*)&ack, sizeof(int));
+	MQ_SEND(port_outMsg, (unsigned char*)buf, sizeof(unsigned char) * 255);
+	i++;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

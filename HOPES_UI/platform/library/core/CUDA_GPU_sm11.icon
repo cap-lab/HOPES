@@ -1,0 +1,8 @@
+Platform
+Core
+"CUDA_GPU_sm11"
+68 72
+"./platform/iconImage/CUDA_GPU_sm11.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "AHBMasterOut"

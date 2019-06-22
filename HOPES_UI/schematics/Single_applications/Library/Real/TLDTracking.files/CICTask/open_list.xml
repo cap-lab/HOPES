@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<document_list>
+  <document name="Task Graph" selected="true" />
+  <document name="DetectorCascade.cic" selected="false" />
+  <document name="Learning.cic" selected="false" />
+  <document name="ReadImage.cic" selected="false" />
+  <document name="Tracker.cic" selected="false" />
+  <document name="Preprocess.cic" selected="false" />
+</document_list>
+

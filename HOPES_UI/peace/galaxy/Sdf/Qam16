@@ -1,0 +1,37 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Star "./icon/inport.icon" I0 8 104 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/BitsToInt.icon" I2 64 88 0
+StarParameter 2 "procId" INT "-1" "nBits" INT "2"
+Star "./icon/Distributor2.icon" I5 144 88 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Star "./icon/TableInt.icon" I9 220 80 0
+StarParameter 3 "procId" INT "-1" "values" INTARRAY "1 0 2 3" "runTimeCheck" INT "YES"
+Star "./icon/TableCx.icon" I12 396 152 0
+StarParameter 3 "procId" INT "-1" "values" COMPLEXARRAY "(1,1) (3,1) (1,3) (3,3)  (-1,1) (-1,3) (-3,1) (-3,3)  (-1,-1) (-3,-1) (-1,-3) (-3,-3)  (1,-1) (1,-3) (3,-1) (3,-3)" "runTimeCheck" INT "YES"
+Star "./icon/AddInt2.icon" I15 316 52 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ModuloInt.icon" I19 380 36 0
+StarParameter 2 "procId" INT "-1" "modulo" INT "4"
+Star "./icon/Fork2.icon" I22 464 52 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/AddInt2.icon" I26 324 168 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/GainInt.icon" I30 364 92 1
+StarParameter 2 "procId" INT "-1" "gain" INT "4"
+Star "./icon/outport.icon" I33 492 168 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I35 "" Star I0 "output" Star I2 "input" 1 40 120 64 120 
+Line I36 "" Star I15 "output" Star I19 "input" 1 352 68 380 68 
+Line I37 "" Star I9 "output" Star I15 "input#2" 1 276 112 334 87 
+Line I38 "" Star I2 "output" Star I5 "input" 1 120 120 144 120 
+Line I39 "" Star I9 "input" Star I5 "output#1" 1 220 112 200 112 
+Line I40 "" Star I19 "output" Star I22 "input" 1 436 68 464 68 
+Line I41 "" Star I26 "output" Star I12 "input" 1 360 184 396 184 
+Line I42 "" Star I12 "output" Star I33 "input" 1 452 184 492 184 
+Line I43 "1" Star I22 "output#1" Star I15 "input#1" 4 517 60 536 60 524 24 276 24 316 68 
+Line I44 "" Star I30 "output" Star I26 "input#1" 2 379 148 308 148 324 184 
+Line I45 "" Star I5 "output#2" Star I26 "input#2" 3 200 128 224 212 344 212 342 203 
+Line I46 "" Star I30 "input" Star I22 "output#2" 2 379 92 544 92 517 76 

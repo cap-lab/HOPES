@@ -1,0 +1,83 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Galaxy "./icon/handShake_galaxy.icon" I0 88 8 0
+StarParameter 1 "capacity" int "-1"
+Galaxy "./icon/handShake_galaxy.icon" I8 88 112 0
+StarParameter 1 "capacity" int "-1"
+Star "./icon/Arbitrate.icon" I16 264 72 0
+StarParameter 1 "nodename" STRING ""
+Galaxy "./icon/handShake_galaxy.icon" I23 88 208 0
+StarParameter 1 "capacity" int "-1"
+Galaxy "./icon/handShake_galaxy.icon" I31 88 312 0
+StarParameter 1 "capacity" int "-1"
+Star "./icon/Arbitrate.icon" I39 264 272 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Merge.icon" I46 304 184 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Arbitrate.icon" I49 400 168 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/BlackHole.icon" I56 232 424 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/inport.icon" I58 16 16 0
+StarParameter 4 "name" string "input#1" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I60 552 168 0
+StarParameter 4 "name" string "request" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I62 8 456 3
+StarParameter 4 "name" string "ackin" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I64 552 96 0
+StarParameter 4 "name" string "dataout" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I66 312 224 0
+StarParameter 4 "name" string "grant" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I68 16 112 0
+StarParameter 4 "name" string "input#3" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I70 16 208 0
+StarParameter 4 "name" string "input#2" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I72 16 312 0
+StarParameter 4 "name" string "input#4" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork2.icon" I74 24 416 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/outport.icon" I78 264 24 0
+StarParameter 4 "name" string "output#1" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I80 272 160 0
+StarParameter 4 "name" string "output#3" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I82 264 216 0
+StarParameter 4 "name" string "output#2" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I84 272 352 0
+StarParameter 4 "name" string "output#4" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I86 "" Star I16 "requestA" Star I0 "request" 1 264 96 144 48 
+Line I87 "" Star I8 "request" Star I16 "requestB" 2 144 152 240 160 264 104 
+Line I88 "" Star I39 "requestA" Star I23 "request" 1 264 296 144 248 
+Line I89 "" Star I31 "request" Star I39 "requestB" 2 144 352 240 360 264 304 
+Line I90 "" Star I0 "output" Star I46 "input" 2 144 56 232 72 304 198 
+Line I91 "" Star I8 "output" Star I46 "input" 1 144 160 304 198 
+Line I92 "" Star I23 "output" Star I46 "input" 2 144 256 232 272 304 198 
+Line I93 "" Star I31 "output" Star I46 "input" 2 144 360 232 376 304 198 
+Line I94 "" Star I16 "grantA" Star I0 "grant" 3 320 104 408 104 64 8 88 48 
+Line I95 "" Star I16 "grantB" Star I8 "grant" 3 320 112 256 144 64 192 88 152 
+Line I96 "" Star I49 "grantA" Star I16 "grantIn" 3 456 200 536 200 264 152 264 112 
+Line I97 "" Star I49 "grantB" Star I39 "grantIn" 3 456 208 536 216 264 344 264 312 
+Line I98 "" Star I16 "requestOut" Star I49 "requestA" 2 320 96 400 88 400 192 
+Line I99 "" Star I39 "requestOut" Star I49 "requestB" 1 320 296 400 200 
+Line I100 "" Star I39 "grantA" Star I23 "grant" 4 320 304 400 304 248 264 64 288 88 248 
+Line I101 "" Star I39 "grantB" Star I31 "grant" 3 320 312 400 320 64 400 88 352 
+Line I102 "" Star I0 "size" Star I56 "input" 2 144 32 224 24 232 428 
+Line I103 "" Star I8 "size" Star I56 "input" 2 144 136 224 128 232 428 
+Line I104 "" Star I23 "size" Star I56 "input" 2 144 232 224 224 232 428 
+Line I105 "" Star I31 "size" Star I56 "input" 2 144 336 224 328 232 428 
+Line I106 "" Star I49 "requestOut" Star I60 "input" 1 456 192 552 184 
+Line I107 "0" Star I46 "output" Star I64 "input" 3 356 200 368 160 496 160 552 112 
+Line I108 "" Star I66 "output" Star I49 "grantIn" 1 344 240 400 208 
+Line I109 "" Star I58 "output" Star I0 "input" 1 48 32 88 32 
+Line I110 "" Star I68 "output" Star I8 "input" 1 48 128 88 136 
+Line I111 "" Star I70 "output" Star I23 "input" 1 48 224 88 232 
+Line I112 "" Star I72 "output" Star I31 "input" 1 48 328 88 336 
+Line I113 "" Star I62 "output" Star I74 "input" 1 24 456 24 432 
+Line I114 "" Star I74 "output#1" Star I23 "ackin" 1 77 424 88 240 
+Line I115 "" Star I74 "output#1" Star I8 "ackin" 1 77 424 88 144 
+Line I116 "" Star I74 "output#1" Star I0 "ackin" 1 77 424 88 40 
+Line I117 "" Star I74 "output#2" Star I31 "ackin" 4 77 440 88 440 88 384 48 376 88 344 
+Line I118 "" Star I0 "ackout" Star I78 "input" 1 144 40 264 40 
+Line I119 "" Star I8 "ackout" Star I80 "input" 2 144 144 248 144 272 176 
+Line I120 "" Star I23 "ackout" Star I82 "input" 1 144 240 264 232 
+Line I121 "" Star I31 "ackout" Star I84 "input" 2 144 344 248 344 272 368 

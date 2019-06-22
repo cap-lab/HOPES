@@ -1,0 +1,37 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Parameter "file_name" string "noname"
+Parameter "globalstate" stringArray "file_name"
+Parameter "nodename" string "divxread"
+Parameter "period" int "30"
+Star "./library/Peace/Port/outport.ilink" I0 124 32 0
+StarParameter 4 "name" string "video_out" "direction" string "out" "multi?" boolean "false" "type" string "MESSAGE"
+Star "./library/Peace/Port/outport.ilink" I2 124 48 0
+StarParameter 4 "name" string "audio_out" "direction" string "out" "multi?" boolean "false" "type" string "MESSAGE"
+Star "./icon/AviParser.icon" I4 40 24 0
+StarParameter 2 "procId" INT "-1" "file_name" STRING "file_name"
+Line I7 "" Star I4 "video_out" Star I0 "input" 1 96 48 124 48 
+Line I8 "" Star I4 "audio_out" Star I2 "input" 1 96 64 124 64 

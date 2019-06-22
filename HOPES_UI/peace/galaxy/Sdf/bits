@@ -1,0 +1,15 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "probOfZero" float "0.5"
+Star "./icon/IIDUniform.icon" I0 44 72 0
+StarParameter 4 "procId" INT "-1" "lower" FLOAT "0.0" "upper" FLOAT "1/probOfZero" "seed" INT "1"
+Star "./icon/Quant.icon" I2 128 72 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "1.0" "levels" FLOATARRAY ""
+Star "./icon/FloatToInt.icon" I5 208 88 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Star "./icon/outport.icon" I8 288 88 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "int"
+Line I10 "" Star I0 "output" Star I2 "input" 1 100 104 128 104 
+Line I11 "" Star I2 "output" Star I5 "input" 1 184 104 208 104 
+Line I12 "" Star I5 "output" Star I8 "input" 1 264 104 288 104 

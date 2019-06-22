@@ -1,0 +1,84 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "gscalefac" int "1"
+Parameter "gpretab" int "1"
+Parameter "gsubblock_gain" int "1"
+Parameter "ggranule_type" int "1"
+Parameter "gsfreq" int "1"
+Parameter "gsubblock_table" intArray "0 [3]"
+Parameter "gscalefac_table" intArray "1 [62]"
+Parameter "gpreflag" int "1"
+Parameter "gscalefac_scale" int "1"
+Parameter "ggain" int "1"
+Parameter "globalstates" stringArray "{gscalefac gpretab gsubblock_gain}"
+Star "./icon/Dequantize0.icon" I0 824 264 0
+StarParameter 6 "procId" INT "-1" "scalefac_scale" FLOAT "gscalefac_scale" "scalefac" FLOAT "gscalefac" "preflag" FLOAT "gpreflag" "pretab" FLOAT "gpretab" "enable" INT "1"
+Star "./icon/Dequantize1.icon" I3 824 160 0
+StarParameter 5 "procId" INT "-1" "scalefac_scale" FLOAT "gscalefac_scale" "scalefac" FLOAT "gscalefac" "subblock_gain" FLOAT "gsubblock_gain" "enable" INT "1"
+Star "./icon/Mux.icon" I6 976 216 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Star "./icon/Sgn.icon" I10 408 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Fork3.icon" I13 64 208 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/inport.icon" I18 16 208 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/GainInt.icon" I20 120 280 0
+StarParameter 2 "procId" INT "-1" "gain" INT "1"
+Star "./icon/SampleCount.icon" I23 176 280 0
+StarParameter 4 "procId" INT "-1" "increment" INT "1" "init" INT "0" "limit" INT "576"
+Star "./icon/ScaleGen.icon" I26 328 304 0
+StarParameter 7 "procId" INT "-1" "nParams" INT "3" "granule_type" INT "ggranule_type" "sfreq" INT "gsfreq" "global_gain" INT "ggain" "subblock_gain" INTARRAY "gsubblock_table" "scalefac_table" INTARRAY "gscalefac_table"
+Star "./icon/Abs.icon" I31 208 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/IntToFloat.icon" I34 152 64 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Star "./icon/Mpy2.icon" I37 752 184 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/SC.icon" I41 464 240 0
+StarParameter 3 "procId" INT "-1" "factor" INT "1" "size" INT "3"
+Star "./icon/Power.icon" I44 304 136 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Const.icon" I48 560 312 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "2.0"
+Star "./icon/Const.icon" I50 256 240 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "1.333333"
+Star "./icon/Piggyback.icon" I52 616 168 0
+StarParameter 4 "procId" INT "-1" "period" INT "1" "offset" INT "0" "stateName" STRINGARRAY "{ globalstates }"
+Star "./icon/Power.icon" I56 600 280 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/IntToFloat.icon" I60 576 64 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Star "./icon/Mpy2.icon" I63 1088 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I67 1160 128 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/IntToFloat.icon" I69 144 208 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Line I72 "" Star I18 "output" Star I13 "input" 1 48 224 64 223 
+Line I73 "" Star I13 "output#3" Star I20 "input" 1 120 234 120 295 
+Line I74 "" Star I13 "output#1" Star I34 "input" 2 120 215 120 152 152 78 
+Line I75 "" Star I20 "output" Star I23 "input" 1 176 295 183 337 
+Line I76 "" Star I23 "output" Star I26 "input" 1 311 337 328 336 
+Line I77 "" Star I50 "output" Star I44 "exponent" 1 343 256 359 199 
+Line I78 "" Star I31 "output" Star I44 "base" 1 336 184 359 183 
+Line I79 "" Star I44 "output" Star I52 "input" 1 487 199 616 200 
+Line I80 "" Star I41 "output" Star I52 "param" 1 592 272 616 184 
+Line I81 "" Star I26 "output" Star I41 "input" 1 456 320 464 272 
+Line I82 "" Star I52 "output" Star I37 "input#1" 1 744 200 752 199 
+Line I83 "" Star I37 "output" Star I3 "input" 2 808 199 832 192 824 192 
+Line I84 "" Star I37 "output" Star I0 "input" 1 808 199 824 296 
+Line I85 "" Star I34 "output" Star I10 "input" 1 206 79 408 80 
+Line I86 "" Star I10 "output" Star I60 "input" 2 536 80 584 80 576 78 
+Line I87 "" Star I3 "output" Star I6 "input" 1 952 192 976 248 
+Line I88 "" Star I0 "output" Star I6 "input" 2 952 296 976 296 976 248 
+Line I89 "" Star I6 "output" Star I63 "input#2" 2 1104 248 1112 248 1115 171 
+Line I90 "" Star I60 "output" Star I63 "input#1" 2 630 79 1088 80 1088 143 
+Line I91 "" Star I26 "gain" Star I56 "exponent" 1 456 352 655 343 
+Line I92 "" Star I48 "output" Star I56 "base" 1 647 328 655 327 
+Line I93 "" Star I63 "output" Star I67 "input" 1 1144 143 1160 144 
+Line I94 "" Star I56 "output" Star I37 "input#2" 1 783 343 779 227 
+Line I95 "" Star I26 "control" Star I6 "control" 2 456 336 1040 384 1039 295 
+Line I96 "" Star I13 "output#2" Star I69 "input" 1 120 224 144 222 
+Line I97 "" Star I69 "output" Star I31 "input" 1 198 223 208 184 

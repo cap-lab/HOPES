@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="MMT_Example">
+  <setting_list>
+    <setting cycle="400" unit="us" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="ProcessNetwork" />
+  </setting_list>
+  <task_list />
+  <library_list />
+  <channel_list />
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <exclusive_set_list>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+    <exclusive_set name="E1">
+      <control_task name="Control" />
+    </exclusive_set>
+  </exclusive_set_list>
+  <supertaskChannel_list />
+  <taskGroupList name="taskGroups">
+    <taskGroup name="H264Dec_PHONE" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
+      <task name="H264Dec_PHONE" />
+    </taskGroup>
+    <taskGroup name="H264Dec_VP" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
+      <task name="H264Dec_VP" />
+    </taskGroup>
+    <taskGroup name="x264Enc" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
+      <task name="x264Enc" />
+    </taskGroup>
+    <taskGroup name="MP3Dec" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
+      <task name="MP3Dec" />
+    </taskGroup>
+  </taskGroupList>
+</cic_manual>
+

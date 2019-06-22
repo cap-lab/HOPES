@@ -1,0 +1,8 @@
+Platform
+Bus
+"RobonovaUartChannel"
+101 36
+"./platform/iconImage/RobonovaUartChannel.image"
+"" ""
+"" ""
+lineport "RobonovaUartChannel" "RobonovaUartChannel"

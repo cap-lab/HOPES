@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project>
+  <project_type>ManualCICDesignFlow</project_type>
+  <name>codesignFlow.xml</name>
+  <version>0.2</version>
+  <step_list>
+    <step>
+      <title>Func.</title>
+      <selected>yes</selected>
+      <name>sim</name>
+      <target_list>
+        <target>
+          <name>CIC-TaskEditor</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-TaskEditor"
+TargetParameter "SimulationTarget" STRING "PThread ##PThread-C++,PThread,NONE"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>H/W Platform</title>
+      <selected>no</selected>
+      <name>arch</name>
+      <target_list>
+        <target>
+          <name>platform</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "Archi"
+Target "platform"
+TargetParameter "PredefinedTarget" STRING "HSim ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
+Run 10
+PredefinedTarget " - "
+PlatformName " - "
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Xml-Gen</title>
+      <selected>no</selected>
+      <name>codegen</name>
+      <target_list>
+        <target>
+          <name>CIC-ManualGen</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-ManualGen"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Profile</title>
+      <selected>no</selected>
+      <name>profile</name>
+      <target_list>
+        <target>
+          <name>CIC-Profile</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-Profile"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>DSE</title>
+      <selected>no</selected>
+      <name>dse</name>
+      <target_list>
+        <target>
+          <name>CIC-DSE</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-DSE"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Synthesis</title>
+      <selected>no</selected>
+      <name>cosim</name>
+      <target_list>
+        <target>
+          <name>MulticoreHost</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "MulticoreHost"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Cell</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Cell"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>HSim</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "HSim"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>CUDA</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CUDA"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>XeonPhi</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "XeonPhi"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Robonova</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Robonova"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>NXT</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "NXT"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>TIEvalbot</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "TIEvalbot"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>IRobotCreate</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "IRobotCreate"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>DistributedRobots</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "DistributedRobots"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>RobotSimulation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "RobotSimulation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>VRepSimulation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "VRepSimulation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Arduino</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Arduino"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+  </step_list>
+</project>
+

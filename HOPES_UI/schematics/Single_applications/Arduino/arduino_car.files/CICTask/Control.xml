@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="forward" x="136" y="160" initial_state="true" hierarchical="false" />
+      <state name="LookAll" x="312" y="160" initial_state="false" hierarchical="false" />
+      <state name="SmoothTurn" x="484" y="164" initial_state="false" hierarchical="false" />
+      <state name="CheckObstacle" x="308" y="284" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_0_0" src_state="forward" dst_state="LookAll" curve0_x="168" curve0_y="192" curve1_x="308" curve1_y="192">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_1" src_state="LookAll" dst_state="SmoothTurn" curve0_x="344" curve0_y="192" curve1_x="476" curve1_y="196">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_2" src_state="SmoothTurn" dst_state="CheckObstacle" curve0_x="516" curve0_y="196" curve1_x="396" curve1_y="272">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_3" src_state="LookAll" dst_state="CheckObstacle" curve0_x="344" curve0_y="192" curve1_x="340" curve1_y="284">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_5" src_state="CheckObstacle" dst_state="forward" curve0_x="276" curve0_y="312" curve1_x="200" curve1_y="260">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_7" src_state="forward" dst_state="CheckObstacle" curve0_x="224" curve0_y="212" curve1_x="304" curve1_y="264">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_6" src_state="CheckObstacle" dst_state="SmoothTurn" curve0_x="420" curve0_y="336" curve1_x="500" curve1_y="252">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

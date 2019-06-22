@@ -1,0 +1,24 @@
+{
+  "mConnectionList": [
+    {
+      "mConnectionType": "TCP",
+      "mConnectionName": "TCP",
+      "mConnectionRole": "Master/Server",
+      "mTCPConnection": {
+        "mTCPConnectionName": "TCP",
+        "mTCPConnectionIP": "255.255.255.255",
+        "mTCPConnectionPort": "8080"
+      }
+    },
+    {
+      "mConnectionType": "BLUETOOTH",
+      "mConnectionName": "BLUETOOTH",
+      "mConnectionRole": "Master/Server",
+      "mBluetoothConnection": {
+        "mBluetoothConnectionName": "BLUETOOTH",
+        "mBluetoothConnectionFriendlyName": "friendlyName",
+        "mBluetoothConnectionMAC": "00:00:00:00:00:00"
+      }
+    }
+  ]
+}

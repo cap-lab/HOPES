@@ -1,0 +1,25 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "max" float "1.0"
+Parameter "min" float "0.0"
+Star "./icon/inport.icon" I0 24 16 0
+StarParameter 4 "name" string "up" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I2 24 136 0
+StarParameter 4 "name" string "down" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I4 432 72 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/DEConst.icon" I6 92 0 0
+StarParameter 2 "nodename" STRING "" "value" STRING "1.0"
+Star "./icon/DEConst.icon" I9 92 120 0
+StarParameter 2 "nodename" STRING "" "value" FLOAT "-1.0"
+Star "./icon/Merge2.icon" I12 208 72 0
+StarParameter 1 "nodename" STRING ""
+Galaxy "./icon/UpDown1.icon" I16 280 56 0
+StarParameter 2 "top" float "max" "bottom" float "min"
+Line I19 "" Star I6 "output" Star I12 "input#1" 1 148 32 209 80 
+Line I20 "" Star I9 "output" Star I12 "input#2" 1 148 152 208 96 
+Line I21 "" Star I12 "output" Star I16 "input" 1 267 88 280 88 
+Line I22 "" Star I16 "output" Star I4 "input" 1 336 88 432 88 
+Line I23 "" Star I0 "output" Star I6 "input" 1 56 32 92 32 
+Line I24 "" Star I2 "output" Star I9 "input" 1 56 152 92 152 

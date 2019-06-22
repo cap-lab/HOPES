@@ -1,0 +1,8 @@
+Platform
+Bus
+"CellRingBus"
+101 36
+"./platform/iconImage/CellRingBus.image"
+"" ""
+"" ""
+lineport "CellRingBus" "CellRingBus"

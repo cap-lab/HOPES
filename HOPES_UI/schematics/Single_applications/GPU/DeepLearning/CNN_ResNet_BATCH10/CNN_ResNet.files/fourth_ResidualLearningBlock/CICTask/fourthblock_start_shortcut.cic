@@ -1,0 +1,122 @@
+/************************************
+ *
+ * File : start_short.cic
+ * Date : Oct 30, 2018 3:33 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+#include "cuda.h"
+
+// ##DEFINE_SECTION::START
+#define BATCH 10
+
+#define EXECUTION_COUNT 3
+
+#define PRINTopt 0
+// ##DEFINE_SECTION::END
+static int IN_WIDTH = 7;
+static int IN_HEIGHT = 7;
+static int IN_CHANNEL = 2048;
+
+static float *pfData;
+static float *pfDataGPU;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_input2;
+STATIC int port_output_shortcut;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    if(PRINTopt == 1)
+        printf("44444fourthblock_start_shortcut) init start\n");
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_input2 = PORT_INITIALIZE(TASK_ID, "input2");
+    port_output_shortcut = PORT_INITIALIZE(TASK_ID, "output_shortcut");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    int nInSize;
+    nInSize = 14 * 14 * 1024;
+
+    pfDataGPU = cuda_make_array((float *)NULL, BATCH * nInSize);
+    if(PRINTopt == 1)
+        printf("44444fourthblock_start_shortcut) init finish\n");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static int iter = 0;
+static int layer_idx = 0;
+TASK_GO
+{
+    if(PRINTopt == 1)
+        printf("44444fourthblock_start_shortcut) iter : %d start\n", iter);
+    // TODO: task main code
+    int nDataSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+    int i;
+    iter++; //change to loop API
+    
+    if(iter % EXECUTION_COUNT == 1){
+        if(iter == 1){
+            nDataSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+            MQ_RECEIVE(port_input, (unsigned char*)pfDataGPU, sizeof(float) * nDataSize * BATCH);
+        }
+        nDataSize = 14 * 14 * 1024;
+        for(int i = 0; i < EXECUTION_COUNT; i++){
+            MQ_RECEIVE(port_input2, (unsigned char*)pfDataGPU, sizeof(float) * nDataSize * BATCH);
+        }
+        if(PRINTopt == 1)
+               printf("44444fourthblock_start_shortcut) receive finish\n");
+    }
+    else{
+        nDataSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+        MQ_RECEIVE(port_input, (unsigned char*)pfDataGPU, sizeof(float) * nDataSize * BATCH);
+    }
+        
+    if(PRINTopt == 1)
+        printf("44444fourthblock_start_shortcut) iter : %d send start\n", iter);
+
+	nDataSize = 14 * 14 * 1024;
+    MQ_SEND(port_output_shortcut, (unsigned char*)pfDataGPU, sizeof(float) * nDataSize * BATCH);
+    MQ_SEND(port_output, (unsigned char*)pfDataGPU, sizeof(float) * nDataSize * BATCH);
+    if(PRINTopt == 1)
+        printf("44444fourthblock_start_shortcut) iter : %d send finish\n", iter);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    cudaFree(pfDataGPU);
+}
+
+TASK_CODE_END

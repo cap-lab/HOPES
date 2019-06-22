@@ -1,0 +1,35 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "Size" int "10"
+Parameter "Rate" float "10.0"
+Star "./icon/inport.icon" I0 16 88 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 504 160 0
+StarParameter 4 "name" string "count" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork2.icon" I4 88 88 0
+StarParameter 1 "nodename" STRING ""
+Galaxy "./icon/UpDown.icon" I8 168 96 0
+StarParameter 2 "max" float "Size" "min" float "0.0"
+Star "./icon/Clock.icon" I12 76 136 0
+StarParameter 3 "nodename" STRING "" "interval" FLOAT "1.0 / Rate" "magnitude" FLOAT "1.0"
+Star "./icon/Fork2.icon" I14 312 112 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/TestLevel.icon" I18 384 88 0
+StarParameter 3 "nodename" STRING "" "threshold" FLOAT "Size" "crossingsOnly" INT "TRUE"
+Star "./icon/Case2.icon" I21 504 24 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/outport.icon" I26 616 8 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I28 616 48 0
+StarParameter 4 "name" string "lost" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I30 "" Star I0 "output" Star I4 "input" 1 48 104 88 104 
+Line I31 "" Star I4 "output#2" Star I8 "up" 1 141 112 168 120 
+Line I32 "" Star I12 "output" Star I8 "down" 1 132 168 168 136 
+Line I33 "" Star I8 "output" Star I14 "input" 1 224 128 312 128 
+Line I34 "" Star I14 "output#1" Star I18 "input" 1 365 120 384 120 
+Line I35 "" Star I14 "output#2" Star I2 "input" 1 365 136 504 176 
+Line I36 "" Star I18 "output" Star I21 "control" 2 440 120 544 120 548 76 
+Line I37 "" Star I4 "output#1" Star I21 "input" 1 141 96 504 52 
+Line I38 "" Star I21 "output#1" Star I26 "input" 1 595 32 616 24 
+Line I39 "" Star I21 "output#2" Star I28 "input" 1 595 68 616 64 

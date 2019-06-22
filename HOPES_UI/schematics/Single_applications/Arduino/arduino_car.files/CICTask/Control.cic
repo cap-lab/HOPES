@@ -1,0 +1,373 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Sep 10, 2018 7:07 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+
+#include <Arduino.h>
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_FORWARD 0
+#define ID_STATE_LOOKALL 1
+#define ID_STATE_SMOOTHTURN 2
+#define ID_STATE_CHECKOBSTACLE 4
+#define ID_TRANSITION_TRANSITION_0_0 0
+#define ID_TRANSITION_TRANSITION_0_1 1
+#define ID_TRANSITION_TRANSITION_0_2 2
+#define ID_TRANSITION_TRANSITION_0_3 3
+#define ID_TRANSITION_TRANSITION_0_4 4
+#define ID_TRANSITION_TRANSITION_0_5 5
+#define ID_TRANSITION_TRANSITION_0_6 6
+#define ID_TRANSITION_TRANSITION_0_7 7
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+enum SensorCheckState {
+    CHECK_FORWARD_FIRST,
+    CHECK_LEFT_45_FIRST,
+    CHECK_LEFT,
+    CHECK_LEFT_45_SECOND,
+    CHECK_FORWARD_SECOND,
+    CHECK_RIGHT_45,
+    CHECK_RIGHT,
+	CHECK_FORWARD_THIRD,
+    MAX_CHECK_STATE,
+};
+
+enum Direction {
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT,
+    DIRECTION_STRAIGHT,
+    DIRECTION_LEFT_45,
+    DIRECTION_RIGHT_45,
+};
+
+struct Distance {
+    enum Direction direction;
+    int distance;
+};
+
+struct TotalDistance {
+    int left;
+    int left45;
+    int forward;
+    int right;
+    int right45;
+};
+
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_distance;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state_0;
+// ##VARIABLE_SECTION::END
+static int repeat = 0;
+static int compare = 0;
+static enum SensorCheckState sensor_state = CHECK_FORWARD_FIRST;
+static int Dist_Min = 30;
+static int LR_Dist_Min = 15;
+static struct TotalDistance allDistance = {0,};
+static int sensor_state_increase = 1;
+static int prev_state;
+//-----------------------------------
+// init code
+//-----------------------------------
+#define SPEED 200
+#define TURN_SPEED 150
+#define TURNING_DELAY 500
+
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_distance = PORT_INITIALIZE(TASK_ID, "distance");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state_0 = ID_STATE_FORWARD;
+// ##INIT_SECTION::END
+
+
+    // TODO: task initialize code
+
+}
+
+//-----------------------------------
+// hierarchical code
+//-----------------------------------
+// ##HIERARCHICAL_SECTION::START
+// ##HIERARCHICAL_SECTION::END
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+static void updateDistance(struct Distance distance)
+{
+    switch(distance.direction)
+    {
+    case DIRECTION_LEFT:
+        allDistance.left = distance.distance;
+        break;
+    case DIRECTION_RIGHT:
+       allDistance.right = distance.distance;
+       break;
+    case DIRECTION_STRAIGHT:
+       allDistance.forward = distance.distance;
+       break;
+    case DIRECTION_LEFT_45:
+       allDistance.left45 = distance.distance;
+       break;
+    case DIRECTION_RIGHT_45:
+       allDistance.right45 = distance.distance;
+       break;
+    }
+}
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add triggering code here.
+	prev_state = current_state_0;
+	//UEM_DEBUG_PRINT("current_state_0: %d\n", current_state_0);
+
+	switch( current_state_0 )
+	{
+		case ID_STATE_FORWARD:
+		{
+			if(repeat == 0)
+			{
+				SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 0);
+				SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"speed", SPEED);
+				SYS_REQ(RUN_TASK, (char *)"Wheel");
+			}
+
+			repeat++;
+			if(repeat > 20)
+			{
+				current_state_0 = ID_STATE_LOOKALL;
+				sensor_state_increase = 1;
+				repeat = 0;
+				compare = 0;
+			}
+			else // repeat <= 20
+			{
+				SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 2);
+				SYS_REQ(RUN_TASK, (char *)"Servo");
+				current_state_0 = ID_STATE_CHECKOBSTACLE;
+			}
+		}
+		break;
+		case ID_STATE_LOOKALL:
+		{
+			struct Distance distance;
+
+			if(sensor_state < MAX_CHECK_STATE)
+			{
+				if(sensor_state_increase == 0)
+				{
+					if(MQ_AVAILABLE(port_distance) > 0)
+					{
+						MQ_RECEIVE(port_distance, (unsigned char *)&distance, sizeof(struct Distance));
+						updateDistance(distance);
+
+						switch(distance.direction)
+						{
+						case DIRECTION_LEFT:
+							if(allDistance.left < LR_Dist_Min)
+							{
+								SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 4);
+								SYS_REQ(RUN_TASK, (char *)"Wheel");
+							}
+							break;
+						case DIRECTION_RIGHT:
+							if(allDistance.right < LR_Dist_Min)
+							{
+								SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 4);
+								SYS_REQ(RUN_TASK, (char *)"Wheel");
+							}
+							break;
+						case DIRECTION_STRAIGHT:
+							if(allDistance.forward < Dist_Min)
+							{
+								SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 4);
+								SYS_REQ(RUN_TASK, (char *)"Wheel");
+							}
+							break;
+						case DIRECTION_LEFT_45:
+							if(allDistance.left45 < Dist_Min)
+							{
+								SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 4);
+								SYS_REQ(RUN_TASK, (char *)"Wheel");
+							}
+							break;
+						case DIRECTION_RIGHT_45:
+							if(allDistance.right45 < Dist_Min)
+							{
+								SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 4);
+								SYS_REQ(RUN_TASK, (char *)"Wheel");
+							}
+							break;
+						}
+
+						sensor_state = (enum SensorCheckState)((int)sensor_state + 1);
+						sensor_state_increase = 1;
+					}
+				}
+				else
+				{
+					switch(sensor_state)
+					{
+					case CHECK_FORWARD_FIRST:
+					case CHECK_FORWARD_SECOND:
+					case CHECK_FORWARD_THIRD:
+						SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 2);
+						SYS_REQ(RUN_TASK, (char *)"Servo");
+						break;
+					case CHECK_LEFT_45_FIRST:
+					case CHECK_LEFT_45_SECOND:
+						SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 3);
+						SYS_REQ(RUN_TASK, (char *)"Servo");
+						break;
+					case CHECK_LEFT:
+						SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 0);
+						SYS_REQ(RUN_TASK, (char *)"Servo");
+						break;
+					case CHECK_RIGHT_45:
+						SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 4);
+						SYS_REQ(RUN_TASK, (char *)"Servo");
+						break;
+					case CHECK_RIGHT:
+						SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 1);
+						SYS_REQ(RUN_TASK, (char *)"Servo");
+						break;
+					default:
+						break;
+					}
+					sensor_state_increase = 0;
+				}
+			}
+			else
+			{
+				sensor_state = CHECK_FORWARD_FIRST;
+				if(allDistance.left > allDistance.right && allDistance.left > allDistance.forward)
+				{
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 3);
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"speed", TURN_SPEED);
+					SYS_REQ(RUN_TASK, (char *)"Wheel");
+					current_state_0 = ID_STATE_SMOOTHTURN;
+				}
+				else if(allDistance.right > allDistance.left && allDistance.right > allDistance.forward)
+				{
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 2);
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"speed", TURN_SPEED);
+					SYS_REQ(RUN_TASK, (char *)"Wheel");
+					current_state_0 = ID_STATE_SMOOTHTURN;
+				}
+				else if(allDistance.left < LR_Dist_Min || allDistance.left45 < Dist_Min)
+				{
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 2);
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"speed", TURN_SPEED);
+					SYS_REQ(RUN_TASK, (char *)"Wheel");
+					current_state_0 = ID_STATE_SMOOTHTURN;
+				}
+				else
+				{
+					SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 2);
+					SYS_REQ(RUN_TASK, (char *)"Servo");
+					current_state_0 = ID_STATE_CHECKOBSTACLE;
+				}
+			}
+		}
+		break;
+		case ID_STATE_SMOOTHTURN:
+		{
+			delay(TURNING_DELAY);
+			SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 2);
+			SYS_REQ(RUN_TASK, (char *)"Servo");
+			current_state_0 = ID_STATE_CHECKOBSTACLE;
+		}
+		break;
+		case ID_STATE_CHECKOBSTACLE:
+		{
+			struct Distance distance;
+			if(MQ_AVAILABLE(port_distance)> 0)
+			{
+				MQ_RECEIVE(port_distance, (unsigned char *)&distance, sizeof(struct Distance));
+				updateDistance(distance);
+
+				if(allDistance.forward < Dist_Min)
+				{
+					//UEM_DEBUG_PRINT("compare: %d, allDistance.forward: %d, Dist_Min: %d\n", compare, allDistance.forward, Dist_Min);
+					compare++;
+
+				}
+				else if(allDistance.forward > Dist_Min && allDistance.forward > 0)
+				{
+					//UEM_DEBUG_PRINT("!!compare: %d, allDistance.forward: %d, Dist_Min: %d\n", compare, allDistance.forward, Dist_Min);
+					compare = 0;
+				}
+				else
+				{
+					//UEM_DEBUG_PRINT("compare: %d, allDistance.forward: %d, Dist_Min: %d\n", compare, allDistance.forward, Dist_Min);
+					// do nothing
+				}
+
+				if(compare > 1)
+				{
+					UEM_DEBUG_PRINT("compare: %d, allDistance.forward: %d, Dist_Min: %d\n", compare, allDistance.forward, Dist_Min);
+					SYS_REQ(SET_PARAM_INT, (char *)"Wheel", (char *)"motor", 4);
+					SYS_REQ(RUN_TASK, (char *)"Wheel");
+					sensor_state_increase = 1;
+					current_state_0 = ID_STATE_LOOKALL;
+					compare = 0;
+					repeat = 0;
+				}
+				else if(compare > 0)
+				{
+					SYS_REQ(SET_PARAM_INT, (char *)"Servo", (char *)"direction", 2);
+					SYS_REQ(RUN_TASK, (char *)"Servo");
+
+					// remain state
+				}
+				else
+				{
+					current_state_0 = ID_STATE_FORWARD;
+				}
+			}
+		}
+			break;
+	}
+// ##GO_SECTION::END
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

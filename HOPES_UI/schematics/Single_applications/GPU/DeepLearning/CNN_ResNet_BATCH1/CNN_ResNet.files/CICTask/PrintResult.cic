@@ -1,0 +1,81 @@
+/************************************
+ *
+ * File : Pr.cic
+ * Date : Oct 11, 2018 12:47 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+#define BATCH 1
+
+#define NUM_CLASSES 1000
+#define TEST_ITER   1000
+#define LAST_DATA_SIZE 1000
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_result;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+static int result[TEST_ITER];
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_result = PORT_INITIALIZE(TASK_ID, "in_result");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int i;
+	float predict = 0;
+    
+    MQ_RECEIVE(port_in_result, (unsigned char*)result, sizeof(int) * TEST_ITER);
+    
+    for(i = 0; i < TEST_ITER; i++)
+    {
+		predict += result[i];
+	}
+	predict = predict / (float)NUM_CLASSES * 100;
+	printf("Prediction Accuracy : %f\n", predict);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

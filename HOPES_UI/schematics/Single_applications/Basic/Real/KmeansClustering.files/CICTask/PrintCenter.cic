@@ -1,0 +1,92 @@
+/************************************
+ *
+ * File : Pr.cic
+ * Date : Nov 15, 2016 5:32 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <stdio.h>
+#include <stdlib.h>
+#include <float.h>
+#include <math.h>
+
+//application specific
+#define NUM_OBJECTS 100
+#define NUM_ATTRIBUTES 34
+#define NUM_CLUSTER 5
+#define THRESHOLD 0.001
+
+
+static float cluster_centres[NUM_CLUSTER * NUM_ATTRIBUTES];
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_p;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_p = PORT_INITIALIZE(TASK_ID, "in_p");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+           int     i, j;
+  MQ_RECEIVE(port_in_p, (unsigned char*)&cluster_centres[0], sizeof(float)*NUM_CLUSTER * NUM_ATTRIBUTES); 
+
+
+
+	printf("number of Clusters %d\n",NUM_CLUSTER); 
+	printf("number of Attributes %d\n\n",NUM_ATTRIBUTES); 
+  	printf("Cluster Centers Output\n"); 
+	printf("The first number is cluster number and the following data is arribute value\n");
+	printf("=============================================================================\n\n");
+    fflush(stdout);
+    
+    for (i=0; i< NUM_CLUSTER; i++) {
+		printf("%d: ", i);
+        for (j=0; j<NUM_ATTRIBUTES; j++)
+            printf("%.2f ", cluster_centres[i * NUM_ATTRIBUTES + j]);
+        printf("\n\n");
+    }   
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

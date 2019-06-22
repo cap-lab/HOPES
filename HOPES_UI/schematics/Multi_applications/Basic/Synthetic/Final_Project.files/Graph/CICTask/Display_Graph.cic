@@ -1,0 +1,244 @@
+/************************************
+ *
+ * File : Re.cic
+ * Date : Apr 18, 2013 10:32 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+// ##DEFINE_PORT_SECTION::END
+
+#define BORDER_WIDTH 2
+
+STATIC Display *theDisplay;
+STATIC Window theWindow;
+STATIC GC theGC;
+
+STATIC int theScreen;
+STATIC int theDepth;
+STATIC unsigned long theBlackPixel;
+STATIC unsigned long theWhitePixel;
+
+STATIC void updateModeString(Window theWindow,GC theGC, char* mode){
+    XSync(theDisplay, False);
+    XClearArea(theDisplay, theWindow, 150, 270, 70, 30, False);
+    XSync(theDisplay, False);
+    XDrawString(theDisplay, theWindow, theGC, 150, 280, mode, strlen(mode));
+    XSync(theDisplay, False);
+}
+
+STATIC void InitCounterDisplay(Window theWindow,GC theGC){
+    int i=0;
+    XSync(theDisplay, False);
+    XClearArea(theDisplay, theWindow, 0, 0, 300, 300, False);
+    XDrawString(theDisplay, theWindow, theGC, 120, 40, "Graph", strlen("Graph"));
+    XSetLineAttributes(theDisplay, theGC, 1, LineSolid, CapNotLast, JoinRound); 
+    XDrawLine(theDisplay,theWindow,theGC,40,70,40,250);
+    XDrawLine(theDisplay,theWindow,theGC,40,160,280,160);
+    XDrawString(theDisplay, theWindow, theGC, 255, 265, "angle", strlen("angle"));
+    XDrawString(theDisplay, theWindow, theGC, 5, 60, "sin/cos(angle)", strlen("sin/cos(angle)"));
+    for(i=1; i<10; i++){
+        XSetLineAttributes(theDisplay, theGC, 1, LineOnOffDash, CapNotLast, JoinRound); 
+        XDrawLine(theDisplay,theWindow,theGC, 40, 70 + (250-70)/10 * i, 280, 70 + (250-70)/10 * i);
+        XDrawLine(theDisplay,theWindow,theGC, 40 + (280-40)/10 * i, 70, 40 + (280-40)/10 * i, 250);
+    }
+    XSync(theDisplay, False);
+}
+
+STATIC unsigned long UsrColorPixel(char* name){
+    Colormap cmap;
+    XColor c0, c1;
+
+    cmap = DefaultColormap(theDisplay, 0);
+    XAllocNamedColor(theDisplay, cmap, name, &c0, &c1);
+    return (c0.pixel);
+}
+
+STATIC int x_point = 0;
+STATIC int y_point = 0;
+STATIC int flag = 0;
+STATIC void drawPoint(GC theGC, Window theWindow, int count){
+    int prev_x = x_point;
+    int prev_y = y_point;
+
+    if(flag == 0){
+        x_point ++;
+        flag = 1;
+    }
+    else flag = 0;
+
+    y_point = 160 - count;
+    XSync(theDisplay, False);
+    XSetForeground(theDisplay, theGC, UsrColorPixel("red"));
+    //XDrawPoint(theDisplay, theWindow, theGC, x_point, y_point);
+    XDrawLine(theDisplay,theWindow,theGC,prev_x,prev_y,x_point,y_point);
+    XSetForeground(theDisplay, theGC, theWhitePixel);
+    if(x_point == 280){
+        x_point = 40;
+        InitCounterDisplay(theWindow, theGC);
+    }
+    XSync(theDisplay, False);
+}
+
+
+STATIC int createGC(Window theNewWindow,GC *theNewGC){
+    XGCValues theGCValues;
+
+    *theNewGC = XCreateGC(theDisplay,theNewWindow,(unsigned long) 0,&theGCValues);
+    if(*theNewGC == 0)
+        return 0;
+    else{
+        XSetForeground(theDisplay,*theNewGC,theWhitePixel);
+        XSetBackground(theDisplay,*theNewGC,theBlackPixel);
+        return 1;
+    }
+}
+
+STATIC Window OpenWindow(int x, int y, int width, int height, int flag,GC *theNewGC){
+    XSetWindowAttributes theWindowAttributes;
+    unsigned long theWindowMask;
+    XSizeHints theSizeHints;
+    XWMHints theWMHints;
+    Window theNewWindow;
+
+    /*Setting the attributes*/
+    theWindowAttributes.border_pixel
+        = WhitePixel(theDisplay,theScreen);
+    theWindowAttributes.background_pixel
+        = BlackPixel(theDisplay,theScreen);
+    theWindowAttributes.override_redirect = False;
+
+    theWindowMask = CWBackPixel|CWBorderPixel|CWOverrideRedirect;
+
+    theNewWindow = XCreateWindow( theDisplay,
+            RootWindow(theDisplay,theScreen),
+            x,y,width,height,
+            BORDER_WIDTH,theDepth,
+            InputOutput,
+            CopyFromParent,
+            theWindowMask,
+            &theWindowAttributes);
+
+    theWMHints.initial_state = NormalState;
+    theWMHints.flags = StateHint;
+
+    XSetWMHints(theDisplay,theNewWindow,&theWMHints);
+
+    theSizeHints.flags = PPosition | PSize;
+    theSizeHints.x = x;
+    theSizeHints.y = y;
+    theSizeHints.width = width;
+    theSizeHints.height = height;
+
+    XSetNormalHints(theDisplay,theNewWindow,&theSizeHints);
+
+    if( createGC(theNewWindow,theNewGC) == 0){
+        XDestroyWindow(theDisplay,theNewWindow);
+        return( (Window) 0);
+    }
+
+    XMapWindow(theDisplay,theNewWindow);
+    XFlush(theDisplay);
+
+    return theNewWindow;
+}
+
+
+STATIC void init_display() {
+    XInitThreads();
+
+    theDisplay=XOpenDisplay((char *)0);
+    if(theDisplay == NULL){
+        printf("Can not open display\n");
+        exit(-1);
+    }
+
+    theScreen = DefaultScreen(theDisplay);
+    theDepth = DefaultDepth(theDisplay,theScreen);
+    theBlackPixel = BlackPixel(theDisplay,theScreen);
+    theWhitePixel = WhitePixel(theDisplay,theScreen);
+
+    theWindow= OpenWindow(100, 100, 300, 300, 0, &theGC);
+
+    XSetStandardProperties (theDisplay, theWindow, "Counter", "Counter", None, NULL, 0, NULL);
+    InitCounterDisplay(theWindow, theGC);
+};
+
+
+STATIC void close_display() {
+    /* it is good programming practice to return system resources to the 
+       system...
+     */
+    XFlush(theDisplay);
+    XFreeGC(theDisplay, theGC);
+    XDestroyWindow(theDisplay, theWindow);
+    XCloseDisplay(theDisplay); 
+}
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC int count;
+STATIC int var;
+TASK_INIT
+{
+    // ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+// ##INIT_PORT_SECTION::END
+    init_display();
+    x_point = 40;
+    y_point = 160;
+    var = 0;
+    count = 0;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+TASK_GO
+{
+    // TODO: task main code
+    int result = 0;
+    char* currMode = SYS_REQ(GET_MODE, "Graph_Display_Graph");
+   // updateModeString(theWindow, theGC, currMode);
+    // TODO: task initialize code
+    MQ_RECEIVE(port_in, (unsigned char*)&result, sizeof(int));
+    drawPoint(theGC, theWindow, result);
+    count++;
+    if(count == 500){
+        //SYS_REQ(STOP_TASK, TASK_NAME);
+    }
+//    printf("Display_Graph: %s: %d\n", currMode, result);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    close_display();
+}
+
+TASK_CODE_END

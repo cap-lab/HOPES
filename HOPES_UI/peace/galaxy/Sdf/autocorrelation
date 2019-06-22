@@ -1,0 +1,58 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "numInputs" int "512"
+Parameter "order" int "16"
+Parameter "log2resolution" int "7"
+Star "./icon/WaveForm.icon" I0 12 68 0
+StarParameter 5 "procId" INT "-1" "value" FLOATARRAY "1 -1" "haltAtEnd" INT "NO" "periodic" INT "YES" "period" INT "0"
+Star "./icon/Mpy2.icon" I2 72 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Autocor.icon" I6 152 8 0
+StarParameter 4 "procId" INT "-1" "noInputsToAvg" INT "numInputs" "noLags" INT "order" "unbiased" INT "0"
+Star "./icon/FFTCx.icon" I9 584 0 0
+StarParameter 4 "procId" INT "-1" "order" INT "log2resolution" "size" INT "order + 1" "direction" INT "1"
+Star "./icon/Chop.icon" I12 120 80 0
+StarParameter 5 "procId" INT "-1" "nread" INT "order + 1" "nwrite" INT "1" "offset" INT "- order" "use_past_inputs" INT "NO"
+Star "./icon/Repeat.icon" I15 228 80 0
+StarParameter 2 "procId" INT "-1" "numTimes" INT "2^log2resolution"
+Star "./icon/Add2.icon" I18 500 16 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I22 332 16 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "-1.0"
+Star "./icon/BlackHole.icon" I25 312 36 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Impulse.icon" I27 456 36 0
+StarParameter 4 "procId" INT "-1" "level" FLOAT "1.0" "period" INT "order + 1" "delay" INT "0"
+Star "./icon/Reciprocal.icon" I29 460 92 2
+StarParameter 2 "procId" INT "-1" "magLimit" FLOAT "10000.0"
+Star "./icon/Chop.icon" I32 392 0 0
+StarParameter 5 "procId" INT "-1" "nread" INT "order" "nwrite" INT "order + 1" "offset" INT "1" "use_past_inputs" INT "NO"
+Star "./icon/Mpy2.icon" I35 680 16 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I39 340 116 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/inport.icon" I43 20 24 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I45 404 116 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/LevDur.icon" I47 220 8 0
+StarParameter 2 "procId" INT "-1" "order" INT "order"
+Line I52 "" Star I0 "output" Star I2 "input#2" 1 68 100 99 68 
+Line I53 "" Star I2 "output" Star I6 "input" 1 128 40 152 40 
+Line I54 "" Star I22 "output" Star I32 "input" 1 388 32 392 32 
+Line I55 "" Star I12 "output" Star I15 "input" 1 176 112 228 112 
+Line I56 "" Star I32 "output" Star I18 "input#1" 1 448 32 500 32 
+Line I57 "" Star I27 "output" Star I18 "input#2" 1 512 68 527 60 
+Line I58 "" Star I18 "output" Star I9 "input" 1 556 32 584 32 
+Line I59 "" Star I9 "output" Star I35 "input#1" 1 640 32 680 32 
+Line I60 "" Star I9 "output" Star I35 "input#2" 1 640 32 707 60 
+Line I61 "" Star I39 "output" Star I45 "input" 1 396 132 404 132 
+Line I62 "" Star I43 "output" Star I2 "input#1" 1 52 40 72 40 
+Line I63 "" Star I6 "output" Star I47 "autocor" 1 208 40 220 40 
+Line I64 "" Star I47 "lp" Star I22 "input" 1 276 32 332 32 
+Line I65 "" Star I47 "refl" Star I25 "input" 1 276 40 312 40 
+Line I66 "" Star I47 "errPower" Star I12 "input" 3 276 48 304 48 100 84 120 112 
+Line I67 "" Star I15 "output" Star I39 "input#2" 1 280 112 367 160 
+Line I68 "" Star I29 "output" Star I39 "input#1" 2 460 108 340 108 340 132 
+Line I69 "" Star I35 "output" Star I29 "input" 2 736 32 748 32 516 108 

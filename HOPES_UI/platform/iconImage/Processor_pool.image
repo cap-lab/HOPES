@@ -1,0 +1,8 @@
+"./platform/iconImage/Processor_pool.image"
+72 76
+Rectangle 8 16 56 48 16777215 true
+Rectangle 8 16 56 48 0 false
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "Processor Pool"
+OutArrowLine 32 62 0 1 16762880

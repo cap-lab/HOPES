@@ -1,0 +1,8 @@
+Platform
+Core
+"ARM926EJS_pool"
+72 76
+"./platform/iconImage/ARM926EJS_pool.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "AHBMasterOut"

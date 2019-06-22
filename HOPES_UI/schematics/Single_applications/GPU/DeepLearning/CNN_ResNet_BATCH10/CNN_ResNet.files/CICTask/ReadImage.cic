@@ -1,0 +1,193 @@
+/************************************
+ *
+ * File : ReadImage.cic
+ * Date : Oct 11, 2018 12:45 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+#include <string.h>
+
+#include "list.h"
+#include "weight.h"
+
+// ##DEFINE_SECTION::START
+#define WEIGHT_SIZE     57559981
+
+#define BATCH 10
+
+#define INPUT_WIDTH 224
+#define INPUT_HEIGHT 224
+#define INPUT_CHANNEL 3
+
+#define INPUT_SIZE (INPUT_WIDTH * INPUT_HEIGHT * INPUT_CHANNEL)
+#define NUM_CLASSES 1000
+#define TEST_ITER   1000
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_imgpath;
+STATIC int port_out_imglabel;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+static char* testImagesPath;
+static char* testLabelsPath;
+
+static int nImgNum;
+static float *nWeight[153];
+static char **pszAllImages;
+static char **pszAllLabels;
+
+static char test_Image_Path[TEST_ITER][100];
+static int test_Label[TEST_ITER];
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out_imgpath = PORT_INITIALIZE(TASK_ID, "out_imgpath");
+    port_out_imglabel = PORT_INITIALIZE(TASK_ID, "out_label");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    testImagesPath = "input/data/imagenet1k.valid.list";
+    testLabelsPath = "input/data/imagenet.labels.list";
+}
+
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static void file_error(char *s) {
+    fprintf(stderr, "Couldn't open file: %s\n", s);
+    exit(0);
+}
+
+static char *fgetl(FILE *fp) {
+    if(feof(fp)) return 0;
+    size_t size = 512;
+    char *line = (char *)malloc(size*sizeof(char));
+    if(!fgets(line, size, fp)){
+        free(line);
+        return 0;
+    }
+
+    size_t curr = strlen(line);
+
+    while((line[curr-1] != '\n') && !feof(fp)){
+        if(curr == size-1){
+            size *= 2;
+            line = (char *)realloc(line, size*sizeof(char));
+            if(!line) {
+                printf("%ld\n", size);
+                fprintf(stderr, "Malloc error\n");
+                exit(-1);
+            }
+        }
+        size_t readsize = size-curr;
+        if(readsize > INT_MAX) readsize = INT_MAX-1;
+        fgets(&line[curr], readsize, fp);
+        curr = strlen(line);
+    }
+    if(line[curr-1] == '\n') line[curr-1] = '\0';
+
+    return line;
+}
+
+list *get_paths(char *filename) {
+    char *path;
+    FILE *file = fopen(filename, "r");
+    if(!file) file_error(filename);
+
+    printf("ReadImage/get_paths) file name %s, fp  %p\n", filename, file);
+    list *lines = make_list();
+    while((path=fgetl(file))){
+        list_insert(lines, path);
+    }
+    fclose(file);
+    return lines;
+}
+
+char *nolib_strstr(const char *s1, const char *s2) {
+    int i;
+
+    if (*s2 == '\0') {
+        return (char *)s1;
+    } else {
+    for (; *s1; s1 ++) {
+        if (*s1 == *s2) {
+            for (i = 1; *(s1 + i) == *(s2 + i); i++);
+            if (i == strlen(s2))
+                return (char *)s1;
+            }
+        }
+        return (char *)NULL;
+    }
+}
+
+list *plist_Image;
+list *plist_Label;
+
+TASK_GO
+{
+    // TODO: task main code 
+    int i,j,k;
+
+    plist_Image = get_paths(testImagesPath);
+    plist_Label = get_paths(testLabelsPath);
+
+    nImgNum = plist_Image->size;
+    pszAllImages = (char **)list_to_array(plist_Image);
+    pszAllLabels = (char **)list_to_array(plist_Label);
+
+    for(i = 0; i < TEST_ITER; i++){
+        strcpy(test_Image_Path[i],pszAllImages[i]);
+    }
+    for (i = 0; i < TEST_ITER; i++) {
+        char *path = pszAllImages[i];
+
+        for (j = 0; j < NUM_CLASSES; j++) {
+            if (nolib_strstr(path, pszAllLabels[j])) {
+                test_Label[i] = j;
+                break;
+			}
+		}
+	}
+
+    printf("ReadImage) Send Start\n");
+    MQ_SEND(port_out_imgpath, (unsigned char*)&test_Image_Path, sizeof(test_Image_Path));
+    printf("ReadImage) Send Image Path Finish\n");
+    MQ_SEND(port_out_imglabel, (unsigned char*)test_Label, sizeof(test_Label));
+    printf("ReadImage) Send Label Finish\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free_list(plist_Image);
+    free_list(plist_Label);
+}
+
+TASK_CODE_END

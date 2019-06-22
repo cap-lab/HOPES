@@ -1,0 +1,7 @@
+Star
+inport
+32 32
+"./iconImage/inport.image"
+"" ""
+"./param/" "inport.param"
+outport output 32 16 false

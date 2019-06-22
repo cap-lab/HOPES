@@ -1,0 +1,10 @@
+"./platform/iconImage/PeaceMC.image"
+80 52
+Rectangle 3 0 73 50 -1 true
+Rectangle 3 0 73 50 -16777216 false
+Text 15 13 11 -16777216 "Peace MC"
+InArrowLine 24 54 0 -2 -13312
+InArrowLine 52 54 0 -2 -13312
+InArrowLine 0 16 1 0 -16777216
+InArrowLine 0 32 1 0 -16777216
+InArrowLine 79 24 1 0 -16777216

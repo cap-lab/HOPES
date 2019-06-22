@@ -1,0 +1,5 @@
+"./platform/iconImage/I2CBus.image"
+101 20
+bus 1 2 100 16 -14336 true
+bus 1 2 100 16 -16777216 false
+Text 5 -3 11 -16777216 "I2CBus"

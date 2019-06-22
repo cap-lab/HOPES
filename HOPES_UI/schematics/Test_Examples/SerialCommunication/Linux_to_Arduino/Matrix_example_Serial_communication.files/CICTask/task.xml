@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="Matrix_example_Serial_communication">
+  <setting_list>
+    <setting cycle="0" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="MatrixA" type="Computational">
+      <config>
+        <location x="88" y="92" width="80" height="40" />
+        <parameter name="CICFile" value="MatrixA.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" name="out" type="fifo" sample_size="12" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="MatrixB" type="Computational">
+      <config>
+        <location x="92" y="184" width="80" height="40" />
+        <parameter name="CICFile" value="MatrixB.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" name="out" type="fifo" sample_size="12" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Display" type="Computational">
+      <config>
+        <location x="532" y="128" width="80" height="40" />
+        <parameter name="CICFile" value="Display.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" name="in" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="9" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="VecMultiplier" type="Computational">
+      <config>
+        <location x="300" y="128" width="80" height="60" />
+        <parameter name="CICFile" value="VecMul.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" name="in1" type="fifo" sample_size="12" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="0" name="in2" type="fifo" sample_size="12" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" name="out" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="MatrixA" src_port="out" dst_task="VecMultiplier" dst_port="in1" size="3" init_size="0" sampleType="int" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="168" y="112" />
+        <edge id="1" x="300" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="MatrixB" src_port="out" dst_task="VecMultiplier" dst_port="in2" size="3" init_size="0" sampleType="int" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="172" y="204" />
+        <edge id="1" x="300" y="168" />
+      </edge_list>
+    </channel>
+    <channel src_task="VecMultiplier" src_port="out" dst_task="Display" dst_port="in" size="9" init_size="0" sampleType="int" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="380" y="148" />
+        <edge id="1" x="532" y="148" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList name="taskGroups" />
+</cic_manual>
+

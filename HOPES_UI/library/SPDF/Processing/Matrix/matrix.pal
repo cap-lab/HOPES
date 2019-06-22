@@ -1,0 +1,51 @@
+Domain "CGC"
+Target "default-CGC"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+Run 10
+Star "./icon/MatrixSub.icon" I0 20 148 0
+StarParameter 4 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}"
+Star "./icon/MatrixPack.icon" I4 240 240 0
+StarParameter 4 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}"
+Star "./icon/MatrixAdd.icon" I7 24 32 0
+StarParameter 4 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}"
+Star "./icon/MatrixUnpack.icon" I11 240 324 0
+StarParameter 4 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}"
+Star "./icon/MatrixAbs.icon" I14 20 324 0
+StarParameter 4 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}"
+Star "./icon/MatrixMpy.icon" I17 20 244 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "commonSize" INT "height"
+Star "./icon/MatrixGain.icon" I21 20 396 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "gain" FLOAT "1.0"
+Star "./icon/MatrixType.icon" I24 240 400 0
+StarParameter 8 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "outputType" STRING "{type}" "saturate" STRING "YES ##YES,NO" "maxValue" FLOAT "255" "minValue" FLOAT "0"
+Star "./icon/MatrixDecom.icon" I27 240 32 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "subWidth" INT "8" "subHeight" INT "8"
+Star "./icon/MatrixCom.icon" I30 240 148 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "subWidth" INT "8" "subHeight" INT "8"
+CommText 0 0 12 -16777216 ""
+CommText 104 52 12 -16777216 "add matrix A and B"
+CommText 100 168 12 -16777216 "subtract matrix B from A"
+CommText 100 264 12 -16777216 "multiply matrix A and B"
+CommText 96 336 12 -16777216 "absolute value \nof each element \nof the matrix"
+CommText 96 408 12 -16777216 "multiply a matrix \nby an scalar gain value"
+CommText 308 132 12 -16777216 "Accept input matrices and create a matrix output.\nEach input matrix represents a decomposed submatrix \nof output matrix in row by row. Note that for one output \nimage, we will need a total \n(Height/subHeight)*(Width/subWidth) input matrices."
+CommText 308 0 12 -16777216 "Decompose a portion of input matrix into a sequence \nof submatrices. The desired portion of input matrix is \nspecified by state parameters "
+CommText 308 232 12 -16777216 "Produce a matrix with entries constructed from input values.  \nThe inputs are put in the matrix in rasterized order, \ne.g. for a MxN matrix, the first row is\nfilled from left to right using the first N input values."
+CommText 308 344 12 -16777216 "Read a matrix and output its elements, row by row."
+CommText 308 416 12 -16777216 "type conversion from "

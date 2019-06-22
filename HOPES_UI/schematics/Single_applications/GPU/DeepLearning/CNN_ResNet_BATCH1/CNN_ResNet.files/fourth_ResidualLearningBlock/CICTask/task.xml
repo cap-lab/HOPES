@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="CNN_ResNet">
+  <setting_list>
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="start_shortcut" type="Computational">
+      <config>
+        <location x="120" y="128" width="80" height="60" />
+        <parameter name="CICFile" value="fourthblock_start_shortcut.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="Yes" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="true" name="input2" type="fifo" sample_size="802816" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output_shortcut" type="fifo" sample_size="802816" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="first_conv" type="Computational">
+      <config>
+        <location x="120" y="312" width="80" height="40" />
+        <parameter name="CICFile" value="fourthblock_first_conv.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="Yes" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="second_conv" type="Computational">
+      <config>
+        <location x="368" y="312" width="80" height="40" />
+        <parameter name="CICFile" value="fourthblock_second_conv.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="Yes" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="100352" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="third_conv" type="Computational">
+      <config>
+        <location x="616" y="312" width="80" height="40" />
+        <parameter name="CICFile" value="fourthblock_third_conv.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="Yes" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="100352" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="end_shortcut" type="Computational">
+      <config>
+        <location x="616" y="128" width="80" height="60" />
+        <parameter name="CICFile" value="fourthblock_end_shortcut.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="Yes" />
+        <parameter name="IsDesignatedTask" value="Yes" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input_shortcut" type="fifo" sample_size="802816" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="input" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="true" name="output2" type="fifo" sample_size="401408" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="start_shortcut" src_port="output_shortcut" dst_task="end_shortcut" dst_port="input_shortcut" size="802816" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="200" y="148" />
+        <edge id="1" x="616" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="start_shortcut" src_port="output" dst_task="first_conv" dst_port="input" size="802816" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="200" y="168" />
+        <edge id="1" x="288" y="168" />
+        <edge id="2" x="52" y="244" />
+        <edge id="3" x="120" y="332" />
+      </edge_list>
+    </channel>
+    <channel src_task="first_conv" src_port="output" dst_task="second_conv" dst_port="input" size="401408" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="200" y="332" />
+        <edge id="1" x="368" y="332" />
+      </edge_list>
+    </channel>
+    <channel src_task="second_conv" src_port="output" dst_task="third_conv" dst_port="input" size="100352" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="448" y="332" />
+        <edge id="1" x="616" y="332" />
+      </edge_list>
+    </channel>
+    <channel src_task="third_conv" src_port="output" dst_task="end_shortcut" dst_port="input" size="401408" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="696" y="332" />
+        <edge id="1" x="772" y="332" />
+        <edge id="2" x="532" y="248" />
+        <edge id="3" x="616" y="168" />
+      </edge_list>
+    </channel>
+    <channel src_task="end_shortcut" src_port="output" dst_task="start_shortcut" dst_port="input" size="401408" init_size="401408" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="696" y="148" />
+        <edge id="1" x="768" y="148" />
+        <edge id="2" x="52" y="96" />
+        <edge id="3" x="120" y="148" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+</cic_manual>
+

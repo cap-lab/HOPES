@@ -1,0 +1,110 @@
+/************************************
+ *
+ * File : No.cic
+ * Date : Oct 29, 2013 11:17 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <math.h>
+// ##DEFINE_SECTION::START
+//#define WIDTH 1920
+//#define HEIGHT 1080
+#define WIDTH 600
+#define HEIGHT 400
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+#define SIZE 1000
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC unsigned char* src;
+STATIC unsigned char* dst;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src = (unsigned char*)malloc(WIDTH * HEIGHT * 3);
+    dst = (unsigned char*)malloc(WIDTH * HEIGHT * 3);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+	/* Local variables */
+	int i = 0, j = 0;
+	int temp = 0;
+    int noise = 0;
+	int Gain = SYS_REQ(GET_PARAM_INT, "Image", "Gain");
+
+	// TODO: task main code
+	MQ_RECEIVE(port_in, (unsigned char*)src, WIDTH * HEIGHT * 3);
+
+	/* Add noise to each point */
+
+	for (i = 0; i < WIDTH; i++){
+		for (j = 0; j < HEIGHT; j++)
+		{
+			noise = LIBCALL(random, Noise);
+			temp = src[WIDTH*j*3 + i*3 + 0] + noise - SIZE / 2 + (double)Gain;
+			if (temp < 0)
+				temp = 0;
+			else if (temp > 255)
+				temp = 255;
+			dst[WIDTH*j*3 + i*3 + 0] = (unsigned char)temp;
+			noise = LIBCALL(random, Noise);
+			temp = src[WIDTH*j*3 + i*3 + 1] + noise - SIZE / 2 + (double)Gain;
+			if (temp < 0)
+				temp = 0;
+			else if (temp > 255)
+				temp = 255;
+			dst[WIDTH*j*3 + i*3 + 1] = (unsigned char)temp;
+			noise = LIBCALL(random, Noise);
+			temp = src[WIDTH*j*3 + i*3 + 2] + noise - SIZE / 2 + (double)Gain;
+			if (temp < 0)
+				temp = 0;
+			else if (temp > 255)
+				temp = 255;
+			dst[WIDTH*j*3 + i*3 + 2] = (unsigned char)temp;
+		}
+	}
+
+	MQ_SEND(port_out, (unsigned char*)dst, WIDTH * HEIGHT * 3);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+	// TODO: task wrapup code
+	free(src);
+	free(dst);
+}
+
+TASK_CODE_END

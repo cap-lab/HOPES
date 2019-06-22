@@ -1,0 +1,24 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "noiseVar" float "0.1"
+Galaxy "./icon/singen.icon" I0 20 36 0
+StarParameter 3 "sample_rate" float "2*PI" "frequency" float "PI/2" "phase_in_radians" float "0.0"
+Star "./icon/IIDGaussian.icon" I2 16 180 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "1.0" "mean" FLOAT "0.0" "seed" INT "1"
+Star "./icon/Biquad.icon" I4 88 180 0
+StarParameter 6 "procId" INT "-1" "d1" FLOAT "-0.850848" "d2" FLOAT "0.0" "n0" FLOAT "1.0" "n1" FLOAT "0.0" "n2" FLOAT "0.0"
+Star "./icon/Add.icon" I7 176 96 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I10 256 96 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Galaxy "./icon/singen.icon" I12 20 80 0
+StarParameter 3 "sample_rate" float "2*PI" "frequency" float "PI/2.1" "phase_in_radians" float "0.0"
+Galaxy "./icon/singen.icon" I14 20 128 0
+StarParameter 3 "sample_rate" float "2*PI" "frequency" float "PI/20" "phase_in_radians" float "0.0"
+Line I16 "" Star I2 "output" Star I4 "input" 1 72 212 88 212 
+Line I17 "" Star I0 "output" Star I7 "input" 2 76 68 92 68 176 112 
+Line I18 "" Star I7 "output" Star I10 "input" 1 232 112 256 112 
+Line I19 "" Star I12 "output" Star I7 "input" 1 76 112 176 112 
+Line I20 "" Star I14 "output" Star I7 "input" 2 76 160 92 160 176 112 
+Line I21 "" Star I4 "output" Star I7 "input" 1 144 212 176 112 

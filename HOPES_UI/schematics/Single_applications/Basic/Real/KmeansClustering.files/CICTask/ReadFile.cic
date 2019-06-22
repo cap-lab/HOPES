@@ -1,0 +1,153 @@
+/************************************
+ *
+ * File : ReadF.cic
+ * Date : Nov 15, 2016 5:30 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <math.h>
+#include <sys/types.h>
+#include <fcntl.h>
+
+//application specific
+#define NUM_OBJECTS 100
+#define NUM_ATTRIBUTES 34
+#define NUM_CLUSTER 5
+#define THRESHOLD 0.001
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_r;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out_r = PORT_INITIALIZE(TASK_ID, "out_r");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+//  float feature[npoints][nfeatures]; 
+static float feature[NUM_OBJECTS][NUM_ATTRIBUTES];
+
+TASK_GO
+{
+    // TODO: task main code
+           char   *filename = 0;           
+           float  *buf;
+           float **attributes;
+           int     i, j;
+                
+           int     numAttributes;
+           int     numObjects;        
+           char    line[1024];           
+    
+           filename = "100";
+
+
+           if (filename == 0) 
+           {
+              printf("IO FAILED!\n"); 
+              exit(-1);
+           }
+
+      numAttributes = numObjects = 0;
+
+    /* from the input file, get the numAttributes and numObjects ------------*/
+    {
+        FILE *infile;
+        if ((infile = fopen(filename, "r")) == NULL) {
+            fprintf(stderr, "Error: no such file (%s)\n", filename);
+            exit(1);
+        }
+        while (fgets(line, 1024, infile) != NULL)
+            if (strtok(line, " \t\n") != 0)
+                numObjects++;
+        rewind(infile);
+        while (fgets(line, 1024, infile) != NULL) {
+            if (strtok(line, " \t\n") != 0) {
+                /* ignore the id (first attribute): numAttributes = 1; */
+                while (strtok(NULL, " ,\t\n") != NULL) numAttributes++;
+                break;
+            }
+        }
+     
+
+        /* allocate space for attributes[] and read attributes of all objects */
+        buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
+        attributes    = (float**)malloc(numObjects*             sizeof(float*));
+        attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
+        for (i=1; i<numObjects; i++)
+            attributes[i] = attributes[i-1] + numAttributes;
+        rewind(infile);
+        i = 0;
+        while (fgets(line, 1024, infile) != NULL) {
+            if (strtok(line, " \t\n") == NULL) continue; 
+            for (j=0; j<numAttributes; j++) {
+                buf[i] = atof(strtok(NULL, " ,\t\n"));
+                i++;
+            }
+        }
+        fclose(infile);
+    }     
+	printf("I/O completed\n");
+
+	memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
+
+    printf("number of objects: %d\n", numObjects);
+	printf("number of Attributes %d\n\n",numAttributes); 
+
+    printf("queue: %d\n", sizeof(float)*numObjects*numAttributes);
+    fflush(stdout);
+    MQ_SEND(port_out_r, (unsigned char*)&attributes[0][0], sizeof(float)*numObjects*numAttributes);
+
+    free(attributes);
+    free(buf);
+
+  // attributes = feature; // [numObjects][numAttributes] ==== in: [npoints][nfeatures]
+//    sleep(1);
+//    MQ_SEND(port_out_r, (unsigned char*) & , sizeof());
+ 
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

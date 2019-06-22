@@ -1,0 +1,28 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "decimation" int "1"
+Parameter "decimationPhase" int "0"
+Parameter "interpolation" int "1"
+Parameter "length" int "64"
+Parameter "symbol_interval" int "16"
+Parameter "excessBW" float "1.0"
+Parameter "square_root" int "NO"
+Star "./icon/RaisedCosine.icon" I0 200 80 0
+StarParameter 8 "procId" INT "-1" "decimation" INT "decimation" "decimationPhase" INT "decimationPhase" "interpolation" INT "interpolation" "length" INT "length" "symbol_interval" INT "symbol_interval" "excessBW" FLOAT "excessBW" "square_root" INT "square_root"
+Star "./icon/CxToRect.icon" I3 68 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToCx.icon" I7 328 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/outport.ilink" I11 408 144 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/inport.ilink" I13 16 144 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/RaisedCosine.icon" I15 196 160 0
+StarParameter 8 "procId" INT "-1" "decimation" INT "decimation" "decimationPhase" INT "decimationPhase" "interpolation" INT "interpolation" "length" INT "length" "symbol_interval" INT "symbol_interval" "excessBW" FLOAT "excessBW" "square_root" INT "square_root"
+Line I18 "" Star I13 "output" Star I3 "input" 1 48 160 68 160 
+Line I19 "" Star I3 "real" Star I0 "signalIn" 1 124 152 200 112 
+Line I20 "" Star I0 "signalOut" Star I7 "real" 1 256 112 328 152 
+Line I21 "" Star I7 "output" Star I11 "input" 1 384 160 408 160 
+Line I22 "" Star I3 "imag" Star I15 "signalIn" 1 124 168 196 192 
+Line I23 "" Star I15 "signalOut" Star I7 "imag" 1 252 192 328 168 

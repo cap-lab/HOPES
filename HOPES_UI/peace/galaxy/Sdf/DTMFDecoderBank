@@ -1,0 +1,57 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "DFTLengthFirstHarmonic" int "205"
+Parameter "DFTLengthSecondHarmonic" int "201"
+Parameter "DFTCoeffFreq1Harmonic1" int "18"
+Parameter "DFTCoeffFreq1Harmonic2" int "35"
+Parameter "DFTCoeffFreq2Harmonic1" int "20"
+Parameter "DFTCoeffFreq2Harmonic2" int "39"
+Parameter "DFTCoeffFreq3Harmonic1" int "22"
+Parameter "DFTCoeffFreq3Harmonic2" int "43"
+Parameter "DFTCoeffFreq4Harmonic1" int "24"
+Parameter "DFTCoeffFreq4Harmonic2" int "47"
+Parameter "MinFirstHarmonicAmplitude" int "6"
+Parameter "MinRationSecondToFirstHarmonic" float "0.25"
+Parameter "MinRatioOtherToMaxAmplitude" float "0.25"
+Star "./icon/inport.icon" I0 4 168 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork.icon" I2 52 168 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/GoertzelDetector.icon" I5 132 152 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq2Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq2Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Galaxy "./icon/GoertzelDetector.icon" I9 136 92 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq1Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq2Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Galaxy "./icon/GoertzelDetector.icon" I13 140 200 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq3Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq3Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Galaxy "./icon/GoertzelDetector.icon" I17 148 252 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq4Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq4Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Star "./icon/Nop4.icon" I21 288 132 0
+Star "./icon/Nop4.icon" I27 264 188 0
+Star "./library/Peace/Port/outport.ilink" I33 488 148 0
+StarParameter 4 "name" string "freqPower" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/DTMFDecision.icon" I35 360 172 0
+StarParameter 4 "procId" INT "-1" "minRatioToMax" FLOAT "MinRatioOtherToMaxAmplitude" "minAmp" FLOAT "MinFirstHarmonicAmplitude" "minSecondToFreq" FLOAT "MinRatioSecondToFirstHarmonic"
+Star "./library/Peace/Port/outport.ilink" I41 488 188 0
+StarParameter 4 "name" string "index" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I43 488 228 0
+StarParameter 4 "name" string "valid" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I45 "" Star I2 "output" Star I5 "input" 1 105 184 132 184 
+Line I46 "" Star I2 "input" Star I0 "output" 1 52 184 36 184 
+Line I47 "" Star I2 "output" Star I9 "input" 1 105 184 136 124 
+Line I48 "" Star I2 "output" Star I13 "input" 1 105 184 140 232 
+Line I49 "" Star I2 "output" Star I17 "input" 1 105 184 148 284 
+Line I50 "" Star I9 "f0power" Star I21 "input#1" 1 192 116 288 156 
+Line I51 "" Star I5 "f0power" Star I21 "input#2" 1 188 176 288 164 
+Line I52 "" Star I13 "f0power" Star I21 "input#3" 1 196 224 288 172 
+Line I53 "" Star I17 "f0power" Star I21 "input#4" 1 204 276 288 180 
+Line I54 "" Star I9 "f1power" Star I27 "input#1" 1 192 132 264 212 
+Line I55 "" Star I5 "f1power" Star I27 "input#2" 1 188 192 264 220 
+Line I56 "" Star I13 "f1power" Star I27 "input#3" 1 196 240 264 228 
+Line I57 "" Star I17 "f1power" Star I27 "input#4" 1 204 292 264 236 
+Line I58 "" Star I21 "output" Star I35 "freq" 1 344 164 360 196 
+Line I59 "" Star I27 "output" Star I35 "second" 1 320 220 360 212 
+Line I60 "" Star I35 "freqOut" Star I33 "input" 1 416 196 488 164 
+Line I61 "" Star I35 "index" Star I41 "input" 1 416 204 488 204 
+Line I62 "" Star I35 "valid" Star I43 "input" 1 416 212 488 244 
+CommText 104 32 20 -16777216 "Dual-Tone Modulated Frequency Decoder Bank"

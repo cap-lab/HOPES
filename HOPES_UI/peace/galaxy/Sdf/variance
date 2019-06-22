@@ -1,0 +1,39 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "displayEvery" int "10"
+Parameter "DontPlotFirst" int "59000"
+Star "./icon/Fork2.icon" I0 80 124 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/inport.ilink" I4 28 124 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Mpy2.icon" I6 144 100 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Biquad.icon" I10 212 84 0
+StarParameter 6 "procId" INT "-1" "d1" FLOAT "-1" "d2" FLOAT "0" "n0" FLOAT "1" "n1" FLOAT "0" "n2" FLOAT "0"
+Star "./icon/DownSample.icon" I13 280 84 0
+StarParameter 3 "procId" INT "-1" "factor" INT "displayEvery" "phase" INT "0"
+Star "./icon/DownSample.icon" I16 204 164 0
+StarParameter 3 "procId" INT "-1" "factor" INT "displayEvery" "phase" INT "0"
+Star "./icon/Reciprocal.icon" I19 284 164 0
+StarParameter 2 "procId" INT "-1" "magLimit" FLOAT "0.0"
+Star "./icon/Mpy2.icon" I22 344 100 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Sqrt.icon" I26 412 84 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Ramp.icon" I29 108 164 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0" "value" FLOAT "1.0"
+Star "./icon/Xgraph.icon" I31 480 84 0
+StarParameter 8 "procId" INT "-1" "title" STRING "phase-error std versus time" "saveFile" STRING "" "options" STRING "-P -x BAUSD -y DEGREES  =250x300+850+100 -0 sigma" "ignore" INT "DontPlotFirst" "xUnits" FLOAT "1.0" "xInit" FLOAT "0.0" "resources" STRINGARRAY "STDIO"
+Line I33 "" Star I4 "output" Star I0 "input" 1 60 140 80 140 
+Line I34 "" Star I0 "output#1" Star I6 "input#1" 1 133 132 144 116 
+Line I35 "" Star I0 "output#2" Star I6 "input#2" 1 133 148 171 144 
+Line I36 "" Star I6 "output" Star I10 "input" 1 200 116 212 116 
+Line I37 "" Star I10 "output" Star I13 "input" 1 268 116 280 116 
+Line I38 "" Star I13 "output" Star I22 "input#1" 1 336 116 344 116 
+Line I39 "" Star I22 "output" Star I26 "input" 1 400 116 412 116 
+Line I40 "" Star I26 "output" Star I31 "input" 1 468 116 480 116 
+Line I41 "" Star I19 "output" Star I22 "input#2" 1 340 196 371 144 
+Line I42 "" Star I16 "output" Star I19 "input" 1 260 196 284 196 
+Line I43 "" Star I29 "output" Star I16 "input" 1 160 196 204 196 
+CommText 120 24 20 -16777216 "Measure standard deviation"

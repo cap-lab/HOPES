@@ -1,0 +1,124 @@
+/************************************
+ *
+ * File : Controller.cic
+ * Date : Aug 13, 2015 5:30 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <string>
+#include "format.h"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <cstdlib>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+STATIC FuseResult result;
+STATIC cv::Mat currMat;
+STATIC cv::Rect currRect;
+STATIC FILE *fp;
+STATIC int frame;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+// ##INIT_PORT_SECTION::END
+//	cv::namedWindow("Output", CV_WINDOW_AUTOSIZE);
+    // TODO: task initialize code
+#ifdef CAP_GET_LOG
+	fp = fopen("learningData/info.txt","w");
+	frame = 1;
+#endif
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+#ifdef CAP_DEBUG
+    printf("Controller_Go function\n");
+#endif
+
+	// TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&result, sizeof(FuseResult));
+
+#ifdef CAP_DEBUG
+    printf("Controller_Go function MQ_RECEIVE succeed\n");
+#endif
+
+	currMat = cv::Mat(imgHeight, imgWidth, CV_8UC1, result.mat.data);
+	currRect = result.BB.valid? cv::Rect(result.BB.value): cv::Rect();
+	if(result.BB.valid)
+	{
+#ifdef CAP_DEBUG_R
+		printf("Tracking Succeed - Rect Value\n");
+		printf("%d %d (x,y) %d %d (width, height)\n", currRect.x, currRect.y, currRect.width, currRect.height);
+#endif
+
+#ifdef CAP_GET_LOG
+		char buf[50];
+		sprintf(buf, "learningData/%d.jpg", frame);
+		fprintf(fp, "%s %d %d %d %d\n", buf, currRect.x, currRect.y, currRect.width, currRect.height);
+		std::string fn = buf;
+		imwrite(fn, currMat);
+		frame++;
+#else
+		int midx = imgWidth/2;
+		int midBB = currRect.x + currRect.width/2;
+		int indurance = imgWidth/20;
+		if(midBB > midx + indurance) printf("Turn Right\n");
+		else if(midBB < midx - indurance) printf("Turn Left\n");
+		else printf("Go Straight\n");
+#endif
+		cv::rectangle(currMat, cvPoint(currRect.x, currRect.y), cvPoint(currRect.x+currRect.width, currRect.y + currRect.height), CV_RGB(255,0,0), 3);
+	}
+	else
+	{
+#ifdef CAP_DEBUG_R
+		printf("\nTracking Failed\n");
+#endif
+	}
+
+	imshow("Input", currMat);
+	cv::waitKey(20);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+#ifdef CAP_GET_LOG
+	fclose(fp);
+#endif
+}
+
+TASK_CODE_END

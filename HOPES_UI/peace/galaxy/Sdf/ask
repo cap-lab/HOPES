@@ -1,0 +1,19 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "level" float "1.0"
+Parameter "excessBW" float "1.0"
+Star "./icon/Const.icon" I0 8 40 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0.0"
+Star "./icon/Scrambler.icon" I2 76 24 0
+StarParameter 3 "procId" INT "-1" "polynomial" INT "0440001" "shiftReg" INT "1"
+Star "./icon/Table.icon" I5 148 24 0
+StarParameter 3 "procId" INT "-1" "values" FLOATARRAY "-level level" "runTimeCheck" INT "YES"
+Star "./icon/RaisedCosine.icon" I8 224 24 0
+StarParameter 8 "procId" INT "-1" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "8" "length" INT "64" "symbol_interval" INT "8" "excessBW" FLOAT "excessBW" "square_root" INT "NO"
+Star "./icon/outport.icon" I11 304 40 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I13 "" Star I0 "output" Star I2 "input" 1 55 56 76 56 
+Line I14 "" Star I2 "output" Star I5 "input" 1 132 56 148 56 
+Line I15 "" Star I5 "output" Star I8 "signalIn" 1 204 56 224 56 
+Line I16 "" Star I8 "signalOut" Star I11 "input" 1 280 56 304 56 

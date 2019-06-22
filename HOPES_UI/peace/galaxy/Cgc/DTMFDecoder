@@ -1,0 +1,67 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "FirstHarmonicDFTLength" int "205"
+Parameter "SecondHarmonicDFTLength" int "201"
+Parameter "MinFirstHarmonicPower" float "2.0E-12"
+Parameter "MinRatioLowToHighFreq" float "1/3      # 1 / (twist ratio)"
+Parameter "MaxRatioLowToHighFreq" float "6        # reverse twist ratio"
+Parameter "MinRatioSecondToFirstHarmonic" float "0.25"
+Parameter "MinRatioOtherToMaxAmplitude" float "0.25"
+Parameter "SamplingRate" int "8000"
+Star "./icon/inport.icon" I0 0 136 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Gain.icon" I2 36 136 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1.0"
+Star "./icon/Fork2.icon" I5 96 136 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/DTMFDecoderBank.icon" I9 168 64 0
+StarParameter 13 "DFTLengthFirstHarmonic" int "FirstHarmonicDFTLength" "DFTLengthSecondHarmonic" int "SecondHarmonicDFTLength" "DFTCoeffFreq1Harmonic1" int "(FirstHarmonicDFTLength*697+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq1Harmonic2" int "(SecondHarmonicDFTLength*2*697+SamplingRate/2)/SamplingRate  #round up" "DFTCoeffFreq2Harmonic1" int "(FirstHarmonicDFTLength*770+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq2Harmonic2" int "(SecondHarmonicDFTLength*2*770+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq3Harmonic1" int "(FirstHarmonicDFTLength*852+SamplingRate/2)/SamplingRate    # round up" "DFTCoeffFreq3Harmonic2" int "(SecondHarmonicDFTLength*2*852+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq4Harmonic1" int "(FirstHarmonicDFTLength*941+SamplingRate/2)/SamplingRate    # round up" "DFTCoeffFreq4Harmonic2" int "(SecondHarmonicDFTLength*2*941+SamplingRate/2)/SamplingRate   # round up" "MinFirstHarmonicAmplitude" int "MinFirstHarmonicPower" "MinRationSecondToFirstHarmonic" float "MinRatioSecondToFirstHarmonic" "MinRatioOtherToMaxAmplitude" float "MinRatioOtherToMaxAmplitude"
+Galaxy "./icon/DTMFDecoderBank.icon" I14 172 192 0
+StarParameter 13 "DFTLengthFirstHarmonic" int "FirstHarmonicDFTLength" "DFTLengthSecondHarmonic" int "SecondHarmonicDFTLength" "DFTCoeffFreq1Harmonic1" int "(FirstHarmonicDFTLength*1209+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq1Harmonic2" int "(SecondHarmonicDFTLength*2*1209+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq2Harmonic1" int "(FirstHarmonicDFTLength*1336+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq2Harmonic2" int "(SecondHarmonicDFTLength*2*1336+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq3Harmonic1" int "(FirstHarmonicDFTLength*1477+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq3Harmonic2" int "(SecondHarmonicDFTLength*2*1477+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq4Harmonic1" int "(FirstHarmonicDFTLength*1633+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq4Harmonic2" int "(SecondHarmonicDFTLength*2*1633+SamplingRate/2)/SamplingRate   # round up" "MinFirstHarmonicAmplitude" int "MinFirstHarmonicPower" "MinRationSecondToFirstHarmonic" float "MinRatioSecondToFirstHarmonic" "MinRatioOtherToMaxAmplitude" float "0.25"
+Star "./icon/Gain.icon" I19 328 144 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1/MaxRatioLowToHighFreq"
+Star "./icon/Gain.icon" I22 324 176 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "MinRatioLowToHighFreq"
+Star "./icon/GainInt.icon" I25 308 32 0
+StarParameter 2 "procId" INT "-1" "gain" INT "4"
+Star "./icon/AddInt2.icon" I28 380 32 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Test.icon" I32 396 96 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "EQ" "crossingsOnly" INT "FALSE"
+Star "./icon/Test.icon" I36 408 216 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "EQ" "crossingsOnly" INT "FALSE"
+Star "./icon/Nop.icon" I40 468 188 0
+Star "./icon/And.icon" I43 504 176 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/TableInt.icon" I46 536 16 0
+StarParameter 3 "procId" INT "-1" "values" INTARRAY "1 2 3 10 4 5 6 11 7 8 9 12 14 0 15 13" "runTimeCheck" INT "YES"
+Star "./icon/DTMFPostTest.icon" I49 604 88 0
+StarParameter 2 "procId" INT "-1" "initialLastInput" INT "-1"
+Star "./icon/outport.icon" I53 636 32 0
+StarParameter 4 "name" string "key" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I55 672 104 0
+StarParameter 4 "name" string "valid" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I57 "" Star I2 "output" Star I5 "input" 1 92 152 96 152 
+Line I58 "" Star I2 "input" Star I0 "output" 1 36 152 32 152 
+Line I59 "" Star I9 "valid" Star I25 "input" 1 224 104 308 48 
+Line I60 "" Star I28 "input#1" Star I25 "output" 1 380 48 364 48 
+Line I61 "" Star I9 "index" Star I32 "upper" 1 224 96 396 120 
+Line I62 "" Star I9 "freqPower" Star I40 "input" 2 224 88 316 208 469 208 
+Line I63 "" Star I40 "output" Star I43 "input" 1 497 208 504 208 
+Line I64 "" Star I28 "output" Star I46 "input" 1 416 48 536 48 
+Line I65 "" Star I43 "output" Star I49 "valid" 1 597 208 604 128 
+Line I66 "" Star I46 "output" Star I53 "input" 1 592 48 636 48 
+Line I67 "" Star I49 "output" Star I55 "input" 1 660 120 672 120 
+Line I68 "" Star I5 "output#2" Star I14 "input" 1 149 160 172 224 
+Line I69 "" Star I5 "output#1" Star I9 "input" 1 149 144 168 96 
+Line I70 "" Star I14 "valid" Star I28 "input#2" 1 228 232 398 67 
+Line I71 "" Star I9 "index" Star I19 "input" 1 224 96 328 160 
+Line I72 "" Star I14 "index" Star I22 "input" 1 228 224 324 192 
+Line I73 "" Star I14 "index" Star I36 "upper" 1 228 224 408 240 
+Line I74 "" Star I19 "output" Star I36 "lower" 1 384 160 408 256 
+Line I75 "" Star I22 "output" Star I32 "lower" 1 380 192 396 136 
+Line I76 "" Star I14 "freqPower" Star I40 "input" 1 228 216 469 208 
+Line I77 "" Star I36 "output" Star I40 "input" 1 464 248 469 208 
+Line I78 "" Star I32 "output" Star I40 "input" 1 452 128 469 208 
+Line I79 "" Star I28 "output" Star I49 "input" 1 416 48 604 112 

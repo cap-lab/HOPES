@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<platform>
+  <name>CUDA</name>
+  <target>CUDA</target>
+  <version>1</version>
+  <description>
+    <![CDATA[CPU/GPU(CUDA) Heterogeneous Platform]]>
+  </description>
+  <schematic>
+    <![CDATA[Domain "Archi"
+Target "platform"
+TargetParameter "PredefinedTarget" STRING "Default ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
+Run 10
+Platform Core "./platform/library/core/CUDA_CPU.icon" I0 12 12 0
+StarParameter 5 "processorId" INT "0" "model" STRING "CPU" "category" STRING "PROCESSOR" "OS" STRING "Linux ##Linux" "scheduler" STRING  "RR"
+Section I0 0 
+Region I0 0
+Platform Core "./platform/library/core/CUDA_GPU_sm20.icon" I2 208 16 0
+StarParameter 7 "processorId" INT "0" "model" STRING "GPU" "category" STRING "PROCESSOR" "OS" STRING "Linux ##Linux" "scheduler" STRING  "RR" "type" STRING "sm20" "Memory Size" INT "200000000"
+Section I2 0 
+Region I2 0
+Platform Bus "./platform/library/bus/CUDABus.icon" I4 92 148 0 101
+BusPort I5 I4 "CellRingBus_I5" "CUDABus" 128 166 false 0
+BusPort I6 I4 "CellRingBus_I6" "CUDABus" 152 166 false 0
+Line I8 "0" Star I0 "master" Star I4 "CellRingBus_I5" 1 44 74 128 166 
+Line I9 "0" Star I2 "master" Star I4 "CellRingBus_I6" 1 240 78 152 166 
+DefaultSlave I4 null
+]]>
+  </schematic>
+</platform>
+

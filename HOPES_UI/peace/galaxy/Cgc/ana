@@ -1,0 +1,22 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "lowpass" floatArray "< $PEACE/src/domains/sdf/demo/qmf.lowpass.filter"
+Parameter "highpass" floatArray "< $PEACE/src/domains/sdf/demo/qmf.highpass.filter"
+Star "./library/Peace/Port/inport.icon" I0 32 176 0
+StarParameter 4 "name" string "in" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.icon" I2 360 128 0
+StarParameter 4 "name" string "hp" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.icon" I4 360 232 0
+StarParameter 4 "name" string "lp" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/FIR.icon" I6 184 112 0
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "highpass" "decimation" INT "2" "decimationPhase" INT "1" "interpolation" INT "1"
+Star "./icon/FIR.icon" I9 192 216 0
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "lowpass" "decimation" INT "2" "decimationPhase" INT "1" "interpolation" INT "1"
+Star "./icon/Fork.icon" I12 88 176 0
+StarParameter 1 "procId" INT "-1"
+Line I15 "" Star I9 "signalOut" Star I4 "input" 1 320 248 360 248 
+Line I16 "" Star I6 "signalOut" Star I2 "input" 1 312 144 360 144 
+Line I17 "" Star I0 "output" Star I12 "input" 1 64 192 88 191 
+Line I18 "" Star I12 "output" Star I6 "signalIn" 1 144 191 184 144 
+Line I19 "" Star I12 "output" Star I9 "signalIn" 1 144 191 192 248 

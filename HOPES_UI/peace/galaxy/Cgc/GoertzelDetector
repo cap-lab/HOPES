@@ -1,0 +1,41 @@
+Domain "CGC"
+Target "default-CGC"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+Run 10
+Parameter "DFTCoefficientHarmonic1" int "18"
+Parameter "DFTLengthHarmonic1" int "205"
+Parameter "DFTCoefficientHarmonic2" int "35"
+Parameter "DFTLengthHarmonic2" int "201"
+Parameter "DFTLength" int "205"
+Star "./icon/inport.icon" I0 32 48 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 368 16 0
+StarParameter 4 "name" string "f0power" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I4 368 88 0
+StarParameter 4 "name" string "f1power" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork2.icon" I6 96 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/GoertzelPower.icon" I10 200 0 0
+StarParameter 4 "procId" INT "-1" "k" INT "DFTCoefficientHarmonic1" "N" INT "DFTLengthHarmonic1" "size" INT "DFTLength"
+Star "./icon/GoertzelPower.icon" I13 200 72 0
+StarParameter 4 "procId" INT "-1" "k" INT "DFTCoefficientHarmonic2" "N" INT "DFTLengthHarmonic2" "size" INT "DFTLength"
+Line I16 "" Star I0 "output" Star I6 "input" 1 64 64 96 63 
+Line I17 "" Star I6 "output#1" Star I10 "input" 1 152 55 200 32 
+Line I18 "" Star I6 "output#2" Star I13 "input" 1 152 71 200 104 
+Line I19 "" Star I10 "output" Star I2 "input" 1 328 32 368 32 
+Line I20 "" Star I13 "output" Star I4 "input" 1 328 104 368 104 

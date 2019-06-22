@@ -1,0 +1,117 @@
+Domain "CGC"
+Target "default-CGC"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+Run 10
+Parameter "DFTLengthFirstHarmonic" int "205"
+Parameter "DFTLengthSecondHarmonic" int "201"
+Parameter "DFTCoeffFreq1Harmonic1" int "18"
+Parameter "DFTCoeffFreq1Harmonic2" int "35"
+Parameter "DFTCoeffFreq2Harmonic1" int "20"
+Parameter "DFTCoeffFreq2Harmonic2" int "39"
+Parameter "DFTCoeffFreq3Harmonic1" int "22"
+Parameter "DFTCoeffFreq3Harmonic2" int "43"
+Parameter "DFTCoeffFreq4Harmonic1" int "24"
+Parameter "DFTCoeffFreq4Harmonic2" int "47"
+Parameter "MinFirstHarmonicAmplitude" int "6"
+Parameter "MinRationSecondToFirstHarmonic" float "0.25"
+Parameter "MinRatioOtherToMaxAmplitude" float "0.25"
+Star "./icon/inport.icon" I0 16 392 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 1128 232 0
+StarParameter 4 "name" string "valid" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork.icon" I4 72 392 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/GoertzelDetector.icon" I7 152 376 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq2Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq2Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Galaxy "./icon/GoertzelDetector.icon" I11 152 296 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq1Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq2Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Galaxy "./icon/GoertzelDetector.icon" I15 152 456 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "DFTCoeffFreq3Harmonic1" "DFTLengthHarmonic1" int "DFTLengthFirstHarmonic" "DFTCoefficientHarmonic2" int "DFTCoeffFreq3Harmonic2" "DFTLengthHarmonic2" int "DFTLengthSecondHarmonic" "DFTLength" int "!\"max {DFTLengthFirstHarmonic} {DFTLengthSecondHarmonic}\""
+Galaxy "./icon/GoertzelDetector.icon" I19 152 536 0
+StarParameter 5 "DFTCoefficientHarmonic1" int "18" "DFTLengthHarmonic1" int "205" "DFTCoefficientHarmonic2" int "35" "DFTLengthHarmonic2" int "201" "DFTLength" int "205"
+Star "./icon/Commutator.icon" I23 240 160 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Star "./icon/Nop.icon" I26 328 304 0
+Star "./icon/Nop.icon" I29 336 560 0
+Star "./icon/MaxMin.icon" I32 400 160 0
+StarParameter 5 "procId" INT "-1" "N" INT "4" "MAX" INT "YES" "compareMagnitude" INT "NO" "outputMagnitude" INT "NO"
+Star "./icon/Fork.icon" I36 552 160 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Fork.icon" I39 552 296 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mux.icon" I42 472 408 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Star "./icon/Distributor.icon" I46 616 32 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Galaxy "./icon/ToneStrength.icon" I49 848 32 0
+Star "./icon/Gain.icon" I57 664 112 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "MinRatioOtherToMaxAmplitude"
+Star "./icon/outport.icon" I60 712 168 0
+StarParameter 4 "name" string "freqPower" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Nop.icon" I62 784 64 0
+Star "./icon/Test.icon" I65 792 216 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "GT" "crossingsOnly" INT "FALSE"
+Star "./icon/Const.icon" I69 680 240 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "MinFirstHarmonicAmplitude"
+Star "./icon/Test.icon" I71 792 320 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "GT" "crossingsOnly" INT "FALSE"
+Star "./icon/Gain.icon" I75 688 320 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "MinRatioSecondToFirstHarmonic"
+Star "./icon/outport.icon" I78 640 376 0
+StarParameter 4 "name" string "index" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/And3.icon" I80 1008 216 0
+StarParameter 2 "procId" INT "-1" "logic" STRING "AND"
+Line I85 "" Star I11 "f0power" Star I26 "input" 1 280 312 328 307 
+Line I86 "" Star I7 "f0power" Star I26 "input" 2 280 392 296 392 328 307 
+Line I87 "" Star I15 "f0power" Star I26 "input" 2 280 472 296 472 328 307 
+Line I88 "" Star I19 "f0power" Star I26 "input" 2 280 552 296 552 328 307 
+Line I89 "" Star I19 "f1power" Star I29 "input" 1 280 568 336 563 
+Line I90 "" Star I15 "f1power" Star I29 "input" 2 280 488 328 488 336 563 
+Line I91 "" Star I7 "f1power" Star I29 "input" 2 280 408 328 408 336 563 
+Line I92 "" Star I11 "f1power" Star I29 "input" 2 280 328 328 336 336 563 
+Line I93 "" Star I29 "output" Star I42 "input" 1 365 561 472 440 
+Line I94 "" Star I32 "index" Star I39 "input" 1 528 192 552 311 
+Line I95 "" Star I32 "output" Star I36 "input" 1 528 176 552 175 
+Line I96 "" Star I39 "output" Star I42 "control" 2 608 311 432 376 535 487 
+Line I97 "" Star I23 "output" Star I46 "input" 1 368 192 616 64 
+Line I98 "" Star I23 "output" Star I32 "input" 1 368 192 400 192 
+Line I99 "" Star I57 "output" Star I49 "index" 1 720 127 848 128 
+Line I100 "" Star I36 "output" Star I57 "input" 1 608 175 664 127 
+Line I101 "" Star I36 "output" Star I60 "input" 1 608 175 712 184 
+Line I102 "" Star I46 "output" Star I62 "input" 1 744 64 784 67 
+Line I103 "" Star I62 "output" Star I49 "a1" 1 813 65 848 64 
+Line I104 "" Star I62 "output" Star I49 "a2" 1 813 65 848 80 
+Line I105 "" Star I62 "output" Star I49 "a3" 1 813 65 848 96 
+Line I106 "" Star I62 "output" Star I49 "a4" 1 813 65 848 112 
+Line I107 "" Star I39 "output" Star I49 "amax" 3 608 311 632 312 808 24 848 48 
+Line I108 "" Star I69 "output" Star I65 "lower" 1 767 256 792 248 
+Line I109 "" Star I36 "output" Star I65 "upper" 1 608 175 792 232 
+Line I110 "" Star I75 "output" Star I71 "upper" 1 744 335 792 336 
+Line I111 "" Star I36 "output" Star I75 "input" 2 608 175 680 280 688 335 
+Line I112 "" Star I42 "output" Star I71 "lower" 2 600 440 784 440 792 352 
+Line I113 "" Star I39 "output" Star I78 "input" 1 608 311 640 392 
+Line I114 "" Star I23 "input" Star I26 "output" 2 240 192 352 264 357 305 
+Line I115 "" Star I4 "output" Star I7 "input" 1 128 407 152 408 
+Line I116 "" Star I4 "input" Star I0 "output" 1 72 407 48 408 
+Line I117 "" Star I65 "output" Star I80 "input#2" 1 920 248 1008 248 
+Line I118 "" Star I49 "strong" Star I80 "input#1" 1 976 64 1008 232 
+Line I119 "" Star I71 "output" Star I80 "input#3" 1 920 352 1008 264 
+Line I120 "" Star I80 "output" Star I2 "input" 1 1100 248 1128 248 
+Line I121 "" Star I4 "output" Star I11 "input" 1 128 407 152 328 
+Line I122 "" Star I4 "output" Star I15 "input" 1 128 407 152 488 
+Line I123 "" Star I4 "output" Star I19 "input" 1 128 407 152 568 

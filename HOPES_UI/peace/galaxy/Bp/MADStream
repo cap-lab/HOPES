@@ -1,0 +1,59 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING "-DFPM_ARM -I$(PEACE)/src/domains/cgc/mad/include"
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Parameter "period" int "8000000"
+Star "./icon/MADStereo.icon" I0 232 76 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/MADReorder.icon" I7 408 84 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/MADSubband.icon" I15 496 92 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/MADOutput.icon" I22 636 108 0
+StarParameter 3 "procId" INT "-1" "fileName" STRING "pcm.bin" "bufferSize" INT "8192"
+Star "./library/Peace/Port/inport.ilink" I25 12 92 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/MADVLDStream.icon" I27 76 76 0
+StarParameter 3 "procId" INT "-1" "fileName" STRING "test.mp3" "bufferSize" INT "512"
+Line I36 "" Star I0 "xrout" Star I7 "xr" 1 288 108 408 108 
+Line I37 "" Star I7 "xrout" Star I15 "xr" 1 464 116 496 116 
+Line I38 "" Star I15 "output" Star I22 "input" 1 552 124 636 132 
+Line I39 "" Star I25 "output" Star I27 "inputStream" 1 44 108 76 108 
+Line I40 "" Star I27 "xr" Star I0 "xr" 1 132 100 232 100 
+Line I41 "" Star I27 "granule" Star I0 "granule" 1 132 108 232 108 
+Line I42 "" Star I27 "frame" Star I0 "frame" 1 132 116 232 116 
+Line I43 "" Star I27 "sfbwidth" Star I0 "sfbwidth" 1 132 124 232 124 
+Line I44 "" Star I27 "ngr" Star I0 "ngr" 1 132 132 232 132 
+Line I45 "" Star I27 "granule" Star I15 "granule" 1 132 108 496 124 
+Line I46 "" Star I27 "ngr" Star I7 "ngr" 1 132 132 408 132 
+Line I47 "" Star I27 "frame" Star I15 "frame" 1 132 116 496 132 
+Line I48 "" Star I27 "nch" Star I7 "nch" 1 132 140 408 140 
+Line I49 "" Star I27 "sfreqi" Star I7 "sfreqi" 1 132 148 408 148 
+Line I50 "" Star I27 "ngr" Star I15 "ngr" 1 132 132 496 140 
+Line I51 "" Star I27 "nch" Star I15 "nch" 1 132 140 496 148 
+Line I52 "" Star I27 "frame" Star I22 "frame" 1 132 116 636 148 
+Line I53 "" Star I27 "granule" Star I7 "granule" 1 132 108 408 116 
+Line I54 "" Star I27 "frame" Star I7 "frame" 1 132 116 408 124 
+CommText 200 12 16 -16777216 "Please select FPM type.\n(Ex. -DFPM_INTEL, -DFPM_ARM....)"
+CommText 272 168 24 -16777216 "mad-0.13.0b"

@@ -1,0 +1,24 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "steering" float "0.0"
+Star "./library/Peace/Port/inport.ilink" I0 24 188 0
+StarParameter 4 "name" string "window" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/MpyCx2.icon" I2 232 148 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/expjx.icon" I6 128 220 0
+Star "./library/Peace/Port/outport.ilink" I9 304 148 0
+StarParameter 4 "name" string "steered" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Const.icon" I11 28 236 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "steering"
+Star "./library/Peace/Port/inport.ilink" I13 24 148 0
+StarParameter 4 "name" string "signal" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/MpyCx2.icon" I15 76 148 0
+StarParameter 1 "procId" INT "-1"
+Line I19 "" Star I13 "output" Star I15 "input#1" 1 56 164 76 164 
+Line I20 "" Star I0 "output" Star I15 "input#2" 1 56 204 103 192 
+Line I21 "" Star I15 "output" Star I2 "input#1" 1 132 164 232 164 
+Line I22 "" Star I11 "output" Star I6 "input" 1 75 252 128 252 
+Line I23 "" Star I6 "output" Star I2 "input#2" 1 184 252 259 192 
+Line I24 "" Star I2 "output" Star I9 "input" 1 288 164 304 164 
+CommText 32 56 18 -16777216 "Multiply a sensor signal by a window sample\nand apply a steering correction"

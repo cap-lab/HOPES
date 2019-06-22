@@ -1,0 +1,114 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "SJS ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 20
+Parameter "width" int "176"
+Parameter "height" int "144"
+Parameter "MBCols" int "176/16"
+Parameter "MBRows" int "144/16"
+Parameter "enable" int "1"
+Star "./icon/BlackHole.icon" I0 140 192 1
+StarParameter 1 "procId" INT "-1"
+Star "./icon/H263Type.icon" I2 112 236 0
+StarParameter 2 "procId" INT "-1" "forced" INT "10"
+Star "./icon/H263FRFastME.icon" I4 208 80 0
+StarParameter 4 "procId" INT "-1" "width" INT "176" "height" INT "144" "macroSize" INT "16"
+Galaxy "./icon/FRDec.icon" I12 320 288 2
+StarParameter 3 "width" int "width" "height" int "height" "enable" int "1"
+Galaxy "./icon/FRDiffImage.icon" I28 280 120 0
+StarParameter 2 "width" int "width" "height" int "height"
+Star "./icon/H263VLCStream.icon" I41 756 112 0
+StarParameter 10 "procId" INT "-1" "outFileName" STRING "FOREMAN.263" "use_gobsync" INT "0" "targetRate" INT "0" "tdr" INT "3" "macroSize" INT "16" "width" INT "width" "height" INT "height" "trace" INT "0" "offlineRateControl" INT "NO"
+Galaxy "./icon/FREnc.icon" I54 360 120 0
+StarParameter 4 "width" int "width" "height" int "height" "MBCols" int "MBCols" "MBRows" int "MBRows"
+Star "./icon/H263FindCBP.icon" I66 564 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/H263FindCBP.icon" I70 564 200 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/H263FindCBP.icon" I74 564 248 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Repeat.icon" I78 500 168 0
+StarParameter 4 "procId" INT "-1" "numTimes" INT "4" "WIDTH" INT "8" "IWL" INT "7"
+Star "./icon/H263PackCBP.icon" I81 660 204 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/outport.ilink" I86 940 136 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/H263ReadFrameStream.icon" I88 52 80 0
+StarParameter 5 "procId" INT "-1" "imageWidth" INT "176" "imageHeight" INT "144" "UVRatio" INT "2" "frameId" INT "1"
+Star "./library/Peace/Port/inport.ilink" I94 8 96 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I96 "" Star I4 "mode" Star I28 "mode" 1 260 120 280 208 
+Line I97 "" Star I12 "U" Star I28 "prevU" 2 324 368 264 368 280 176 
+Line I98 "" Star I12 "V" Star I28 "prevV" 2 324 360 272 360 280 184 
+Line I99 "" Star I12 "ipol" Star I4 "prevIpolImage" 2 324 352 204 352 208 120 
+Line I100 "" Star I28 "YBlock" Star I54 "YBlock" 1 332 144 360 144 
+Line I101 "" Star I28 "UBlock" Star I54 "UBlock" 1 332 152 360 152 
+Line I102 "" Star I28 "VBlock" Star I54 "VBlock" 1 332 160 360 160 
+Line I103 "" Star I4 "mode" Star I54 "mode_in" 2 260 120 324 120 360 168 
+Line I104 "" Star I54 "mode_out" Star I41 "mode" 2 412 176 496 208 756 192 
+Line I105 "" Star I54 "VQ" Star I41 "VBlock" 1 412 160 756 152 
+Line I106 "" Star I54 "UQ" Star I41 "UBlock" 1 412 152 756 144 
+Line I107 "" Star I54 "YQ" Star I41 "YBlock" 1 412 145 756 136 
+Line I108 "" Star I4 "dx" Star I41 "dx" 2 260 104 696 104 756 160 
+Line I109 "" Star I4 "dy" Star I41 "dy" 2 260 112 692 112 756 168 
+Line I110 "" Star I4 "dx" Star I12 "dx" 2 260 104 464 104 376 336 
+Line I111 "" Star I4 "dy" Star I12 "dy" 2 260 112 472 112 376 320 
+Line I112 "" Star I12 "Y" Star I4 "prevImage" 2 324 376 200 376 208 112 
+Line I113 "" Star I12 "Y" Star I28 "prevY" 2 324 376 256 376 280 168 
+Line I114 "" Star I54 "Qxmit" Star I41 "Qxmit" 2 412 168 492 300 756 176 
+Line I115 "" Star I54 "dquant" Star I41 "dquant" 2 412 184 512 304 756 184 
+Line I116 "" Star I66 "output" Star I81 "CBPY" 1 616 184 660 228 
+Line I117 "" Star I70 "output" Star I81 "CBPU" 1 616 232 660 236 
+Line I118 "" Star I74 "output" Star I81 "CBPV" 1 616 280 660 244 
+Line I119 "" Star I81 "output" Star I41 "CBP" 1 712 236 756 200 
+Line I120 "" Star I70 "output" Star I12 "CBPU" 2 616 232 644 236 376 304 
+Line I121 "" Star I66 "output" Star I12 "CBPY" 2 616 184 644 192 376 312 
+Line I122 "" Star I54 "VQ" Star I74 "input" 1 412 160 564 272 
+Line I123 "" Star I54 "UQ" Star I70 "input" 1 412 152 564 224 
+Line I124 "" Star I54 "YQ" Star I66 "input" 1 412 145 564 176 
+Line I125 "" Star I54 "mode_out" Star I78 "input" 1 412 176 500 200 
+Line I126 "" Star I54 "mode_out" Star I70 "mode" 1 412 176 564 240 
+Line I127 "" Star I54 "mode_out" Star I74 "mode" 1 412 176 564 288 
+Line I128 "" Star I78 "output" Star I66 "mode" 1 552 200 564 192 
+Line I129 "" Star I2 "output" Star I4 "type" 1 164 268 208 128 
+Line I130 "" Star I4 "dy" Star I28 "dy" 1 260 112 280 200 
+Line I131 "" Star I4 "dx" Star I28 "dx" 1 260 104 280 192 
+Line I132 "" Star I54 "VQ" Star I12 "VQ" 2 412 160 424 160 376 360 
+Line I133 "" Star I54 "UQ" Star I12 "UQ" 2 412 152 420 152 376 368 
+Line I134 "" Star I54 "YQ" Star I12 "YQ" 2 412 145 416 144 376 376 
+Line I135 "" Star I54 "mode_out" Star I12 "mode" 2 412 176 432 176 376 344 
+Line I136 "" Star I54 "Qxmit" Star I12 "Q" 2 412 168 436 168 376 352 
+Line I137 "" Star I74 "output" Star I12 "CBPV" 2 616 280 640 280 376 296 
+Line I138 "1" Star I41 "QP" Star I54 "QP" 3 808 136 836 152 352 88 360 176 
+Line I139 "" Star I2 "output" Star I12 "type" 2 164 268 384 400 376 328 
+Line I140 "" Star I2 "output" Star I41 "type" 4 164 268 384 400 612 400 724 400 756 208 
+Line I141 "" Star I41 "streamOut" Star I86 "input" 1 808 152 940 152 
+Line I142 "" Star I88 "Y" Star I4 "image" 1 104 104 208 104 
+Line I143 "" Star I88 "U" Star I28 "U" 1 104 112 280 152 
+Line I144 "" Star I88 "Y" Star I28 "Y" 1 104 104 280 144 
+Line I145 "" Star I88 "frameIdOutput" Star I0 "input" 1 104 128 164 192 
+Line I146 "" Star I88 "V" Star I28 "V" 1 104 120 280 160 
+Line I147 "" Star I88 "videoIn" Star I94 "output" 1 52 112 40 112 
+CommText 108 40 24 -16777216 "H.263 Encoder in fractional rate"
+CommText 108 40 16 -16777216 ""

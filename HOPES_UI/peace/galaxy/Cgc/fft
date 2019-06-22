@@ -1,0 +1,49 @@
+Domain "CGC"
+Target "default-CGC"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+Run 10
+Parameter "order" int "8"
+Parameter "size" int "256"
+Parameter "direction" int "1"
+Star "./icon/inport.icon" I0 8 24 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 696 8 0
+StarParameter 4 "name" string "mag" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/WaveForm.icon" I4 24 80 0
+StarParameter 5 "procId" INT "-1" "value" FLOATARRAY "1 -1" "haltAtEnd" INT "NO" "periodic" INT "YES" "period" INT "0"
+Star "./icon/Mpy2.icon" I6 88 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/FloatToCx.icon" I10 160 24 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Star "./icon/FFTCx.icon" I13 232 8 0
+StarParameter 4 "procId" INT "-1" "order" INT "8" "size" INT "256" "direction" INT "1"
+Star "./icon/CxToRect.icon" I16 384 8 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToPolar.icon" I20 544 8 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I25 696 48 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I27 "" Star I0 "output" Star I6 "input#1" 1 40 40 88 39 
+Line I28 "" Star I6 "input#2" Star I4 "output" 1 115 67 120 112 
+Line I29 "" Star I6 "output" Star I10 "input" 1 144 39 161 39 
+Line I30 "" Star I10 "output" Star I13 "input" 1 214 38 232 40 
+Line I31 "" Star I13 "output" Star I16 "input" 1 360 40 384 40 
+Line I32 "" Star I16 "real" Star I20 "x" 1 512 24 544 24 
+Line I33 "" Star I16 "imag" Star I20 "y" 1 512 40 544 40 
+Line I34 "" Star I20 "magnitude" Star I2 "input" 1 672 24 696 24 
+Line I35 "" Star I20 "phase" Star I25 "input" 1 672 40 696 64 

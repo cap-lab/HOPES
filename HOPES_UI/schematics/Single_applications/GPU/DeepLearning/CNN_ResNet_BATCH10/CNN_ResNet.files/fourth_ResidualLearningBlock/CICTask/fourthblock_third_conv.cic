@@ -1,0 +1,273 @@
+/************************************
+ *
+ * File : th.cic
+ * Date : Oct 30, 2018 3:35 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+#include "activate.h"
+#include "blas.h"
+#include "cuda.h"
+#include "weight.h"
+
+// ##DEFINE_SECTION::START
+#define BATCH 10
+
+#define KERNEL_WIDTH    1
+#define KERNEL_HEIGHT   1
+#define STRIDE          1
+#define PADDING_WIDTH   0
+#define PADDING_HEIGHT  0
+#define GROUPS          1
+
+#define NUMBER_OF_LAYERS 152
+
+#define EXECUTION_COUNT 3
+
+#define PRINTopt 0
+// ##DEFINE_SECTION::END
+
+static int IN_WIDTH = 7;
+static int IN_HEIGHT = 7;
+static int IN_CHANNEL = 512;
+    
+static int OUT_WIDTH = 7;
+static int OUT_HEIGHT = 7;
+static int OUT_CHANNEL = 2048;
+
+static float *pfData;
+static float *pfWeight;
+static float *pfBias;
+
+static float *pfWorkspace;
+static float *pfPrevDataGPU;
+static float *pfDataGPU;
+static float *pfWeightGPU[EXECUTION_COUNT];
+static float *pfBiasGPU[EXECUTION_COUNT];
+
+static float *scales;
+static float *rolling_mean;
+static float *rolling_variance;
+
+static cudnnTensorDescriptor_t srcTensorDesc;
+static cudnnTensorDescriptor_t dstTensorDesc;
+static cudnnTensorDescriptor_t biasTensorDesc;
+
+static cudnnFilterDescriptor_t weightDesc;
+static cudnnConvolutionDescriptor_t convDesc;
+static cudnnConvolutionFwdAlgo_t fw_algo;
+static size_t workspace_size;
+static size_t workspace_maxsize;
+
+static float *weight;
+static float *pfInitWeight;
+
+static int nLayer[EXECUTION_COUNT] = {145, 148, 151};
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+static cudaStream_t stream;
+
+
+static void nobn_weight_do(int idx, int layer_idx)
+{
+    int nWeightSize = IN_CHANNEL/GROUPS * KERNEL_WIDTH * KERNEL_HEIGHT * OUT_CHANNEL;
+    int filter, size;
+    int conv_size = IN_CHANNEL/GROUPS * KERNEL_WIDTH * KERNEL_HEIGHT;
+
+    for(filter = 0; filter < OUT_CHANNEL; filter++){
+        float variance = rolling_variance[filter] + .00001f;
+        float invstd = scales[filter] / sqrt(variance);
+        pfBias[filter] =  pfBias[filter] - (rolling_mean[filter]) * invstd;
+        for(size = 0; size < conv_size; size++){
+            pfWeight[filter*conv_size + size] =  pfWeight[filter*conv_size + size] * invstd;
+        }
+    }
+    cuda_push_array(pfWeightGPU[idx], pfWeight, nWeightSize);
+    cuda_push_array(pfBiasGPU[idx], pfBias, OUT_CHANNEL);
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    int i;
+    float *pfTemp;
+        
+    int nWeightSize, nInSize, nOutSize;
+    int layer_idx;
+
+    cudnnGetStream(cudnn_handle(), &stream);
+
+    for(i = 0; i < EXECUTION_COUNT; i++){
+        layer_idx = nLayer[i];
+        
+        nWeightSize = IN_CHANNEL/GROUPS * KERNEL_WIDTH * KERNEL_HEIGHT * OUT_CHANNEL;
+        pfInitWeight = (float *)malloc((nWeightSize + OUT_CHANNEL * 4) * sizeof(float));
+        get_weight(layer_idx, pfInitWeight, nWeightSize + OUT_CHANNEL * 4);
+        pfTemp = pfInitWeight;
+
+        // data to be saved
+        scales = pfInitWeight + OUT_CHANNEL;
+        rolling_mean = scales + OUT_CHANNEL;
+        rolling_variance = rolling_mean + OUT_CHANNEL;
+        pfTemp = rolling_variance;
+        
+        nWeightSize = IN_CHANNEL/GROUPS * KERNEL_WIDTH * KERNEL_HEIGHT * OUT_CHANNEL;
+        
+        pfWeight = pfTemp + OUT_CHANNEL;
+        pfBias = pfInitWeight;
+        
+        pfWeightGPU[i] = cuda_make_array(pfWeight, nWeightSize);
+        pfBiasGPU[i] = cuda_make_array(pfInitWeight, OUT_CHANNEL);
+
+        nobn_weight_do(i, nLayer[i]);
+		free(pfInitWeight);
+    }
+
+    cudnnCreateTensorDescriptor(&srcTensorDesc);
+    cudnnCreateTensorDescriptor(&dstTensorDesc);
+    cudnnCreateTensorDescriptor(&biasTensorDesc);
+    cudnnCreateFilterDescriptor(&weightDesc);
+    cudnnCreateConvolutionDescriptor(&convDesc);
+
+    nInSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+    pfPrevDataGPU = cuda_make_array((float *)NULL, BATCH * nInSize);
+
+    nOutSize = OUT_WIDTH * OUT_HEIGHT * OUT_CHANNEL;
+    pfDataGPU = cuda_make_array((float *)NULL, BATCH * nOutSize);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static size_t get_workspace_size() {
+    size_t most = 0;
+    size_t s = 0;
+    cudnnGetConvolutionForwardWorkspaceSize(cudnn_handle(), srcTensorDesc,
+                                            weightDesc, convDesc, dstTensorDesc,
+                                            fw_algo, &s);
+    if (s > most)
+        most = s;
+    return most;
+}
+
+static void cudnn_convolutional_setup() {
+    cudnnSetTensor4dDescriptor(srcTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, BATCH, IN_CHANNEL, IN_HEIGHT,
+                               IN_WIDTH);
+    cudnnSetTensor4dDescriptor(dstTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, BATCH, OUT_CHANNEL, OUT_HEIGHT,
+                               OUT_WIDTH);
+    cudnnSetTensor4dDescriptor(biasTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, 1, OUT_CHANNEL, 1,
+                               1); 
+    cudnnSetFilter4dDescriptor(weightDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW,
+                               OUT_CHANNEL, IN_CHANNEL/GROUPS, KERNEL_HEIGHT,
+                               KERNEL_WIDTH);
+#if CUDNN_MAJOR >= 6
+    cudnnSetConvolution2dDescriptor(convDesc, PADDING_HEIGHT, PADDING_WIDTH, STRIDE, STRIDE, 1, 1,
+                                    CUDNN_CROSS_CORRELATION, CUDNN_DATA_FLOAT);
+#else
+    cudnnSetConvolution2dDescriptor(convDesc, PADDING_HEIGHT, PADDING_WIDTH, STRIDE, STRIDE, 1, 1,
+                                    CUDNN_CROSS_CORRELATION);
+#endif
+#if CUDNN_MAJOR >= 7
+    cudnnSetConvolutionGroupCount(convDesc, GROUPS);
+#else
+    if (GROUPS > 1) {
+        perror("CUDNN < 7 doesn't support groups, please upgrade!");
+        exit(-1);
+    }   
+#endif
+    cudnnGetConvolutionForwardAlgorithm(
+        cudnn_handle(), srcTensorDesc, weightDesc, convDesc, dstTensorDesc,
+        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &fw_algo);
+}
+
+static int iter = 0;
+const float one = 1;
+TASK_GO
+{
+    // TODO: task main code
+    int layer_idx = 1;
+    int i;
+    int nInSize, nOutSize;
+
+    iter = iter % EXECUTION_COUNT;
+
+    layer_idx = nLayer[iter];
+	nInSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+    nOutSize = OUT_WIDTH * OUT_HEIGHT * OUT_CHANNEL;
+
+    cudnn_convolutional_setup();
+    workspace_size = get_workspace_size();
+    if(workspace_size > workspace_maxsize){
+        if(pfWorkspace != NULL) cudaFree(pfWorkspace);
+        pfWorkspace = cuda_make_array((float *)NULL, workspace_size);
+        workspace_maxsize = workspace_size;
+    } 
+
+    check_error(cudaMemsetAsync(pfDataGPU, 0, sizeof(float) * BATCH * nOutSize, stream));
+    
+    MQ_RECEIVE(port_input, (unsigned char*)pfPrevDataGPU, sizeof(float) * nInSize * BATCH);
+    if(PRINTopt == 1)
+        printf("44444fourthblock_third_conv) iter : %d receive finish\n", iter);
+
+    cudnnConvolutionForward(cudnn_handle(), &one, srcTensorDesc, pfPrevDataGPU,
+                            weightDesc, pfWeightGPU[iter], convDesc, fw_algo,
+                            pfWorkspace, workspace_size, &one, dstTensorDesc,
+                            pfDataGPU);
+    cudnnAddTensor(cudnn_handle(), &one, biasTensorDesc, pfBiasGPU[iter], &one, dstTensorDesc, pfDataGPU);
+
+    layer_idx++;
+    iter++; //change to loop API
+    MQ_SEND(port_output, (unsigned char*)pfDataGPU, sizeof(float) * nOutSize * BATCH);
+    if(PRINTopt == 1)
+        printf("44444fourthblock_third_conv) iter : %d send finish\n", iter);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    int i;
+    for(i = 0; i < EXECUTION_COUNT; i++){
+        cudaFree(pfWeightGPU[i]);
+        cudaFree(pfBiasGPU[i]);
+    }
+    cudaFree(pfPrevDataGPU);
+    cudaFree(pfDataGPU);
+}
+
+TASK_CODE_END

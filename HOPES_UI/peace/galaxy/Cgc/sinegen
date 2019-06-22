@@ -1,0 +1,14 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "sample_rate" float "2*PI"
+Parameter "frequency" float "PI/50"
+Parameter "phase_in_radians" float "0.0"
+Star "./icon/Ramp.icon" I0 16 104 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "2*PI*frequency/sample_rate" "value" FLOAT "phase_in_radians"
+Star "./icon/Sin.icon" I2 124 104 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I5 232 120 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I7 "" Star I0 "output" Star I2 "input" 1 68 136 124 136 
+Line I8 "" Star I2 "output" Star I5 "input" 1 180 136 232 136 

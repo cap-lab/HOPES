@@ -1,0 +1,9 @@
+"./platform/iconImage/SoCBaseAND2.image"
+68 72
+Rectangle 4 12 56 48 16777198 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "SoCBaseAND2"
+InArrowLine 0 28 2 0 0
+InArrowLine 0 44 2 0 0
+OutArrowLine 61 36 1 0 0
+Image "./platform/icon/and2.gif" 16 20 32 32

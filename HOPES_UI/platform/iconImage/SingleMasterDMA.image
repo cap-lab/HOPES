@@ -1,0 +1,11 @@
+"./platform/iconImage/SingleMasterDMA.image"
+84 52
+Rectangle 7 0 74 48 -1 true
+Text 12 2 11 -16777216 "SingleMaster"
+InArrowLine 60 52 0 -2 -13312
+InArrowLine 24 50 0 2 -13312
+Rectangle 7 0 74 48 -16777216 false
+Text 33 23 11 -16777216 "DMA"
+InArrowLine 3 12 1 0 -16777216
+InArrowLine 3 32 1 0 -16777216
+InArrowLine 83 24 1 0 -16777216

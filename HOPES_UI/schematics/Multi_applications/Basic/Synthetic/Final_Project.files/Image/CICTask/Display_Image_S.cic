@@ -1,0 +1,203 @@
+/************************************
+ *
+ * File : DisplayImage.cic
+ * Date : Oct 29, 2013 11:14 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+//#define WIDTH 1920
+//#define HEIGHT 1080
+#define WIDTH 600
+#define HEIGHT 400
+// ##DEFINE_SECTION::END
+
+#define BORDER_WIDTH 2
+STATIC Display *theDisplay;
+STATIC Window theWindow;
+STATIC GC theGC;
+
+STATIC int theScreen;
+STATIC int theDepth;
+STATIC unsigned long theBlackPixel;
+STATIC unsigned long theWhitePixel;
+
+STATIC int createGC(Window theNewWindow,GC *theNewGC){
+    XGCValues theGCValues;
+
+    *theNewGC = XCreateGC(theDisplay,theNewWindow,(unsigned long) 0,&theGCValues);
+    if(*theNewGC == 0)
+        return 0;
+    else{
+        XSetForeground(theDisplay,*theNewGC,theWhitePixel);
+        XSetBackground(theDisplay,*theNewGC,theBlackPixel);
+        return 1;
+    }
+}
+
+STATIC Window OpenWindow(int x, int y, int width, int height, int flag,GC *theNewGC){
+    XSetWindowAttributes theWindowAttributes;
+    unsigned long theWindowMask;
+    XSizeHints theSizeHints;
+    XWMHints theWMHints;
+    Window theNewWindow;
+
+   /* 
+    if(!XMatchVisualInfo(theDisplay, theWindow, 24, TrueColor, &vis_info)) {
+        fprintf(stderr, " * ERR: %d depth not supported\n", depth);
+        return 1;
+    }
+    */
+
+    /*Setting the attributes*/
+    theWindowAttributes.colormap = XCreateColormap (theDisplay, DefaultRootWindow(theDisplay),
+                DefaultVisual(theDisplay, theScreen), AllocNone);
+    theWindowAttributes.border_pixel
+        = WhitePixel(theDisplay,theScreen);
+    theWindowAttributes.background_pixel
+        = BlackPixel(theDisplay,theScreen);
+    theWindowAttributes.override_redirect = False;
+
+    theWindowMask = CWBackPixel|CWBorderPixel|CWOverrideRedirect;
+
+    theNewWindow = XCreateWindow( theDisplay,
+            RootWindow(theDisplay,theScreen),
+            x,y,width,height,
+            BORDER_WIDTH,theDepth,
+            InputOutput,
+            CopyFromParent,
+            theWindowMask,
+            &theWindowAttributes);
+
+    theWMHints.initial_state = NormalState;
+    theWMHints.flags = StateHint;
+
+    XSetWMHints(theDisplay,theNewWindow,&theWMHints);
+
+    theSizeHints.flags = PPosition | PSize;
+    theSizeHints.x = x;
+    theSizeHints.y = y;
+    theSizeHints.width = width;
+    theSizeHints.height = height;
+
+    XSetNormalHints(theDisplay,theNewWindow,&theSizeHints);
+
+    if( createGC(theNewWindow,theNewGC) == 0){
+        XDestroyWindow(theDisplay,theNewWindow);
+        return( (Window) 0);
+    }
+
+    XMapWindow(theDisplay,theNewWindow);
+    XFlush(theDisplay);
+
+    return theNewWindow;
+}
+
+
+STATIC void init_display() {
+
+    theDisplay=XOpenDisplay((char *)0);
+    if(theDisplay == NULL){
+        printf("Can not open display\n");
+        exit(-1);
+    }
+
+    theScreen = DefaultScreen(theDisplay);
+    theDepth = DefaultDepth(theDisplay,theScreen);
+    theBlackPixel = BlackPixel(theDisplay,theScreen);
+    theWhitePixel = WhitePixel(theDisplay,theScreen);
+
+	theWindow= OpenWindow(680,50, WIDTH, HEIGHT, 0, &theGC);
+	XSetStandardProperties (theDisplay, theWindow, "Image_Smoothing", "Image_Smoothing", None, NULL, 0, NULL);
+
+};
+
+
+STATIC void close_display() {
+    /* it is good programming practice to return system resources to the 
+       system...
+     */
+    XFlush(theDisplay);
+    XFreeGC(theDisplay, theGC);
+    XDestroyWindow(theDisplay, theWindow);
+    XCloseDisplay(theDisplay); 
+}
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC unsigned char* result;
+STATIC FILE* fd;
+STATIC int count;
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    result = (unsigned char*)malloc(WIDTH * HEIGHT * 3);
+    fd = fopen("result_s.rgb", "wb");   
+
+    init_display();
+    count = 0;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)result, WIDTH * HEIGHT * 3);
+    fwrite((void*)(result), sizeof(char), HEIGHT * WIDTH * 3, fd);
+
+    XWindowAttributes xwa;
+    XGetWindowAttributes(theDisplay, theWindow, &xwa);
+    XImage *img = XCreateImage(theDisplay, DefaultVisual(theDisplay, theScreen), DefaultDepth(theDisplay, theScreen), ZPixmap, 0, (char*)result, WIDTH, HEIGHT, 32, 0);
+    img->bits_per_pixel = 24;
+    img->bitmap_unit = 24;
+    img->bitmap_pad = 24;
+    img->bytes_per_line = WIDTH*3;
+    img->bitmap_bit_order = MSBFirst;
+    img->byte_order = MSBFirst;
+    XPutImage(theDisplay, theWindow, theGC, img, 0, 0, 0, 0, WIDTH, HEIGHT);
+    count++;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(result);
+    fclose(fd);
+    close_display();
+}
+
+TASK_CODE_END

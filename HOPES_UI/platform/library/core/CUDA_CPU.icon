@@ -1,0 +1,8 @@
+Platform
+Core
+"CUDA_CPU"
+68 72
+"./platform/iconImage/CUDA_CPU.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "AHBMasterOut"

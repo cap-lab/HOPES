@@ -1,0 +1,1432 @@
+/************************************
+ *
+ * File : Wr.cic
+ * Date : Sep 9, 2012 3:56 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "h264decoder.h"
+#include "h264dec_struct.h"
+
+#ifdef DISPLAY
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
+
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+#ifdef DISPLAY
+static unsigned long wpixel_120[3];
+static unsigned char *dithered_image;
+static Display *display;
+static Window window;
+static GC gc;
+static int dpy_depth;
+XImage *ximage_119;
+static unsigned char pixel_121[256];
+static unsigned char *clp_108;
+static unsigned char clpGlobal_109[1024];
+static int expand_105=0;
+static int quiet_106=1;
+static int convmat_107[8][4]
+=
+{
+  {117504, 138453, 13954, 34903}, /* no sequence_display_extension */
+  {117504, 138453, 13954, 34903}, /* ITU-R Rec. 709 (1990) */
+  {104597, 132201, 25675, 53279}, /* unspecified */
+  {104597, 132201, 25675, 53279}, /* reserved */
+  {104448, 132798, 24759, 53109}, /* FCC */
+  {104597, 132201, 25675, 53279}, /* ITU-R Rec. 624-4 System B, G */
+  {104597, 132201, 25675, 53279}, /* SMPTE 170M */
+  {117579, 136230, 16907, 35559}  /* SMPTE 240M (1987) */
+};
+
+static long int crv_tab_110[256];
+static long int cbu_tab_111[256];
+static long int cgu_tab_112[256];
+
+static long int cgv_tab_113[256];
+static long int tab_76309_114[256];
+
+static void init_dither_tab()
+{
+  long int crv,cbu,cgu,cgv;
+  int i;
+
+  crv = 104597; cbu = 132201;  /* fra matrise i global.h */
+  cgu = 25675;  cgv = 53279;
+
+  for (i = 0; i < 256; i++) {
+    crv_tab_110[i] = (i-128) * crv;
+    cbu_tab_111[i] = (i-128) * cbu;
+    cgu_tab_112[i] = (i-128) * cgu;
+    cgv_tab_113[i] = (i-128) * cgv;
+    tab_76309_114[i] = 76309*(i-16);
+  }
+}
+
+#endif
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_inFrame;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+STATIC YUVFrame frame;
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+static FILE *p_out;
+#ifdef DISPLAY
+static void init_display(char* string);
+#endif
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_inFrame = PORT_INITIALIZE(TASK_ID, "inFrame");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+  if ((p_out=fopen("output_video.yuv", "wb")) == 0) {
+    printf("Error open file %s ", "output_video.yuv");
+    exit(-1);
+  }
+  printf(" Output decoded YUV 4:2:0                  : %s\n", "output_video.yuv");
+
+#ifdef DISPLAY
+	init_display("");
+#endif
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+#ifdef DISPLAY
+
+
+/**********************************************************************
+ *
+ *      Name:            ConvertYUVtoRGB
+ *      Description:     Converts YUV image to RGB (packed mode)
+ *
+ *      Input:           pointer to source luma, Cr, Cb, destination,
+ *                       image width and height
+ *      Returns:
+ *      Side effects:
+ *
+ *      Date: 951208    Author: Karl.Lillevold@nta.no
+ *
+ ***********************************************************************/
+
+
+
+static void ConvertYUVtoRGB(unsigned char *src0,unsigned char *src1,unsigned char *src2,unsigned char *dst_ori,int width,int height)
+{
+  //extern long int crv_tab_110[];
+  //extern long int cbu_tab_111[];
+  //extern long int cgu_tab_112[];
+
+  //extern long int cgv_tab_113[];
+  //extern long int tab_76309_114[];
+
+  int y11,y21;
+        int y12,y22;
+  int y13,y23;
+        int y14,y24;
+  int u,v;
+  int i,j;
+        int c11, c21, c31, c41;
+        int c12, c22, c32, c42;
+        unsigned int DW;
+        unsigned int *id1, *id2;
+  unsigned char *py1,*py2,*pu,*pv;
+  unsigned char *d1, *d2;
+
+  d1 = dst_ori;
+  d1 += width*height*3 - width*3;
+        d2 = d1 - width*3;
+
+  py1 = src0; pu = src1; pv = src2;
+        py2 = py1 + width;
+
+        id1 = (unsigned int *)d1;
+        id2 = (unsigned int *)d2;
+
+  for (j = 0; j < height; j += 2) {
+    /* line j + 0 */
+    for (i = 0; i < width; i += 4) {
+      u = *pu++;
+      v = *pv++;
+      c11 = crv_tab_110[v];
+      c21 = cgu_tab_112[u];
+      c31 = cgv_tab_113[v];
+      c41 = cbu_tab_111[u];
+      u = *pu++;
+      v = *pv++;
+      c12 = crv_tab_110[v];
+      c22 = cgu_tab_112[u];
+      c32 = cgv_tab_113[v];
+      c42 = cbu_tab_111[u];
+
+      y11 = tab_76309_114[*py1++]; /* (255/219)*65536 */
+      y12 = tab_76309_114[*py1++];
+      y13 = tab_76309_114[*py1++]; /* (255/219)*65536 */
+      y14 = tab_76309_114[*py1++];
+
+      y21 = tab_76309_114[*py2++];
+      y22 = tab_76309_114[*py2++];
+      y23 = tab_76309_114[*py2++];
+      y24 = tab_76309_114[*py2++];
+
+      /* RGBR*/
+      DW = ((clp_108[(y11 + c41)>>16])) |
+           ((clp_108[(y11 - c21 - c31)>>16])<<8) |
+           ((clp_108[(y11 + c11)>>16])<<16) |
+           ((clp_108[(y12 + c41)>>16])<<24);
+      *id1++ = DW;
+
+      /* GBRG*/
+      DW = ((clp_108[(y12 - c21 - c31)>>16])) |
+           ((clp_108[(y12 + c11)>>16])<<8) |
+           ((clp_108[(y13 + c42)>>16])<<16) |
+           ((clp_108[(y13 - c22 - c32)>>16])<<24);
+
+      /* BRGB*/
+      DW = ((clp_108[(y13 + c12)>>16])) |
+           ((clp_108[(y14 + c42)>>16])<<8) |
+           ((clp_108[(y14 - c22 - c32)>>16])<<16) |
+           ((clp_108[(y14 + c12)>>16])<<24);
+      *id1++ = DW;
+
+      /* RGBR*/
+      DW = ((clp_108[(y21 + c41)>>16])) |
+           ((clp_108[(y21 - c21 - c31)>>16])<<8) |
+           ((clp_108[(y21 + c11)>>16])<<16) |
+           ((clp_108[(y22 + c41)>>16])<<24);
+      *id2++ = DW;
+
+      /* GBRG*/
+      DW = ((clp_108[(y22 - c21 - c31)>>16])) |
+           ((clp_108[(y22 + c11)>>16])<<8) |
+           ((clp_108[(y23 + c42)>>16])<<16) |
+           ((clp_108[(y23 - c22 - c32)>>16])<<24);
+      *id2++ = DW;
+
+      /* BRGB*/
+      DW = ((clp_108[(y23 + c12)>>16])) |
+           ((clp_108[(y24 + c42)>>16])<<8) |
+           ((clp_108[(y24 - c22 - c32)>>16])<<16) |
+           ((clp_108[(y24 + c12)>>16])<<24);
+      *id2++ = DW;
+    }
+    id1 -= (9 * width)>>2;
+    id2 -= (9 * width)>>2;
+    py1 += width;
+    py2 += width;
+  }
+}
+
+/*
+ * Erik Corry's multi-byte dither routines.
+ *
+ * The basic idea is that the Init generates all the necessary tables.
+ * The tables incorporate the information about the layout of pixels
+ * in the XImage, so that it should be able to cope with 15-bit, 16-bit
+ * 24-bit (non-packed) and 32-bit (10-11 bits per color!) screens.
+ * At present it cannot cope with 24-bit packed mode, since this involves
+ * getting down to byte level again. It is assumed that the bits for each
+ * color are contiguous in the longword.
+ *
+ * Writing to memory is done in shorts or ints. (Unfortunately, short is not
+ * very fast on Alpha, so there is room for improvement here). There is no
+ * dither time check for overflow - instead the tables have slack at
+ * each end. This is likely to be faster than an 'if' test as many modern
+ * architectures are really bad at ifs. Potentially, each '&&' causes a
+ * pipeline flush!
+ *
+ * There is no shifting and fixed point arithmetic, as I really doubt you
+ * can see the difference, and it costs. This may be just my bias, since I
+ * heard that Intel is really bad at shifting.
+ */
+/* Gamma correction stuff */
+
+#define GAMMA_CORRECTION(x) ((int)(pow((x) / 255.0, 1.0 / gammaCorrect_115) * 255.0))
+#define CHROMA_CORRECTION256(x) ((x) >= 128 \
+                    ? 128 + mmin(127, (int)(((x) - 128.0) * chromaCorrect_116)) \
+                    : 128 - mmin(128, (int)((128.0 - (x)) * chromaCorrect_116)))
+#define CHROMA_CORRECTION128(x) ((x) >= 0 \
+                    ? mmin(127,  (int)(((x) * chromaCorrect_116))) \
+                    : mmax(-128, (int)(((x) * chromaCorrect_116))))
+#define CHROMA_CORRECTION256D(x) ((x) >= 128 \
+                    ? 128.0 + mmin(127.0, (((x) - 128.0) * chromaCorrect_116)) \
+                    : 128.0 - mmin(128.0, (((128.0 - (x)) * chromaCorrect_116))))
+#define CHROMA_CORRECTION128D(x) ((x) >= 0 \
+                    ? mmin(127.0,  ((x) * chromaCorrect_116)) \
+                    : mmax(-128.0, ((x) * chromaCorrect_116)))
+
+
+/* Flag for gamma correction */
+static int gammaCorrectFlag_117 = 0;
+static double gammaCorrect_115 = 1.0;
+
+/* Flag for chroma correction */
+static int chromaCorrectFlag_118 = 0;
+static double chromaCorrect_116 = 1.0;
+
+/*
+ * How many 1 bits are there in the longword.
+ * Low performance, do not call often.
+ */
+static int
+number_of_bits_set(unsigned long a)
+{
+    if(!a) return 0;
+    if(a & 1) return 1 + number_of_bits_set(a >> 1);
+    return(number_of_bits_set(a >> 1));
+}
+
+/*
+ * Shift the 0s in the least significant end out of the longword.
+ * Low performance, do not call often.
+ */
+static unsigned long
+shifted_down(unsigned long a)
+{
+    if(!a) return 0;
+    if(a & 1) return a;
+    return a >> 1;
+}
+/*
+ * How many 0 bits are there at most significant end of longword.
+ * Low performance, do not call often.
+ */
+static int
+free_bits_at_top(unsigned long a)
+{
+      /* assume char is 8 bits */
+    if(!a) return sizeof(unsigned long) * 8;
+        /* assume twos complement */
+    if(((long)a) < 0l) return 0;
+    return 1 + free_bits_at_top ( a << 1);
+}
+
+/*
+ * How many 0 bits are there at least significant end of longword.
+ * Low performance, do not call often.
+ */
+static int
+free_bits_at_bottom(unsigned long a)
+{
+      /* assume char is 8 bits */
+    if(!a) return sizeof(unsigned long) * 8;
+    if(((long)a) & 1l) return 0;
+    return 1 + free_bits_at_bottom ( a >> 1);
+}
+
+static int *L_tab, *Cr_r_tab, *Cr_g_tab, *Cb_g_tab, *Cb_b_tab;
+
+/*
+ * We define tables that convert a color value between -256 and 512
+ * into the R, G and B parts of the pixel. The normal range is 0-255.
+ */
+
+static long *r_2_pix;
+static long *g_2_pix;
+static long *b_2_pix;
+static long *r_2_pix_alloc;
+static long *g_2_pix_alloc;
+static long *b_2_pix_alloc;
+
+
+/*
+ *--------------------------------------------------------------
+ *
+ * InitColor16Dither --
+ *
+ *      To get rid of the multiply and other conversions in color
+ *      dither, we use a lookup table.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      The lookup tables are initialized.
+ *
+ *--------------------------------------------------------------
+ */
+
+static void
+InitColorDither(int thirty2)
+{
+    extern XImage *ximage_119;
+    extern unsigned long wpixel_120[3];
+    /*
+     * misuse of the wpixel_120 array for the pixel masks. Note that this
+     * implies that the window is created before this routine is called
+     */
+
+
+    unsigned long red_mask;
+    unsigned long green_mask;
+    unsigned long blue_mask;
+
+    int CR, CB, i;
+
+    red_mask = wpixel_120[0];
+    green_mask = wpixel_120[1];
+    blue_mask = wpixel_120[2];
+
+    if (ximage_119->bits_per_pixel == 24) /* not necessary in non-packed mode */
+      init_dither_tab();
+
+    L_tab    = (int *)malloc(256*sizeof(int));
+    Cr_r_tab = (int *)malloc(256*sizeof(int));
+    Cr_g_tab = (int *)malloc(256*sizeof(int));
+    Cb_g_tab = (int *)malloc(256*sizeof(int));
+    Cb_b_tab = (int *)malloc(256*sizeof(int));
+
+    r_2_pix_alloc = (long *)malloc(768*sizeof(long));
+    g_2_pix_alloc = (long *)malloc(768*sizeof(long));
+    b_2_pix_alloc = (long *)malloc(768*sizeof(long));
+
+#ifndef __SOC_BASE__
+    if (L_tab == NULL ||
+        Cr_r_tab == NULL ||
+        Cr_g_tab == NULL ||
+        Cb_g_tab == NULL ||
+        Cb_b_tab == NULL ||
+        r_2_pix_alloc == NULL ||
+        g_2_pix_alloc == NULL ||
+        b_2_pix_alloc == NULL) {
+      fprintf(stderr, "Could not get enough memory in InitColorDither\n");
+      exit(1);
+    }
+#endif
+
+    for (i=0; i<256; i++) {
+      L_tab[i] = i;
+      if (gammaCorrectFlag_117) {
+        L_tab[i] = GAMMA_CORRECTION(i);
+      }
+
+      CB = CR = i;
+
+      if (chromaCorrectFlag_118) {
+        CB -= 128;
+        CB = CHROMA_CORRECTION128(CB);
+        CR -= 128;
+        CR = CHROMA_CORRECTION128(CR);
+      } else {
+        CB -= 128; CR -= 128;
+      }
+/* was
+      Cr_r_tab[i] =  1.596 * CR;
+      Cr_g_tab[i] = -0.813 * CR;
+      Cb_g_tab[i] = -0.391 * CB;
+      Cb_b_tab[i] =  2.018 * CB;
+  but they were just messed up.
+  Then was (_Video Deymstified_):
+      Cr_r_tab[i] =  1.366 * CR;
+      Cr_g_tab[i] = -0.700 * CR;
+      Cb_g_tab[i] = -0.334 * CB;
+      Cb_b_tab[i] =  1.732 * CB;
+  but really should be:
+   (from ITU-R BT.470-2 System B, G and SMPTE 170M )
+*/
+      Cr_r_tab[i] =  (0.419/0.299) * CR;
+      Cr_g_tab[i] = -(0.299/0.419) * CR;
+      Cb_g_tab[i] = -(0.114/0.331) * CB;
+      Cb_b_tab[i] =  (0.587/0.331) * CB;
+
+/*
+  though you could argue for:
+    SMPTE 240M
+      Cr_r_tab[i] =  (0.445/0.212) * CR;
+      Cr_g_tab[i] = -(0.212/0.445) * CR;
+      Cb_g_tab[i] = -(0.087/0.384) * CB;
+      Cb_b_tab[i] =  (0.701/0.384) * CB;
+    FCC
+      Cr_r_tab[i] =  (0.421/0.30) * CR;
+      Cr_g_tab[i] = -(0.30/0.421) * CR;
+      Cb_g_tab[i] = -(0.11/0.331) * CB;
+      Cb_b_tab[i] =  (0.59/0.331) * CB;
+    ITU-R BT.709
+      Cr_r_tab[i] =  (0.454/0.2125) * CR;
+      Cr_g_tab[i] = -(0.2125/0.454) * CR;
+      Cb_g_tab[i] = -(0.0721/0.386) * CB;
+      Cb_b_tab[i] =  (0.7154/0.386) * CB;
+*/
+    }
+
+    /*
+     * Set up entries 0-255 in rgb-to-pixel value tables.
+     */
+    for (i = 0; i < 256; i++) {
+      r_2_pix_alloc[i + 256] = i >> (8 - number_of_bits_set(red_mask));
+      r_2_pix_alloc[i + 256] <<= free_bits_at_bottom(red_mask);
+      g_2_pix_alloc[i + 256] = i >> (8 - number_of_bits_set(green_mask));
+      g_2_pix_alloc[i + 256] <<= free_bits_at_bottom(green_mask);
+      b_2_pix_alloc[i + 256] = i >> (8 - number_of_bits_set(blue_mask));
+      b_2_pix_alloc[i + 256] <<= free_bits_at_bottom(blue_mask);
+      /*
+       * If we have 16-bit output depth, then we double the value
+       * in the top word. This means that we can write out both
+       * pixels in the pixel doubling mode with one op. It is
+       * harmless in the normal case as storing a 32-bit value
+       * through a short pointer will lose the top bits anyway.
+       * A similar optimisation for Alpha for 64 bit has been
+       * prepared for, but is not yet implemented.
+       */
+      if(!thirty2) {
+
+        r_2_pix_alloc[i + 256] |= (r_2_pix_alloc[i + 256]) << 16;
+        g_2_pix_alloc[i + 256] |= (g_2_pix_alloc[i + 256]) << 16;
+        b_2_pix_alloc[i + 256] |= (b_2_pix_alloc[i + 256]) << 16;
+
+      }
+#ifdef SIXTYFOUR_BIT
+      if(thirty2) {
+
+        r_2_pix_alloc[i + 256] |= (r_2_pix_alloc[i + 256]) << 32;
+        g_2_pix_alloc[i + 256] |= (g_2_pix_alloc[i + 256]) << 32;
+        b_2_pix_alloc[i + 256] |= (b_2_pix_alloc[i + 256]) << 32;
+
+      }
+#endif
+    }
+
+    /*
+     * Spread out the values we have to the rest of the array so that
+     * we do not need to check for overflow.
+     */
+    for (i = 0; i < 256; i++) {
+      r_2_pix_alloc[i] = r_2_pix_alloc[256];
+      r_2_pix_alloc[i+ 512] = r_2_pix_alloc[511];
+      g_2_pix_alloc[i] = g_2_pix_alloc[256];
+      g_2_pix_alloc[i+ 512] = g_2_pix_alloc[511];
+      b_2_pix_alloc[i] = b_2_pix_alloc[256];
+      b_2_pix_alloc[i+ 512] = b_2_pix_alloc[511];
+    }
+
+    r_2_pix = r_2_pix_alloc + 256;
+    g_2_pix = g_2_pix_alloc + 256;
+    b_2_pix = b_2_pix_alloc + 256;
+
+}
+
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Color16DitherImage --
+ *
+ *      Converts image into 16 bit color.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      None.
+ *
+ *--------------------------------------------------------------
+ */
+
+static void
+Color16DitherImage(unsigned char *src[], unsigned char *out)
+{
+    unsigned char *lum = src[0];
+    unsigned char *cb = src[1];
+    unsigned char *cr = src[2];
+    int cols;
+    int rows;
+
+    int L, CR, CB;
+    unsigned short *row1, *row2;
+    unsigned char *lum2;
+    int x, y;
+    int cr_r;
+    int cr_g;
+    int cb_g;
+    int cb_b;
+    int cols_2;
+
+    cols = 176;
+    rows = 144;
+    if (expand_105) {
+      cols *= 2;
+      rows *= 2;
+    }
+    cols_2 = cols/2;
+
+    row1 = (unsigned short *)out;
+    row2 = row1 + cols_2 + cols_2;
+    lum2 = lum + cols_2 + cols_2;
+
+    for (y=0; y<rows; y+=2) {
+        for (x=0; x<cols_2; x++) {
+            int R, G, B;
+
+            CR = *cr++;
+            CB = *cb++;
+            cr_r = Cr_r_tab[CR];
+            cr_g = Cr_g_tab[CR];
+            cb_g = Cb_g_tab[CB];
+            cb_b = Cb_b_tab[CB];
+
+            L = L_tab[(int) *lum++];
+
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row1++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+
+#ifdef INTERPOLATE
+            if(x != cols_2 - 1) {
+              CR = (CR + *cr) >> 1;
+              CB = (CB + *cb) >> 1;
+              cr_r = Cr_r_tab[CR];
+              cr_g = Cr_g_tab[CR];
+              cb_g = Cb_g_tab[CB];
+              cb_b = Cb_b_tab[CB];
+            }
+#endif
+
+            L = L_tab[(int) *lum++];
+
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row1++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+
+            /*
+             * Now, do second row.
+             */
+#ifdef INTERPOLATE
+            if(y != rows - 2) {
+              CR = (CR + *(cr + cols_2 - 1)) >> 1;
+              CB = (CB + *(cb + cols_2 - 1)) >> 1;
+              cr_r = Cr_r_tab[CR];
+              cr_g = Cr_g_tab[CR];
+              cb_g = Cb_g_tab[CB];
+              cb_b = Cb_b_tab[CB];
+            }
+#endif
+
+            L = L_tab[(int) *lum2++];
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row2++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+
+            L = L_tab[(int) *lum2++];
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row2++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+        }
+        /*
+         * These values are at the start of the next line, (due
+         * to the ++'s above),but they need to be at the start
+         * of the line after that.
+         */
+        lum += cols_2 + cols_2;
+        lum2 += cols_2 + cols_2;
+        row1 += cols_2 + cols_2;
+        row2 += cols_2 + cols_2;
+    }
+}
+
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Color32DitherImage --
+ *
+ *      Converts image into 32 bit color (or 24-bit non-packed).
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      None.
+ *
+ *--------------------------------------------------------------
+ */
+
+/*
+ * This is a copysoft version of the function above with ints instead
+ * of shorts to cause a 4-byte pixel size
+ */
+
+static void
+Color32DitherImage(unsigned char *src[], unsigned char *out)
+{
+    unsigned char *lum = src[0];
+    unsigned char *cb = src[1];
+    unsigned char *cr = src[2];
+    int cols;
+    int rows;
+
+    int L, CR, CB;
+    unsigned int *row1, *row2;
+    unsigned char *lum2;
+    int x, y;
+    int cr_r;
+    int cr_g;
+    int cb_g;
+    int cb_b;
+    int cols_2;
+
+    cols = 176;
+    rows = 144;
+    if (expand_105) {
+      cols *= 2;
+      rows *= 2;
+    }
+    cols_2 = cols/2;
+
+    row1 = (unsigned int *)out;
+    row2 = row1 + cols_2 + cols_2;
+    lum2 = lum + cols_2 + cols_2;
+    for (y=0; y<rows; y+=2) {
+        for (x=0; x<cols_2; x++) {
+            int R, G, B;
+
+            CR = *cr++;
+            CB = *cb++;
+            cr_r = Cr_r_tab[CR];
+            cr_g = Cr_g_tab[CR];
+            cb_g = Cb_g_tab[CB];
+            cb_b = Cb_b_tab[CB];
+
+            L = L_tab[(int) *lum++];
+
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row1++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+
+#ifdef INTERPOLATE
+            if(x != cols_2 - 1) {
+              CR = (CR + *cr) >> 1;
+              CB = (CB + *cb) >> 1;
+              cr_r = Cr_r_tab[CR];
+              cr_g = Cr_g_tab[CR];
+              cb_g = Cb_g_tab[CB];
+              cb_b = Cb_b_tab[CB];
+            }
+#endif
+
+            L = L_tab[(int) *lum++];
+
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row1++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+
+            /*
+             * Now, do second row.
+             */
+
+#ifdef INTERPOLATE
+            if(y != rows - 2) {
+              CR = (CR + *(cr + cols_2 - 1)) >> 1;
+              CB = (CB + *(cb + cols_2 - 1)) >> 1;
+              cr_r = Cr_r_tab[CR];
+              cr_g = Cr_g_tab[CR];
+              cb_g = Cb_g_tab[CB];
+              cb_b = Cb_b_tab[CB];
+            }
+#endif
+
+            L = L_tab [(int) *lum2++];
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row2++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+
+            L = L_tab [(int) *lum2++];
+            R = L + cr_r;
+            G = L + cr_g + cb_g;
+            B = L + cb_b;
+
+            *row2++ = (r_2_pix[R] | g_2_pix[G] | b_2_pix[B]);
+        }
+        lum += cols_2 + cols_2;
+        lum2 += cols_2 + cols_2;
+        row1 += cols_2 + cols_2;
+        row2 += cols_2 + cols_2;
+    }
+}
+
+static unsigned char ytab[16 * (256 + 16)];
+static unsigned char uvtab[256 * 269 + 270];
+
+/****************************************************************************
+
+  4x4 ordered dither
+
+  Threshold pattern:
+
+     0  8  2 10
+    12  4 14  6
+     3 11  1  9
+    15  7 13  5
+
+ ****************************************************************************/
+static void
+ord4x4_dither_init (void)
+{
+  int i, j, v;
+  unsigned char ctab[256 + 32];
+
+  for (i = 0; i < 256 + 16; i++)
+    {
+      v = (i - 8) >> 4;
+      if (v < 2)
+        v = 2;
+      else if (v > 14)
+        v = 14;
+      for (j = 0; j < 16; j++)
+        ytab[16 * i + j] = pixel_121[(v << 4) + j];
+    }
+
+  for (i = 0; i < 256 + 32; i++)
+    {
+      v = (i + 48 - 128) >> 5;
+      if (v < 0)
+        v = 0;
+      else if (v > 3)
+        v = 3;
+      ctab[i] = v;
+    }
+
+  for (i = 0; i < 255 + 15; i++)
+    for (j = 0; j < 255 + 15; j++)
+      uvtab[256 * i + j] = (ctab[i + 16] << 6) | (ctab[j + 16] << 4) | (ctab[i] << 2) | ctab[j];
+}
+
+
+
+static void
+ord4x4_dither_frame (unsigned char *src[], unsigned char *dst)
+{
+  int i, j;
+  unsigned char *py = src[0];
+  unsigned char *pu = src[1];
+  unsigned char *pv = src[2];
+
+  int width, height, cwidth;
+
+  if (expand_105)
+    {
+      width = 2 * 176;
+      height = 2 * 144;
+      cwidth = 2 * (176>>1);
+    }
+  else
+    {
+      width = 176;
+      height = 144;
+      cwidth = (176>>1);
+    }
+
+  for (j = 0; j < height; j += 4)
+    {
+      register unsigned int uv;
+
+      /* line j + 0 */
+      for (i = 0; i < width; i += 8)
+        {
+          uv = uvtab[(*pu++ << 8) | *pv++];
+          *dst++ = ytab[((*py++) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 8) << 4) | (uv >> 4)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 1028];
+          *dst++ = ytab[((*py++ + 2) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 10) << 4) | (uv >> 4)];
+          uv = uvtab[(*pu++ << 8) | *pv++];
+          *dst++ = ytab[((*py++) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 8) << 4) | (uv >> 4)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 1028];
+          *dst++ = ytab[((*py++ + 2) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 10) << 4) | (uv >> 4)];
+        }
+
+      pu -= cwidth;
+      pv -= cwidth;
+
+      /* line j + 1 */
+      for (i = 0; i < width; i += 8)
+        {
+          uv = uvtab[((*pu++ << 8) | *pv++) + 2056];
+          *dst++ = ytab[((*py++ + 12) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 4) << 4) | (uv & 15)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 3084];
+          *dst++ = ytab[((*py++ + 14) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 6) << 4) | (uv & 15)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 2056];
+          *dst++ = ytab[((*py++ + 12) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 4) << 4) | (uv & 15)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 3084];
+          *dst++ = ytab[((*py++ + 14) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 6) << 4) | (uv & 15)];
+        }
+
+      /* line j + 2 */
+      for (i = 0; i < width; i += 8)
+        {
+          uv = uvtab[((*pu++ << 8) | *pv++) + 1542];
+          *dst++ = ytab[((*py++ + 3) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 11) << 4) | (uv >> 4)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 514];
+          *dst++ = ytab[((*py++ + 1) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 9) << 4) | (uv >> 4)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 1542];
+          *dst++ = ytab[((*py++ + 3) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 11) << 4) | (uv >> 4)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 514];
+          *dst++ = ytab[((*py++ + 1) << 4) | (uv & 15)];
+          *dst++ = ytab[((*py++ + 9) << 4) | (uv >> 4)];
+        }
+
+      pu -= cwidth;
+      pv -= cwidth;
+
+      /* line j + 3 */
+      for (i = 0; i < width; i += 8)
+        {
+          uv = uvtab[((*pu++ << 8) | *pv++) + 3598];
+          *dst++ = ytab[((*py++ + 15) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 7) << 4) | (uv & 15)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 2570];
+          *dst++ = ytab[((*py++ + 13) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 5) << 4) | (uv & 15)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 3598];
+          *dst++ = ytab[((*py++ + 15) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 7) << 4) | (uv & 15)];
+          uv = uvtab[((*pu++ << 8) | *pv++) + 2570];
+          *dst++ = ytab[((*py++ + 13) << 4) | (uv >> 4)];
+          *dst++ = ytab[((*py++ + 5) << 4) | (uv & 15)];
+        }
+    }
+}
+
+/* connect to server, create and map window,
+ * allocate colors and (shared) memory
+ */
+static void init_display(char *name)
+{
+  int crv, cbu, cgu, cgv;
+  int y, u, v, r, g, b;
+  int i;
+  char dummy;
+  int screen;
+  Visual *visual;
+  int dpy_class;
+  Colormap cmap;
+  int _private;
+  XColor xcolor;
+  unsigned int fg, bg;
+  char *hello = "H.264 Display video";
+  XSizeHints hint;
+  XEvent xev;
+  XSetWindowAttributes xswa;
+  unsigned long tmp_pixel;
+  unsigned int mask;
+  int matrix_coefficients = 0;
+
+  clp_108 = clpGlobal_109;
+  clp_108 += 384;
+  { int i;
+  for (i=-384; i<640; i++)
+    clp_108[i] = (i<0) ? 0 : ((i>255) ? 255 : i);
+  }
+
+  display = XOpenDisplay(name);
+
+  if (display == NULL)
+    error("Can not open display\n", 1);
+
+  screen = DefaultScreen(display);
+
+  visual = DefaultVisual (display, screen);
+  dpy_depth = DefaultDepth (display, screen);
+#ifdef CC
+  dpy_class = visual->c_class;
+#else
+  dpy_class = visual->class;
+#endif
+
+  if (!((dpy_class == TrueColor && dpy_depth == 32)
+        || (dpy_class == TrueColor && dpy_depth == 24)
+        || (dpy_class == TrueColor && dpy_depth == 16)
+        || (dpy_class == PseudoColor && dpy_depth == 8)))
+    error ("requires 8 bit PseudoColor or 16/24/32 bit TrueColor display\n", 1);
+
+  if (dpy_class == TrueColor && dpy_depth == 32)
+    printf("TrueColor : 32 bit colordepth\n");
+  if (dpy_class == TrueColor && dpy_depth == 24)
+    printf("TrueColor : 24 bit colordepth\n");
+  if (dpy_class == TrueColor && dpy_depth == 16)
+    printf("TrueColor : 16 bit colordepth\n");
+  if (dpy_class == PseudoColor && dpy_depth == 8)
+    printf("PseudoColor : 8 bit colordepth, 4x4 ordered dither\n");
+
+  /* width and height of the display window */
+  if (expand_105) {
+    hint.min_width = hint.max_width = hint.width = 2*176;
+    hint.min_height = hint.max_height = hint.height = 2*144;
+  }
+  else {
+    hint.min_width = hint.max_width = hint.width = 176;
+    hint.min_height = hint.max_height = hint.height = 144;
+  }
+
+  hint.flags = PSize | PMinSize | PMaxSize;
+
+  /* Get some colors */
+
+  bg = WhitePixel (display, screen);
+  fg = BlackPixel (display, screen);
+
+  /* Make the window */
+  mask = CWBackPixel | CWBorderPixel;
+  if (dpy_depth == 32 || dpy_depth == 24 || dpy_depth == 16) {
+    mask |= CWColormap;
+    xswa.colormap = XCreateColormap (display, DefaultRootWindow (display),
+             visual, AllocNone);
+  }
+  xswa.background_pixel = bg;
+  xswa.border_pixel = fg;
+  window = XCreateWindow (display, DefaultRootWindow (display),
+          hint.x, hint.y, hint.width, hint.height,
+          1, dpy_depth, InputOutput, visual, mask, &xswa);
+
+
+  XSelectInput(display, window, StructureNotifyMask);
+
+  /* Tell other applications about this window */
+
+  XSetStandardProperties (display, window, hello, hello, None, NULL, 0, &hint);
+
+  /* Map window. */
+
+  XMapWindow(display, window);
+
+  /* Wait for map. */
+  do
+  {
+    XNextEvent(display, &xev);
+  }
+  while (xev.type != MapNotify || xev.xmap.event != window);
+
+  XSelectInput(display, window, NoEventMask);
+
+  /* allocate colors */
+
+  gc = DefaultGC(display, screen);
+
+  if (dpy_depth == 8) {
+    XWindowAttributes xwa;
+
+    cmap = DefaultColormap(display, screen);
+    _private = 0;
+
+    /* matrix coefficients */
+    crv = convmat_107[matrix_coefficients][0];
+    cbu = convmat_107[matrix_coefficients][1];
+    cgu = convmat_107[matrix_coefficients][2];
+    cgv = convmat_107[matrix_coefficients][3];
+
+    /* color allocation:
+     * i is the (internal) 8 bit color number, it consists of separate
+     * bit fields for Y, U and V: i = (yyyyuuvv), we don't use yyyy=0000
+     * yyyy=0001 and yyyy=1111, this leaves 48 colors for other applications
+     *
+     * the allocated colors correspond to the following Y, U and V values:
+     * Y:   40, 56, 72, 88, 104, 120, 136, 152, 168, 184, 200, 216, 232
+     * U,V: -48, -16, 16, 48
+     *
+     * U and V values span only about half the color space; this gives
+     * usually much better quality, although highly saturated colors can
+     * not be displayed properly
+     *
+     * translation to R,G,B is implicitly done by the color look-up table
+     */
+    for (i=32; i<240; i++) {
+      /* color space conversion */
+      y = 16*((i>>4)&15) + 8;
+      u = 32*((i>>2)&3)  - 48;
+      v = 32*(i&3)       - 48;
+
+      y = 76309 * (y - 16); /* (255/219)*65536 */
+
+      r = clp_108[(y + crv*v + 32768)>>16];
+      g = clp_108[(y - cgu*u -cgv*v + 32768)>>16];
+      b = clp_108[(y + cbu*u + 32786)>>16];
+
+      /* X11 colors are 16 bit */
+      xcolor.red   = r << 8;
+      xcolor.green = g << 8;
+      xcolor.blue  = b << 8;
+
+      if (XAllocColor(display, cmap, &xcolor) != 0)
+        pixel_121[i] = xcolor.pixel;
+      else {
+        /* allocation failed, have to use a private colormap */
+
+        if (_private)
+          error("Couldn't allocate private colormap", 1);
+
+        _private = 1;
+
+#ifndef __SOC_BASE__
+        if (!quiet_106)
+          fprintf(stderr, "Using private colormap (%d colors were "
+          "available).\n", i-32);
+#endif
+
+        /* Free colors. */
+        while (--i >= 32)
+        {
+          tmp_pixel = pixel_121[i]; /* because XFreeColors expects unsigned long */
+          XFreeColors(display, cmap, &tmp_pixel, 1, 0);
+        }
+
+        /* i is now 31, this restarts the outer loop */
+
+        /* create private colormap */
+
+        XGetWindowAttributes(display, window, &xwa);
+        cmap = XCreateColormap(display, window, xwa.visual, AllocNone);
+        XSetWindowColormap(display, window, cmap);
+      }
+    }
+  }
+
+#ifdef SH_MEM
+  if (XShmQueryExtension(display))
+    shmem_flag = 1;
+  else
+  {
+    shmem_flag = 0;
+#ifndef __SOC_BASE__
+    if (!quiet_106)
+      fprintf(stderr, "Shared memory not supported\nReverting to normal "
+              "Xlib\n");
+#endif
+  }
+
+  if (shmem_flag)
+    CompletionType = XShmGetEventBase(display) + ShmCompletion;
+
+  InstallXErrorHandler();
+
+  if (shmem_flag)
+  {
+
+    if (expand_105)
+      ximage_119 = XShmCreateImage(display, visual, dpy_depth, ZPixmap, NULL,
+               &shminfo1,
+               2*176, 2*144);
+    else
+      ximage_119 = XShmCreateImage(display, visual, dpy_depth, ZPixmap, NULL,
+               &shminfo1,
+               176, 144);
+
+
+    /* If no go, then revert to normal Xlib calls. */
+
+    if (ximage_119==NULL)
+    {
+      if (ximage_119!=NULL)
+        XDestroyImage(ximage_119);
+#ifndef __SOC_BASE__
+      if (!quiet_106)
+        fprintf(stderr, "Shared memory error, disabling (Ximage error)\n", 1);
+#endif
+      goto shmemerror;
+    }
+
+    /* Success here, continue. */
+
+    shminfo1.shmid = shmget(IPC_PRIVATE,
+                            ximage_119->bytes_per_line * ximage_119->height,
+                            IPC_CREAT | 0777);
+
+    if (shminfo1.shmid<0)
+    {
+      XDestroyImage(ximage_119);
+#ifndef __SOC_BASE__
+      if (!quiet_106)
+        fprintf(stderr, "Shared memory error, disabling (seg id error)\n");
+#endif
+      goto shmemerror;
+    }
+
+    shminfo1.shmaddr = (char *) shmat(shminfo1.shmid, 0, 0);
+    shminfo2.shmaddr = (char *) shmat(shminfo2.shmid, 0, 0);
+
+    if (shminfo1.shmaddr==((char *) -1))
+    {
+      XDestroyImage(ximage_119);
+      if (shminfo1.shmaddr!=((char *) -1))
+        shmdt(shminfo1.shmaddr);
+#ifndef __SOC_BASE__
+      if (!quiet_106)
+      {
+        fprintf(stderr, "Shared memory error, disabling (address error)\n");
+      }
+#endif
+      goto shmemerror;
+    }
+
+    ximage_119->data = shminfo1.shmaddr;
+    dithered_image = (unsigned char *)ximage_119->data;
+    shminfo1.readOnly = False;
+    XShmAttach(display, &shminfo1);
+
+    XSync(display, False);
+
+    if (gXErrorFlag)
+    {
+      /* Ultimate failure here. */
+      XDestroyImage(ximage_119);
+      shmdt(shminfo1.shmaddr);
+#ifndef __SOC_BASE__
+      if (!quiet_106)
+        fprintf(stderr, "Shared memory error, disabling.\n");
+#endif
+      gXErrorFlag = 0;
+      goto shmemerror;
+    }
+    else
+    {
+      shmctl(shminfo1.shmid, IPC_RMID, 0);
+    }
+
+#ifndef __SOC_BASE__
+    if (!quiet_106)
+    {
+      fprintf(stderr, "Sharing memory.\n");
+    }
+#endif
+  }
+  else
+  {
+shmemerror:
+    shmem_flag = 0;
+#endif
+
+
+    if (expand_105) {
+      ximage_119 = XCreateImage(display,visual,dpy_depth,ZPixmap,0,&dummy,
+            2*176,2*144,8,0);
+      if (!(dithered_image =
+            (unsigned char *)malloc(176*144*
+            (dpy_depth > 8 ? sizeof (int)*4 :
+             sizeof (unsigned char))*4)))
+        error("malloc failed", 1);
+    }
+    else {
+      ximage_119 = XCreateImage(display,visual,dpy_depth,ZPixmap,0,&dummy,
+            176,144,8,0);
+      if (!(dithered_image =
+            (unsigned char *)malloc(176*144*
+            (dpy_depth > 8 ? sizeof (int) :
+             sizeof (unsigned char)))))
+        error("malloc failed", 1);
+    }
+
+#ifdef SH_MEM
+  }
+
+  DeInstallXErrorHandler();
+#endif
+
+
+  if (dpy_depth == 32 || dpy_depth == 24 || dpy_depth == 16) {
+    XWindowAttributes xwa;
+
+    XGetWindowAttributes(display, window, &xwa);
+
+
+    wpixel_120[0] = xwa.visual->red_mask;
+    wpixel_120[1] = xwa.visual->green_mask;
+    wpixel_120[2] = xwa.visual->blue_mask;
+
+    /* If the colors in 16/24/32-bit mode are wrong, try this instead
+       of the above three lines */
+    /*
+    wpixel_120[2] = xwa.visual->red_mask;
+    wpixel_120[1] = xwa.visual->green_mask;
+    wpixel_120[0] = xwa.visual->blue_mask;
+    */
+
+    InitColorDither(dpy_depth == 24 || dpy_depth == 32);
+  }
+  else {
+    ord4x4_dither_init ();
+  }
+}
+
+static void exit_display()
+{
+#ifdef SH_MEM
+  if (shmem_flag)
+  {
+    XShmDetach(display, &shminfo1);
+    XDestroyImage(ximage_119);
+    shmdt(shminfo1.shmaddr);
+  }  
+#endif
+  XCloseDisplay(display);
+}
+
+static void display_image(XImage *ximage_119,unsigned char *dithered_image)
+{
+  int t = 1;
+
+ /* Always work in native bit and byte order. This tells Xlib to
+    reverse bit and byte order if necessary when crossing a
+    network. Frankly, this part of XImages is somewhat
+    underdocumented, so this may not be exactly correct.  */
+
+  if (*(char *)&t == 1) {
+    ximage_119->byte_order = LSBFirst;
+    ximage_119->bitmap_bit_order = LSBFirst;
+  }
+  else {
+    ximage_119->byte_order = MSBFirst;
+    ximage_119->bitmap_bit_order = MSBFirst;
+  }
+
+  /* display dithered image */
+#ifdef SH_MEM
+  if (shmem_flag)
+  {
+    XShmPutImage(display, window, gc, ximage_119,
+                 0, 0, 0, 0, ximage_119->width, ximage_119->height, True);
+    XFlush(display);
+
+    while (1)
+    {
+      XEvent xev;
+
+      XNextEvent(display, &xev);
+      if (xev.type == CompletionType)
+        break;
+    }
+  }
+  else
+#endif
+  {
+    ximage_119->data = (char *) dithered_image;
+    XPutImage(display, window, gc, ximage_119, 0, 0, 0, 0, ximage_119->width, ximage_119->height);
+  }
+}
+
+
+static void dither(unsigned char *src[])
+{
+  if (dpy_depth == 24 || dpy_depth == 32) {
+    if (ximage_119->bits_per_pixel == 24)
+      ConvertYUVtoRGB(src[0],src[1],src[2], dithered_image,
+                      176,
+                      144);
+    else
+      Color32DitherImage(src, dithered_image);
+  }
+  else if (dpy_depth == 16) {
+    Color16DitherImage(src, dithered_image);
+  }
+  else {
+    ord4x4_dither_frame (src, dithered_image);
+  }
+
+  display_image (ximage_119, dithered_image);
+}
+#endif
+
+TASK_GO
+{
+    // TODO: task 
+  MQ_RECEIVE(port_inFrame, (unsigned char*)&frame, sizeof(YUVFrame));
+  int i,j;
+  
+#ifdef DISPLAY
+	unsigned char* fr[3];
+	fr[0] = (unsigned char*)frame.Y.data;
+	fr[1] = (unsigned char*)frame.U.data;
+	fr[2] = (unsigned char*)frame.V.data;
+	dither(fr);
+#endif
+ 
+  /*
+   * the mmin, mmax macros are taken out, because it makes no sense due to limited range of data type
+  */
+  for(i=0;i<IMG_HEIGHT;i++){
+    for(j=0;j<IMG_WIDTH;j++)
+    {
+      fputc(frame.Y.data[i][j], p_out);
+    }
+  }
+  
+  for(i=0;i<IMG_HEIGHT/2;i++){
+    for(j=0;j<IMG_WIDTH/2;j++)
+    {
+      fputc(frame.U.data[i][j], p_out);
+    }
+  }
+  for(i=0;i<IMG_HEIGHT/2;i++){
+    for(j=0;j<IMG_WIDTH/2;j++)
+    {
+      fputc(frame.V.data[i][j], p_out);
+    }
+  }
+  
+  fflush(p_out);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    fclose(p_out);
+#ifdef DISPLAY
+	exit_display("");
+#endif
+}
+
+TASK_CODE_END

@@ -1,0 +1,364 @@
+/************************************
+ *
+ * File : Deblo.cic
+ * Date : Sep 9, 2012 3:55 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "h264decoder.h"
+#include "h264dec_struct.h"
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_inFrame_interY;
+STATIC int port_inFrame_interU;
+STATIC int port_inFrame_interV;
+STATIC int port_inFrame_intraY;
+STATIC int port_inFrame_intraU;
+STATIC int port_inFrame_intraV;
+STATIC int port_outFrame;
+STATIC int port_outRef_Y;
+STATIC int port_outRef_U;
+STATIC int port_outRef_V;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+STATIC ResultFrame inY;
+STATIC HalfFrame inU;
+STATIC HalfFrame inV;
+STATIC YUVFrame out;
+
+static int  ININT_STRENGTH[4] = {0x04040404, 0x03030303, 0x03030303, 0x03030303} ; 
+static byte BLK_NUM[2][4][4]  = {{{0,4,8,12},{1,5,9,13},{2,6,10,14},{3,7,11,15}},{{0,1,2,3},{4,5,6,7},{8,9,10,11},{12,13,14,15}}} ;
+//static byte BLK_4_TO_8[16]    = {0,0,1,1,0,0,1,1,2,2,3,3,2,2,3,3} ;
+
+STATIC Macroblock *mb_data;
+STATIC int (*refFrArr)[IMG_WIDTH/BLOCK_SIZE];
+STATIC int (*img_mv)[IMG_HEIGHT/BLOCK_SIZE][3];
+
+static byte (*F_imgY)[IMG_WIDTH];
+static byte (*F_imgU)[IMG_WIDTH/2];
+static byte (*F_imgV)[IMG_WIDTH/2];
+
+#define  IClip( Min, Max, Val) (((Val)<(Min))? (Min):(((Val)>(Max))? (Max):(Val)))
+
+static byte ALPHA_TABLE[52]  = {0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,4,4,5,6,  7,8,9,10,12,13,15,17,  20,22,25,28,32,36,40,45,  50,56,63,71,80,90,101,113,  127,144,162,182,203,226,255,255} ;
+static byte  BETA_TABLE[52]  = {0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,2,2,2,3,  3,3,3, 4, 4, 4, 6, 6,   7, 7, 8, 8, 9, 9,10,10,  11,11,12,12,13,13, 14, 14,   15, 15, 16, 16, 17, 17, 18, 18} ;
+static byte CLIP_TAB[52][5]  =
+{
+  { 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},
+  { 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},{ 0, 0, 0, 0, 0},
+  { 0, 0, 0, 0, 0},{ 0, 0, 0, 1, 1},{ 0, 0, 0, 1, 1},{ 0, 0, 0, 1, 1},{ 0, 0, 0, 1, 1},{ 0, 0, 1, 1, 1},{ 0, 0, 1, 1, 1},{ 0, 1, 1, 1, 1},
+  { 0, 1, 1, 1, 1},{ 0, 1, 1, 1, 1},{ 0, 1, 1, 1, 1},{ 0, 1, 1, 2, 2},{ 0, 1, 1, 2, 2},{ 0, 1, 1, 2, 2},{ 0, 1, 1, 2, 2},{ 0, 1, 2, 3, 3},
+  { 0, 1, 2, 3, 3},{ 0, 2, 2, 3, 3},{ 0, 2, 2, 4, 4},{ 0, 2, 3, 4, 4},{ 0, 2, 3, 4, 4},{ 0, 3, 3, 5, 5},{ 0, 3, 4, 6, 6},{ 0, 3, 4, 6, 6},
+  { 0, 4, 5, 7, 7},{ 0, 4, 5, 8, 8},{ 0, 4, 6, 9, 9},{ 0, 5, 7,10,10},{ 0, 6, 8,11,11},{ 0, 6, 8,13,13},{ 0, 7,10,14,14},{ 0, 8,11,16,16},
+  { 0, 9,12,18,18},{ 0,10,13,20,20},{ 0,11,15,23,23},{ 0,13,17,25,25}
+} ;
+
+
+
+
+static void GetStrength(byte Strength[4],Macroblock* MbP,Macroblock* MbQ,int dir,int edge,int block_y,int block_x)
+{
+  int    blkP, blkQ, idx ;
+  int    blk_x, blk_x2, blk_y, blk_y2 ;
+
+ *((int*)Strength) = ININT_STRENGTH[edge] ; // Start with Strength=3. or Strength=4 for Mb-edge
+
+  for( idx=0 ; idx<4 ; idx++ )
+  {                                                                                       // if not intra or SP-frame
+    blkQ = BLK_NUM[dir][ edge       ][idx] ;                 // if one of the 4x4 blocks has coefs.    set Strength=2
+    blkP = BLK_NUM[dir][(edge-1) & 3][idx] ; 
+    
+
+    if( !(MbP->mb_type==I4MB || MbP->mb_type==I16MB)
+          && !(MbQ->mb_type==I4MB || MbQ->mb_type==I16MB) )
+    {
+      if( ((MbQ->cbp_blk &  (1 << blkQ )) != 0) || ((MbP->cbp_blk &  (1 << blkP)) != 0) )
+        Strength[idx] = 2 ;
+      else
+      {                                                     // if no coefs, but vector difference >= 1 set Strength=1 
+        blk_y  = block_y + (blkQ >> 2) ;   blk_y2 = blk_y -  dir ;
+        blk_x  = block_x + (blkQ  & 3)+4 ; blk_x2 = blk_x - !dir ;
+
+        Strength[idx] =  (abs( img_mv[blk_x][blk_y][0] - img_mv[blk_x2][blk_y2][0]) >= 4 ) |
+                         (abs( img_mv[blk_x][blk_y][1] - img_mv[blk_x2][blk_y2][1]) >= 4 ) |
+                         (refFrArr[blk_y][blk_x-4]   !=  refFrArr[blk_y2][blk_x2-4] );
+      }
+    }
+  }
+}
+
+
+/*!
+ *****************************************************************************************
+ * \brief
+ *    Filters one edge of 16 (luma) or 8 (chroma) pel
+ *****************************************************************************************
+ */
+ 
+static void EdgeLoop(byte* SrcPtr,byte Strength[4],int QP,
+              int AlphaC0Offset, int BetaOffset, int dir,int width,int yuv)
+{
+  int      pel, ap = 0, aq = 0, PtrInc, Strng ;
+  int      inc, inc2, inc3, inc4 ;
+  int      C0, c0, Delta, dif, AbsDelta ;
+  int      L2 = 0, L1, L0, R0, R1, R2 = 0, RL0 ;
+  int      Alpha = 0, Beta = 0 ;
+  byte*    ClipTab = NULL;   
+  int      small_gap;
+  int      indexA, indexB;
+
+
+  PtrInc  = dir?      1 : width ;
+  inc     = dir?  width : 1 ;                     // vertical filtering increment to next pixel is 1 else width
+  inc2    = inc<<1 ;    
+  inc3    = inc + inc2 ;    
+  inc4    = inc<<2 ;
+
+  for( pel=0 ; pel<16 ; pel++ )
+  {
+    if(!(pel&3))
+    {
+      indexA = IClip(0, MAX_QP, QP + AlphaC0Offset);
+      indexB = IClip(0, MAX_QP, QP + BetaOffset);
+
+      Alpha=ALPHA_TABLE[indexA];
+      Beta=BETA_TABLE[indexB];  
+      ClipTab=CLIP_TAB[indexA];
+    }
+    if( (Strng = Strength[pel >> 2]) )
+    {
+      L0  = SrcPtr [-inc ] ;
+      R0  = SrcPtr [    0] ;
+      AbsDelta  = abs( Delta = R0 - L0 )  ;
+
+      if( AbsDelta < Alpha )
+      {
+        C0  = ClipTab[ Strng ] ;
+        L1  = SrcPtr[-inc2] ;
+        R1  = SrcPtr[ inc ] ;
+        if( ((abs( R0 - R1) - Beta )  & (abs(L0 - L1) - Beta )) < 0  ) 
+        {
+          if( !yuv)
+            {
+          L2  = SrcPtr[-inc3] ;
+          R2  = SrcPtr[ inc2] ;
+          aq  = (abs( R0 - R2) - Beta ) < 0  ;
+          ap  = (abs( L0 - L2) - Beta ) < 0  ;
+            }
+
+          RL0             = L0 + R0 ;
+
+          if(Strng == 4 )    // INTRA strong filtering
+          {
+            if( yuv)  // Chroma
+              {
+              SrcPtr[   0 ] = ((R1 << 1) + R0 + L1 + 2) >> 2; 
+              SrcPtr[-inc ] = ((L1 << 1) + L0 + R1 + 2) >> 2;                                           
+              }
+            else  // Luma
+              {
+            small_gap = (AbsDelta < ((Alpha >> 2) + 2));
+         
+            aq &= small_gap;
+            ap &= small_gap;
+
+            SrcPtr[   0 ]   = aq ? ( L1 + ((R1 + RL0) << 1) +  SrcPtr[ inc2] + 4) >> 3 : ((R1 << 1) + R0 + L1 + 2) >> 2 ;
+            SrcPtr[-inc ]   = ap ? ( R1 + ((L1 + RL0) << 1) +  SrcPtr[-inc3] + 4) >> 3 : ((L1 << 1) + L0 + R1 + 2) >> 2 ;
+
+            SrcPtr[ inc ] =   aq  ? ( SrcPtr[ inc2] + R0 + R1 + L0 + 2) >> 2 : SrcPtr[ inc ];
+            SrcPtr[-inc2] =   ap  ? ( SrcPtr[-inc3] + L1 + L0 + R0 + 2) >> 2 : SrcPtr[-inc2];
+
+              SrcPtr[ inc2] = aq ? (((SrcPtr[ inc3] + SrcPtr[ inc2]) <<1) + SrcPtr[ inc2] + R1 + RL0 + 4) >> 3 : R2;
+              SrcPtr[-inc3] = ap ? (((SrcPtr[-inc4] + SrcPtr[-inc3]) <<1) + SrcPtr[-inc3] + L1 + RL0 + 4) >> 3 : L2;
+              }
+          }
+          else                                                                                   // normal filtering
+          {
+            c0               = yuv? (C0+1):(C0 + ap + aq) ;
+            dif              = IClip( -c0, c0, ( (Delta << 2) + (L1 - R1) + 4) >> 3 ) ;
+            SrcPtr[  -inc ]  = IClip(0, 255, L0 + dif) ;
+            SrcPtr[     0 ]  = IClip(0, 255, R0 - dif) ;
+
+            if( !yuv )
+            {
+              if( ap )
+                SrcPtr[-inc2] += IClip( -C0,  C0, ( L2 + ((RL0+1) >> 1) - (L1<<1)) >> 1 ) ;
+              if( aq  )
+                SrcPtr[  inc] += IClip( -C0,  C0, ( R2 + ((RL0+1) >> 1) - (R1<<1)) >> 1 ) ;
+            } ;
+          } ;
+        } ; 
+      } ;
+      SrcPtr += PtrInc ;      // Increment to next set of pixel
+      pel    += yuv ;
+    } 
+    else
+    {
+      SrcPtr += PtrInc << (2 - yuv) ;
+      pel    += 3 ;
+    }  ;
+  }
+}
+
+
+
+static void DeblockMb(int mb_y, int mb_x, DeblockParams *deblockparams)
+{
+  int           EdgeCondition;
+  int           dir,edge,QP;
+  byte          Strength[4], *SrcY, *SrcU, *SrcV ;
+  Macroblock    *MbP, *MbQ ; 
+  int           sizey;
+  int           QPC;
+  const int width = IMG_WIDTH;
+  const byte QP_SCALE_CR[52]=
+  {
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,
+     12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,
+     28,29,29,30,31,32,32,33,34,34,35,35,36,36,37,37,
+     37,38,38,38,39,39,39,39
+  };
+  
+  SrcY = F_imgY[mb_y<<4] + (mb_x<<4) ;                                                      // pointers to source
+  SrcU = F_imgU[mb_y<<3] + (mb_x<<3) ;
+  SrcV = F_imgV[mb_y<<3] + (mb_x<<3) ;
+
+  MbQ  =  &mb_data[mb_y*(width>>4) + mb_x] ;                                                 // current Mb
+
+  // This could also be handled as a filter offset of -51 
+  //if (MbQ->lf_disable) return;
+  if (deblockparams->LFDisableIdc) return;
+
+  for( dir=0 ; dir<2 ; dir++ )                                             // vertical edges, than horicontal edges
+  {
+    EdgeCondition = (dir && mb_y) || (!dir && mb_x)  ;                    // can not filter beyond frame boundaries
+    for( edge=0 ; edge<4 ; edge++ )                                            // first 4 vertical strips of 16 pel
+    {                                                                                         // then  4 horicontal
+      if( edge || EdgeCondition )
+      {
+        
+        sizey = mb_y%2 ? 1:2*width/MB_BLOCK_SIZE-1;
+        MbP = (edge)? MbQ : ((dir)? (MbQ -(width>>4))  : (MbQ-1) ) ;       // MbP = Mb of the remote 4x4 block
+
+        QP  = ( MbP->qp + MbQ->qp + 1) >> 1 ;                   // Average QP of the two blocks
+        GetStrength(Strength,MbP,MbQ,dir,edge,mb_y<<2,mb_x<<2); // Strength for 4 blks in 1 stripe
+        if( *((int*)Strength) )                      // only if one of the 4 Strength bytes is != 0
+        {
+          EdgeLoop( SrcY + (edge<<2)* ((dir)? width:1 ), Strength, QP, deblockparams->LFAlphaC0Offset, deblockparams->LFBetaOffset, dir, width, 0) ; 
+          if( (F_imgU != NULL) && !(edge & 1) )
+          {
+            QPC  = (QP_SCALE_CR[MbP->qp] + QP_SCALE_CR[MbQ->qp] + 1) >> 1;
+            EdgeLoop( SrcU +  (edge<<1) * ((dir)? width/2:1 ), Strength, QPC, deblockparams->LFAlphaC0Offset, deblockparams->LFBetaOffset, dir, width/2, 1 ) ; 
+            EdgeLoop( SrcV +  (edge<<1) * ((dir)? width/2:1 ), Strength, QPC, deblockparams->LFAlphaC0Offset, deblockparams->LFBetaOffset, dir, width/2, 1 ) ; 
+          }
+        }
+      }
+    }//end edge
+  }//end loop dir
+}
+
+
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_inFrame_interY = PORT_INITIALIZE(TASK_ID, "inFrame_interY");
+    port_inFrame_interU = PORT_INITIALIZE(TASK_ID, "inFrame_interU");
+    port_inFrame_interV = PORT_INITIALIZE(TASK_ID, "inFrame_interV");
+    port_inFrame_intraY = PORT_INITIALIZE(TASK_ID, "inFrame_intraY");
+    port_inFrame_intraU = PORT_INITIALIZE(TASK_ID, "inFrame_intraU");
+    port_inFrame_intraV = PORT_INITIALIZE(TASK_ID, "inFrame_intraV");
+    port_outFrame = PORT_INITIALIZE(TASK_ID, "outFrame");
+    port_outRef_Y = PORT_INITIALIZE(TASK_ID, "outRef_Y");
+    port_outRef_U = PORT_INITIALIZE(TASK_ID, "outRef_U");
+    port_outRef_V = PORT_INITIALIZE(TASK_ID, "outRef_V");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+
+  char* mode_name = SYS_REQ(GET_CURRENT_MODE_NAME);
+
+  if(strcmp(mode_name, "I_Frame")==0){
+        MQ_RECEIVE(port_inFrame_intraY, (unsigned char*)&inY, sizeof(ResultFrame));
+        MQ_RECEIVE(port_inFrame_intraU, (unsigned char*)&inU, sizeof(HalfFrame));
+        MQ_RECEIVE(port_inFrame_intraV, (unsigned char*)&inV, sizeof(HalfFrame));
+    }
+    else{
+        MQ_RECEIVE(port_inFrame_interY, (unsigned char*)&inY, sizeof(ResultFrame));
+        MQ_RECEIVE(port_inFrame_interU, (unsigned char*)&inU, sizeof(HalfFrame));
+        MQ_RECEIVE(port_inFrame_interV, (unsigned char*)&inV, sizeof(HalfFrame));
+    }
+
+ 	int mb_x, mb_y;
+    int i,j;
+
+    mb_data = inY.frameinfo.mbdata;
+    refFrArr =inY.frameinfo.refFrameArr;
+    img_mv = inY.frameinfo.mv;
+
+    F_imgY = out.Y.data;
+    F_imgU = out.U.data;
+    F_imgV = out.V.data;
+
+    for(j = 0; j < IMG_HEIGHT; j++)
+        for(i = 0; i < IMG_WIDTH; i++)
+          F_imgY[j][i] = inY.frame.data[j][i];
+    for(j = 0; j < IMG_HEIGHT/2; j++)
+        for(i = 0; i < IMG_WIDTH/2; i++) {
+          F_imgU[j][i] = inU.data[j][i];
+          F_imgV[j][i] = inV.data[j][i];
+        }
+
+    for( mb_y=0 ; mb_y<(IMG_HEIGHT>>4) ; mb_y++ )
+        for( mb_x=0 ; mb_x<(IMG_WIDTH>>4) ; mb_x++ )
+          DeblockMb(mb_y, mb_x, &inY.deblockparams) ;
+
+    MQ_SEND(port_outFrame, (unsigned char*)&out, sizeof(YUVFrame));
+    MQ_SEND(port_outRef_Y, (unsigned char*)&out.Y, sizeof(Frame));
+    MQ_SEND(port_outRef_U, (unsigned char*)&out.U, sizeof(HalfFrame));
+    MQ_SEND(port_outRef_V, (unsigned char*)&out.V, sizeof(HalfFrame));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

@@ -1,0 +1,20 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "top" float "1.0"
+Parameter "bottom" float "0.0"
+Star "./icon/inport.icon" I0 8 32 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 408 24 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Add2.icon" I4 96 32 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Limit.icon" I8 184 16 0
+StarParameter 3 "nodename" STRING "" "bottom" FLOAT "bottom" "top" FLOAT "top"
+Star "./icon/Fork2.icon" I11 328 32 0
+StarParameter 1 "nodename" STRING ""
+Line I15 "" Star I8 "output" Star I11 "input" 1 240 48 328 48 
+Line I16 "" Star I11 "output#1" Star I2 "input" 1 381 40 408 40 
+Line I17 "" Star I4 "output" Star I8 "input" 1 152 48 184 48 
+Line I18 "" Star I0 "output" Star I4 "input#1" 1 40 48 96 48 
+Line I19 "1" Star I11 "output#2" Star I4 "input#2" 2 381 56 392 56 123 76 

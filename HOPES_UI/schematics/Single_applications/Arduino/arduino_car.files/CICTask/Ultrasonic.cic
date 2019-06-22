@@ -1,0 +1,121 @@
+/************************************
+ *
+ * File : Ultrason.cic
+ * Date : Sep 10, 2018 7:07 PM
+ *
+*************************************/
+
+#include <Arduino.h>
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+enum Direction {
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT,
+    DIRECTION_STRAIGHT,
+    DIRECTION_LEFT_45,
+    DIRECTION_RIGHT_45,
+};
+
+struct Distance {
+    enum Direction direction;
+    int distance;
+};
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_direction;
+STATIC int port_distance;
+// ##DEFINE_PORT_SECTION::END
+
+static const int trigPin = 13;
+static const int echoPin = 12;
+static int isInit = 0;
+static int nChannelSize = 0;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_direction = PORT_INITIALIZE(TASK_ID, "direction");
+    port_distance = PORT_INITIALIZE(TASK_ID, "distance");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    if(isInit == 0) {
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+        digitalWrite(trigPin, LOW);
+        isInit = 1;
+    }
+    nChannelSize = UFPort_GetChannelSize(port_distance);
+}
+
+
+static int U_Sonic() {
+	long Dist_cm;
+	digitalWrite(trigPin, LOW);
+	delayMicroseconds(5);
+	digitalWrite(trigPin, HIGH);
+	delayMicroseconds(15);
+	digitalWrite(trigPin, LOW);
+	Dist_cm = pulseIn(echoPin, HIGH);
+	Dist_cm = Dist_cm * 0.017; // (0.034cm/us)/2
+	return round(Dist_cm);
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    struct Distance distance;
+    int nDataSize;
+     uem_result result;
+    
+    result = UFPort_GetNumOfAvailableData(port_direction, 0, &nDataSize);
+    if(result != ERR_UEM_NOERROR) return;
+    if(nDataSize < (int) sizeof(enum Direction)) return;
+
+    result = UFPort_GetNumOfAvailableData(port_distance, 0, &nDataSize);
+    if(result != ERR_UEM_NOERROR) return;
+    if(nDataSize + (int) sizeof(struct Distance) > nChannelSize) return;
+    
+    MQ_RECEIVE(port_direction, (unsigned char *)&(distance.direction), sizeof(enum Direction)); 
+    
+    distance.distance = U_Sonic();
+    //if(direction != prev_direction)
+    	//UEM_DEBUG_PRINT("ultrasonic servo_angle: %d, distance: %d\n", servo_angle, distance.distance);
+
+    // TODO: task main code
+    MQ_SEND(port_distance, (unsigned char*)&distance, sizeof(struct Distance));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

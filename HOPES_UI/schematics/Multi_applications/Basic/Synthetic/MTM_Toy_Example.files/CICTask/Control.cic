@@ -1,0 +1,249 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Apr 18, 2013 1:32 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_IDLE 0
+#define ID_STATE_COUNTER 1
+#define ID_STATE_PINGPONG 2
+#define ID_STATE_COUNTERPINGPONG 3
+#define ID_TRANSITION_TRANSITION_0 0
+#define ID_TRANSITION_TRANSITION_1 1
+#define ID_TRANSITION_TRANSITION_2 2
+#define ID_TRANSITION_TRANSITION_3 3
+#define ID_TRANSITION_TRANSITION_4 4
+#define ID_TRANSITION_TRANSITION_5 5
+#define ID_TRANSITION_TRANSITION_6 6
+#define ID_TRANSITION_TRANSITION_7 7
+#define ID_TRANSITION_TRANSITION_8 8
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state;
+static int previous_state;
+// ##VARIABLE_SECTION::END
+
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state = ID_STATE_IDLE;
+// ##INIT_SECTION::END
+
+    // TODO: task initialize code
+    SYS_REQ(STOP_TASK, "Counter");
+    SYS_REQ(STOP_TASK, "PingPong");
+}
+
+
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+    char input;
+
+    while(1){
+        int ret = MQ_AVAILABLE(port_input);
+        if(ret != 0){
+            MQ_RECEIVE(port_input, (unsigned char*)&input, sizeof(char));
+            break;
+        }
+    }
+
+	switch( current_state )
+	{
+	case ID_STATE_IDLE:
+		if(input == 'p')
+		{
+			SYS_REQ(RUN_TASK, "PingPong");
+			printf("Control: Run PingPong Task\n");
+			previous_state = current_state;
+			current_state = ID_STATE_PINGPONG;
+		}
+		else if(input == 'c')
+		{
+			SYS_REQ(RUN_TASK, "Counter");
+			printf("Control: Run Counter Task\n");
+			previous_state = current_state;
+			current_state = ID_STATE_COUNTER;
+		}
+		else if(input == 'b')
+		{
+			SYS_REQ(RUN_TASK, "Counter");
+			SYS_REQ(RUN_TASK, "PingPong");
+			printf("Control: Run Counter & PingPong Tasks\n");
+			previous_state = current_state;
+			current_state = ID_STATE_COUNTERPINGPONG;
+		}
+		else if(input == 'q')
+		{
+			SYS_REQ(STOP);
+			printf("Control: Stop the application\n");
+		}
+        break;
+	case ID_STATE_COUNTER:
+        if(input == 'b')
+		{
+            if(previous_state == ID_STATE_IDLE)    SYS_REQ(RUN_TASK, "PingPong");
+			else                                   SYS_REQ(RESUME_TASK, "PingPong");
+			printf("Control: Run Counter & PingPong Tasks\n");
+			previous_state = current_state;
+			current_state = ID_STATE_COUNTERPINGPONG;
+		}
+		else if(input == 'p')
+		{
+		    SYS_REQ(SUSPEND_TASK, "Counter");
+            if(previous_state == ID_STATE_IDLE)    SYS_REQ(RUN_TASK, "PingPong");
+			else                                   SYS_REQ(RESUME_TASK, "PingPong");
+			printf("Control: Suspend Counter Task\n");
+			printf("Control: Run PingPong Task\n");
+			previous_state = current_state;
+			current_state = ID_STATE_PINGPONG;
+		}
+        else if(input == 'q')
+		{
+			SYS_REQ(STOP);
+			printf("Control: Stop the application\n");
+		}
+		break;
+	case ID_STATE_PINGPONG:
+		if(input == 'b')
+		{
+			if(previous_state == ID_STATE_IDLE)    SYS_REQ(RUN_TASK, "Counter");
+			else                                   SYS_REQ(RESUME_TASK, "Counter");
+			printf("Control: Run Counter & PingPong Tasks\n");
+			previous_state = current_state;
+			current_state = ID_STATE_COUNTERPINGPONG;
+		}
+		else if(input == 'c')
+		{
+		    SYS_REQ(SUSPEND_TASK, "PingPong");
+            if(previous_state == ID_STATE_IDLE)    SYS_REQ(RUN_TASK, "Counter");
+			else                                   SYS_REQ(RESUME_TASK, "Counter");
+			printf("Control: Suspend PingPong Task\n");
+			printf("Control: Run Counter Task\n");
+			previous_state = current_state;
+			current_state = ID_STATE_COUNTER;
+		}
+        else if(input == 'q')
+		{
+			SYS_REQ(STOP);
+			printf("Control: Stop the application\n");
+		}
+		else if(input == '1' || input == '2' || input == '3' || input == '4'){
+            int speed = 1;
+            switch (input){
+                case '1':
+                    speed = 1;
+                    break;
+                case '2':
+                    speed = 2;
+                    break;
+                case '3':
+                    speed = 3;
+                    break;
+                case '4':
+                    speed = 4;
+                    break;
+                default:
+                   speed = 1;
+                    break;
+            }
+		    SYS_REQ(SET_PARAM_INT, "PingPong", "Speed", speed);
+		}
+		break;
+	case ID_STATE_COUNTERPINGPONG:
+		if(input == 'p')
+		{
+			SYS_REQ(SUSPEND_TASK, "Counter");
+			previous_state = current_state;
+			current_state = ID_STATE_PINGPONG;
+		}
+		else if(input == 'c')
+		{
+            SYS_REQ(SUSPEND_TASK, "PingPong");
+			previous_state = current_state;
+			current_state = ID_STATE_COUNTER;
+		}
+        else if(input == 'q')
+		{
+			SYS_REQ(STOP);
+			printf("Control: Stop the application\n");
+		}
+		else if(input == '1' || input == '2' || input == '3' || input == '4'){
+            int speed = 1;
+            switch (input){
+                case '1':
+                    speed = 1;
+                    break;
+                case '2':
+                    speed = 2;
+                    break;
+                case '3':
+                    speed = 3;
+                    break;
+                case '4':
+                    speed = 4;
+                    break;
+                default:
+                   speed = 1;
+                    break;
+            }
+		    SYS_REQ(SET_PARAM_INT, "PingPong", "Speed", speed);
+		}
+		break;
+	}
+// ##GO_SECTION::END
+
+
+    // TODO: task main code
+
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

@@ -1,0 +1,33 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/VicDemux.icon" I0 180 112 0
+StarParameter 5 "procId" INT "-1" "videoPacketMax" INT "100000" "audioPacketMax" INT "4096" "vicStreamMax" INT "100000" "trace" INT "0"
+Star "./library/Peace/Port/inport.ilink" I4 96 128 0
+StarParameter 4 "name" string "StreamIn" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I6 288 92 0
+StarParameter 4 "name" string "VideoOut" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I8 284 164 0
+StarParameter 4 "name" string "AudioOut" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I10 "" Star I4 "output" Star I0 "vicStreamIn" 1 128 144 180 144 
+Line I11 "" Star I0 "videoOut" Star I6 "input" 1 232 136 288 108 
+Line I12 "" Star I0 "audioOut" Star I8 "input" 1 232 152 284 180 

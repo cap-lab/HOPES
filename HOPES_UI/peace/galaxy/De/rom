@@ -1,0 +1,16 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "accessTime" float "1.0"
+Parameter "data" intArray "0 1 2 3"
+Star "./icon/inport.icon" I0 20 36 0
+StarParameter 4 "name" string "address" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 364 36 0
+StarParameter 4 "name" string "data" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Server.icon" I4 72 32 0
+StarParameter 2 "nodename" STRING "" "serviceTime" FLOAT "accessTime"
+Galaxy "./icon/table_galaxy.icon" I7 212 20 0
+StarParameter 1 "values" intArray "data"
+Line I10 "" Star I0 "output" Star I4 "input" 1 52 52 72 52 
+Line I11 "" Star I4 "output" Star I7 "input" 1 194 52 212 52 
+Line I12 "" Star I7 "output" Star I2 "input" 1 268 52 364 52 

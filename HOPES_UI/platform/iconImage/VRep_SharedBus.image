@@ -1,0 +1,5 @@
+"./platform/iconImage/VRep_SharedBus.image"
+101 36
+bus 1 2 100 33 15790320 true
+bus 1 2 100 33 -16777216 false
+Text 5 -3 11 -16777216 "VRep_SharedBus"

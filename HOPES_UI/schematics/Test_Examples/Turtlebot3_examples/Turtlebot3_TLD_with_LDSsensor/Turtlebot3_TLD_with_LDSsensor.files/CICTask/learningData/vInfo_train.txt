@@ -1,0 +1,1 @@
+learningData/train.mp4 70 10 180 100

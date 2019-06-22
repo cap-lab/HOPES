@@ -1,0 +1,30 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "numInputs" int "512"
+Parameter "log2order" int "9"
+Parameter "numToAverage" int "1"
+Star "./icon/inport.icon" I0 24 80 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 400 80 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Mpy2.icon" I4 68 80 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Average.icon" I8 272 64 0
+StarParameter 3 "procId" INT "-1" "numInputsToAverage" INT "numToAverage" "blockSize" INT "2^(log2order)"
+Star "./icon/Gain.icon" I11 332 80 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1/2^(log2order)"
+Star "./icon/WaveForm.icon" I14 20 104 0
+StarParameter 5 "procId" INT "-1" "value" FLOATARRAY "1 -1" "haltAtEnd" INT "NO" "periodic" INT "YES" "period" INT "0"
+Star "./icon/Mpy2.icon" I16 204 80 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/FFTCx.icon" I20 140 64 0
+StarParameter 4 "procId" INT "-1" "order" INT "log2order" "size" INT "numInputs/numToAverage" "direction" INT "1"
+Line I23 "" Star I0 "output" Star I4 "input#1" 1 56 96 68 96 
+Line I24 "" Star I14 "output" Star I4 "input#2" 1 76 136 95 124 
+Line I25 "" Star I16 "output" Star I8 "input" 1 260 96 272 96 
+Line I26 "" Star I8 "output" Star I11 "input" 1 328 96 332 96 
+Line I27 "" Star I11 "output" Star I2 "input" 1 388 96 400 96 
+Line I28 "" Star I4 "output" Star I20 "input" 1 124 96 140 96 
+Line I29 "" Star I20 "output" Star I16 "input#1" 1 196 96 204 96 
+Line I30 "" Star I20 "output" Star I16 "input#2" 1 196 96 231 124 

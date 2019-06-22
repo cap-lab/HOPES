@@ -1,0 +1,8 @@
+Platform
+Core
+"CellSPE_pool"
+72 76
+"./platform/iconImage/CellSPE_pool.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "AHBMasterOut"

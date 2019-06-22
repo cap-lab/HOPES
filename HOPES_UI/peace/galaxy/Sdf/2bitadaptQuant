@@ -1,0 +1,31 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "intstep" int "20"
+Parameter "stephi" float ""
+Star "./icon/inport.icon" I0 8 80 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/AdaptLinQuant.icon" I2 72 80 0
+StarParameter 2 "procId" INT "-1" "bits" INT "2"
+Star "./icon/Fork2.icon" I8 224 32 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Abs.icon" I12 296 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Limit.icon" I15 112 232 2
+StarParameter 3 "procId" INT "-1" "bottom" FLOAT "0.0" "top" FLOAT "stephi"
+Star "./icon/Table.icon" I18 248 144 0
+StarParameter 3 "procId" INT "-1" "values" FLOATARRAY "1.9 0.85 0.85 1.9" "runTimeCheck" INT "YES"
+Star "./icon/Mpy.icon" I21 448 88 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I24 448 16 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I26 "" Star I2 "stepLevel" Star I18 "input" 1 128 120 248 176 
+Line I27 "" Star I18 "output" Star I21 "input" 2 304 176 448 176 448 104 
+Line I28 "" Star I8 "output#2" Star I12 "input" 1 277 56 296 56 
+Line I29 "" Star I2 "amplitude" Star I8 "input" 1 128 104 224 48 
+Line I30 "" Star I12 "output" Star I21 "input" 2 352 56 440 56 448 104 
+Line I31 "" Star I2 "outStep" Star I21 "input" 1 128 112 448 104 
+Line I32 "" Star I0 "output" Star I2 "input" 1 40 96 72 104 
+Line I33 "{initstep}" Star I15 "output" Star I2 "inStep" 2 112 248 72 248 72 120 
+Line I34 "" Star I21 "output" Star I15 "input" 1 504 104 168 248 
+Line I35 "" Star I8 "output#1" Star I24 "input" 2 277 40 424 8 448 32 

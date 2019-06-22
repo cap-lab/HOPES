@@ -1,0 +1,27 @@
+Domain "BP"
+Target "<parent>"
+Run 10
+Parameter "nodename" string "phone"
+Galaxy "./icon/VicDemuxGal.icon" I0 336 104 0
+Galaxy "./icon/PWCCapture.icon" I4 48 68 0
+StarParameter 4 "grab_device" string "/dev/video0" "grab_width" int "176" "grab_height" int "144" "period" int "2"
+Galaxy "./icon/H263FREncStream.icon" I6 124 68 0
+StarParameter 5 "width" int "176" "height" int "144" "MBCols" int "176/16" "MBRows" int "144/16" "enable" int "1"
+Galaxy "./icon/G72xEnc.icon" I9 128 144 0
+Galaxy "./icon/MicGal.icon" I12 52 144 0
+StarParameter 6 "audioDev" string "/dev/dsp" "audioFmt" string "AFMT_S16_LE" "channels" int "2" "sampleRate" int "8000" "playUnit" int "2048" "period" int "1"
+Galaxy "./icon/NetData.icon" I14 244 104 0
+StarParameter 5 "sID" int "-1" "vicStreamMax" int "100000" "trace" int "0" "globalstate" stringArray "sID" "nodename" string "network"
+Galaxy "./icon/G72xDecGal.icon" I18 428 160 0
+Galaxy "./icon/H263Decoder.icon" I21 432 64 0
+StarParameter 3 "width" int "176" "height" int "144" "period" int "-1"
+Galaxy "./icon/PcmPlayGal.icon" I23 528 160 0
+StarParameter 5 "audioDev" string "/dev/audio" "AudioFmt" string "AFMT_S16_LE" "channels" int "2" "sampleRate" int "8000" "playUnit" int "2048"
+Line I25 "" Star I4 "output" Star I6 "input" 1 104 100 124 100 
+Line I26 "" Star I12 "output" Star I9 "input" 1 108 176 128 176 
+Line I27 "" Star I14 "output" Star I0 "StreamIn" 1 300 136 336 136 
+Line I28 "" Star I6 "output" Star I14 "audioIn" 1 180 100 244 128 
+Line I29 "" Star I9 "output" Star I14 "videoIn" 1 184 176 244 144 
+Line I30 "" Star I0 "AudioOut" Star I18 "input" 1 392 144 428 192 
+Line I31 "" Star I0 "VideoOut" Star I21 "input" 1 392 128 432 96 
+Line I32 "" Star I18 "output" Star I23 "input" 1 484 192 528 192 

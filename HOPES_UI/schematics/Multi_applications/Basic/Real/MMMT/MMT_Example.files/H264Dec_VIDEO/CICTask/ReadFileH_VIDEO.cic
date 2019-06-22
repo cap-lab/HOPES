@@ -1,0 +1,1586 @@
+/************************************
+ *
+ * File : ReadF.cic
+ * Date : Aug 28, 2012 1:49 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include "h264decoder.h"
+#include "ReadFile.h"
+#include "h264dec_struct.h"
+
+#include <stdio.h>
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_outFrame;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+STATIC FILE *fd;
+STATIC FramePacket fp;
+
+STATIC Bitstream *currStream;
+STATIC SliceParams *sliceparams;
+STATIC DeblockParams *deblockparams;
+
+STATIC char errortext[ET_SIZE];
+STATIC NALU_t nalunit;
+STATIC ImageParameters img[1];
+
+STATIC int UsedBits;      // for internal statistics, is adjusted by se_v, ue_v, u_1
+
+STATIC seq_parameter_set_rbsp_t SeqParSet[MAXSPS];
+STATIC pic_parameter_set_rbsp_t PicParSet[MAXPPS];
+STATIC seq_parameter_set_rbsp_t *active_sps;
+STATIC pic_parameter_set_rbsp_t *active_pps;
+
+static int FindStartCode (unsigned char *Buf, int zeros_in_startcode);
+static int GetAnnexbNALU(void);
+
+static void ref_pic_list_reordering(Bitstream *currStream);
+static void dec_ref_pic_marking(Bitstream *currStream);
+static void decoding_poc(struct img_par *img);
+static void post_poc(void);
+
+
+
+//char errortext[ET_SIZE];
+/*!
+ ************************************************************************
+ * \brief
+ *    Error handling procedure. Print error message to stderr and exit
+ *    with supplied code.
+ * \param text
+ *    Error message
+ ************************************************************************
+ */
+
+static void error(char *text, int code)
+{
+  //fprintf(stderr, "%s\n", text);
+  //exit(code);
+  printf("%s\n", text);
+}
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *    Exit program if memory allocation failed (using error())
+ * \param where
+ *    string indicating which memory allocation failed
+ ************************************************************************
+ */
+static void no_mem_exit(char *where)
+{
+//   snprintf(errortext, ET_SIZE, "Could not allocate memory: %s",where);
+   error (where, 100);
+}
+
+
+
+/////////////////////////
+// vlc.c ////////////////
+/////////////////////////
+
+/*!
+ ************************************************************************
+ * \brief
+ *    mapping rule for ue(v) syntax elements
+ * \par Input:
+ *    lenght and info
+ * \par Output:
+ *    number in the code table
+ ************************************************************************
+ */
+static void linfo_ue(int len, int info, int *value1, int *dummy)
+{
+//  *value1 = (int)pow(2,(len/2))+info-1; // *value1 = (int)(2<<(len>>1))+info-1;
+  *value1 = (int)(1<<(len>>1))+info-1; 
+}
+
+/*!
+ ************************************************************************
+ * \brief
+ *    mapping rule for se(v) syntax elements
+ * \par Input:
+ *    lenght and info
+ * \par Output:
+ *    signed mvd
+ ************************************************************************
+ */
+static void linfo_se(int len,  int info, int *value1, int *dummy)
+{
+  int n;
+//  n = (int)pow(2,(len/2))+info-1;
+  int len2 = len/2;
+  if (len2<0) {
+          len2 = -len2;
+          n = (int)(1>>len2)+info-1;
+  }
+  else
+          n = (int)(1<<len2)+info-1;
+
+  *value1 = (n+1)/2;
+  if((n & 0x01)==0)                           // lsb is signed bit
+    *value1 = -*value1;
+}
+
+/*!
+ ************************************************************************
+ * \brief
+ *  Moves the read pointer of the partition forward by one symbol
+ *
+ * \param byte buffer[]
+ *    containing VLC-coded data bits
+ * \param int totbitoffset
+ *    bit offset from start of partition
+ * \param int type
+ *    expected data type (Partiotion ID)
+ * \return  int info, len
+ *    Length and Value of the next symbol
+ *
+ * \note
+ *    As in both nal_bits.c and nal_part.c all data of one partition, slice,
+ *    picture was already read into a buffer, there is no need to read any data
+ *    here again.
+ * \par
+ *    GetVLCInfo was extracted because there should be only one place in the
+ *    source code that has knowledge about symbol extraction, regardless of
+ *    the number of different NALs.
+ * \par
+ *    This function could (and should) be optimized considerably
+ * \par
+ *    If it is ever decided to have different VLC tables for different symbol
+ *    types, then this would be the place for the implementation
+ * \par
+ *    An alternate VLC table is implemented based on exponential Golomb codes.
+ *    The encoder must have a matching define selected.
+ *  
+ ************************************************************************
+ */
+static int GetVLCSymbol (byte buffer[],int totbitoffset,int *info, int bytecount)
+{
+
+  register int inf;
+  long byteoffset;      // byte from start of buffer
+  int bitoffset;      // bit from start of byte
+  int ctr_bit=0;      // control bit for current bit posision
+  int bitcounter=1;
+  int len;
+  int info_bit;
+
+  byteoffset= totbitoffset/8;
+  bitoffset= 7-(totbitoffset%8);
+  ctr_bit = (buffer[byteoffset] & (0x01<<bitoffset));   // set up control bit
+
+  len=1;
+  while (ctr_bit==0)
+  {                 // find leading 1 bit
+    len++;
+    bitoffset-=1;           
+    bitcounter++;
+    if (bitoffset<0)
+    {                 // finish with current byte ?
+      bitoffset=bitoffset+8;
+      byteoffset++;
+    }
+    ctr_bit=buffer[byteoffset] & (0x01<<(bitoffset));
+  }
+    // make infoword
+  inf=0;                          // shortest possible code is 1, then info is always 0
+  for(info_bit=0;(info_bit<(len-1)); info_bit++)
+  {
+    bitcounter++;
+    bitoffset-=1;
+    if (bitoffset<0)
+    {                 // finished with current byte ?
+      bitoffset=bitoffset+8;
+      byteoffset++;
+    }
+    if (byteoffset > bytecount)
+    {
+      return -1;
+    }
+    inf=(inf<<1);
+    if(buffer[byteoffset] & (0x01<<(bitoffset)))
+      inf |=1;
+  }
+
+  *info = inf;
+  return bitcounter;           // return absolute offset in bit from start of frame
+}
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *  Reads bits from the bitstream buffer
+ *
+ * \param byte buffer[]
+ *    containing VLC-coded data bits
+ * \param int totbitoffset
+ *    bit offset from start of partition
+ * \param int bytecount
+ *    total bytes in bitstream
+ * \param int numbits
+ *    number of bits to read
+ *
+ ************************************************************************
+ */
+
+
+static int GetBits (byte buffer[],int totbitoffset,int *info, int bytecount, 
+             int numbits)
+{
+
+  register int inf;
+  long byteoffset;      // byte from start of buffer
+  int bitoffset;      // bit from start of byte
+
+  int bitcounter=numbits;
+
+  byteoffset= totbitoffset/8;
+  bitoffset= 7-(totbitoffset%8);
+
+  inf=0;
+  while (numbits)
+  {
+    inf <<=1;
+    inf |= (buffer[byteoffset] & (0x01<<bitoffset))>>bitoffset;
+    numbits--;
+    bitoffset--;
+    if (bitoffset < 0)
+    {
+      byteoffset++;
+      bitoffset += 8;
+      if (byteoffset > bytecount)
+      {
+        return -1;
+      }
+    }
+  }
+
+  *info = inf;
+  return bitcounter;           // return absolute offset in bit from start of frame
+}     
+
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *    read FLC codeword from UVLC-partition 
+ ************************************************************************
+ */
+static int readSyntaxElement_FLC(SyntaxElement *sym, Bitstream *currStream)
+{
+  int frame_bitoffset = currStream->frame_bitoffset;
+  byte *buf = currStream->streamBuffer;
+  int BitstreamLengthInBytes = currStream->bitstream_length;
+
+  if ((GetBits(buf, frame_bitoffset, &(sym->inf), BitstreamLengthInBytes, sym->len)) < 0)
+    return -1;
+
+  currStream->frame_bitoffset += sym->len; // move bitstream pointer
+  sym->value1 = sym->inf;
+
+  return 1;
+}
+
+
+
+static pic_parameter_set_rbsp_t *AllocPPS ()
+{
+   pic_parameter_set_rbsp_t *p;
+
+   if ((p=(pic_parameter_set_rbsp_t *)calloc (sizeof (pic_parameter_set_rbsp_t), 1)) == NULL)
+     no_mem_exit ("AllocPPS: PPS");
+   if ((p->slice_group_id = (unsigned int *)calloc (SIZEslice_group_id, 1)) == NULL)
+     no_mem_exit ("AllocPPS: slice_group_id");
+   return p;
+}
+
+static seq_parameter_set_rbsp_t *AllocSPS ()
+{
+   seq_parameter_set_rbsp_t *p;
+
+   if ((p=(seq_parameter_set_rbsp_t *)calloc (sizeof (seq_parameter_set_rbsp_t), 1)) == NULL)
+     no_mem_exit ("AllocSPS: SPS");
+   return p;
+}
+
+
+static void FreePPS (pic_parameter_set_rbsp_t *pps)
+{
+   assert (pps != NULL);
+   if (pps->slice_group_id != NULL) free (pps->slice_group_id);
+   free (pps);
+}
+
+
+static void FreeSPS (seq_parameter_set_rbsp_t *sps)
+{
+   assert (sps != NULL);
+   free (sps);
+}
+
+
+
+/*! 
+ *************************************************************************************
+ * \brief
+ *    ue_v, reads an ue(v) syntax element, the length in bits is stored in 
+ *    the global UsedBits variable
+ *
+ * \param tracestring
+ *    the string for the trace file
+ *
+ * \param bitstream
+ *    the stream to be read from
+ *
+ * \return
+ *    the value of the coded syntax element
+ *
+ *************************************************************************************
+ */
+static int ue_v (char *tracestring, Bitstream *bitstream)
+{
+  SyntaxElement symbol, *sym=&symbol;
+  int frame_bitoffset = bitstream->frame_bitoffset;
+  byte *buf = bitstream->streamBuffer;
+  int BitstreamLengthInBytes = bitstream->bitstream_length;
+
+  assert (bitstream->streamBuffer != NULL);
+  sym->type = SE_HEADER;
+  sym->len =  GetVLCSymbol (buf, frame_bitoffset, &(sym->inf), BitstreamLengthInBytes);
+  if (sym->len != -1) {
+    bitstream->frame_bitoffset += sym->len;
+    linfo_ue(sym->len,sym->inf,&(sym->value1),&(sym->value2));
+  }
+  UsedBits+=sym->len;
+  return sym->value1;
+}
+
+
+/*! 
+ *************************************************************************************
+ * \brief
+ *    ue_v, reads an se(v) syntax element, the length in bits is stored in 
+ *    the global UsedBits variable
+ *
+ * \param tracestring
+ *    the string for the trace file
+ *
+ * \param bitstream
+ *    the stream to be read from
+ *
+ * \return
+ *    the value of the coded syntax element
+ *
+ *************************************************************************************
+ */
+static int se_v (char *tracestring, Bitstream *bitstream)
+{
+  SyntaxElement symbol, *sym=&symbol;
+  int frame_bitoffset = bitstream->frame_bitoffset;
+  byte *buf = bitstream->streamBuffer;
+  int BitstreamLengthInBytes = bitstream->bitstream_length;
+
+  assert (bitstream->streamBuffer != NULL);
+  sym->type = SE_HEADER;
+  sym->len =  GetVLCSymbol (buf, frame_bitoffset, &(sym->inf), BitstreamLengthInBytes);
+  if (sym->len != -1) {
+    bitstream->frame_bitoffset += sym->len;
+    linfo_se(sym->len,sym->inf,&(sym->value1),&(sym->value2));
+  }
+  UsedBits+=sym->len;
+  return sym->value1;
+}
+
+
+/*! 
+ *************************************************************************************
+ * \brief
+ *    ue_v, reads an u(v) syntax element, the length in bits is stored in 
+ *    the global UsedBits variable
+ *
+ * \param tracestring
+ *    the string for the trace file
+ *
+ * \param bitstream
+ *    the stream to be read from
+ *
+ * \return
+ *    the value of the coded syntax element
+ *
+ *************************************************************************************
+ */
+static int u_v (int LenInBits, char*tracestring, Bitstream *bitstream)
+{
+  SyntaxElement symbol, *sym=&symbol;
+
+  assert (bitstream->streamBuffer != NULL);
+  sym->type = SE_HEADER;
+  sym->len = LenInBits;
+  readSyntaxElement_FLC (sym, bitstream);
+  UsedBits+=sym->len;
+  return sym->inf;
+};
+
+
+/*! 
+ *************************************************************************************
+ * \brief
+ *    ue_v, reads an u(1) syntax element, the length in bits is stored in 
+ *    the global UsedBits variable
+ *
+ * \param tracestring
+ *    the string for the trace file
+ *
+ * \param bitstream
+ *    the stream to be read from
+ *
+ * \return
+ *    the value of the coded syntax element
+ *
+ *************************************************************************************
+ */
+static int u_1 (char *tracestring, Bitstream *bitstream)
+{
+  return u_v (1, tracestring, bitstream);
+}
+
+
+////////////////////////////
+// header.c ////////////////
+////////////////////////////
+
+/*!
+ ************************************************************************
+ * \brief
+ *    calculate Ceil(Log2(uiVal))
+ ************************************************************************
+ */
+static unsigned CeilLog2( unsigned uiVal)
+{
+  unsigned uiTmp = uiVal;
+  unsigned uiRet = 0;
+
+  while( uiTmp != 0 )
+  {
+    uiTmp >>= 1;
+    uiRet++;
+  }
+  return uiRet;
+}
+
+
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *    read the first part of the header (only the pic_parameter_set_id)
+ * \return
+ *    Length of the first part of the slice header (in bits)
+ ************************************************************************
+ */
+static int FirstPartOfSliceHeader(int *currSlice_pps_id, Bitstream *currStream)
+{
+  //Bitstream *currStream = &bitstream;
+  int tmp;
+
+  UsedBits= currStream->frame_bitoffset; // was hardcoded to 31 for previous start-code. This is better.
+
+  // Get first_mb_in_slice
+  //currSlice->start_mb_nr = ue_v ("SH: first_mb_in_slice", currStream);
+  tmp = ue_v ("SH: first_mb_in_slice", currStream);
+  if (tmp) {
+    fprintf(stderr, "This decoder does not support multiple slices in a frame!\n");
+    assert(tmp == 0);
+  }
+
+  tmp = ue_v ("SH: slice_type", currStream);
+  
+  if (tmp>4) tmp -=5;
+
+  img->type = (SliceType) tmp;
+  assert(img->type == I_SLICE || img->type == P_SLICE);
+
+  //currSlice->pic_parameter_set_id = ue_v ("SH: pic_parameter_set_id", currStream);
+  // second return value
+  *currSlice_pps_id = ue_v ("SH: pic_parameter_set_id", currStream);
+  
+  return UsedBits;
+}
+
+/*!
+ ************************************************************************
+ * \brief
+ *    read the scond part of the header (without the pic_parameter_set_id 
+ * \return
+ *    Length of the second part of the Slice header in bits
+ ************************************************************************
+ */
+static int RestOfSliceHeader(Bitstream *currStream, DeblockParams *deblockparams)
+{
+  //Bitstream *currStream = &bitstream;
+  int val, len;
+
+  img->frame_num = u_v (active_sps->log2_max_frame_num_minus4 + 4, "SH: frame_num", currStream);
+
+  assert(active_sps->frame_mbs_only_flag == 1);
+  if (active_sps->frame_mbs_only_flag)
+  {
+    img->structure = FRAME;
+    img->field_pic_flag=0;
+  }
+
+  img->mb_frame_field_flag=(active_sps->mb_adaptive_frame_field_flag && (img->field_pic_flag==0));
+
+  // assertion by Hyunuk 2003. 11.26
+  assert(active_sps->frame_mbs_only_flag == 1);
+  assert(img->mb_frame_field_flag == 0);
+  assert(active_sps->mb_adaptive_frame_field_flag == 0);
+  assert(img->structure == FRAME);
+  assert(img->field_pic_flag == 0);
+  ////////////////////////////////////////////
+
+  if (img->structure == 0) assert (img->field_pic_flag == 0);
+  if (img->structure == 1) assert (img->field_pic_flag == 1 && img->bottom_field_flag == 0);
+  if (img->structure == 2) assert (img->field_pic_flag == 1 && img->bottom_field_flag == 1);
+
+  if (img->idr_flag)
+  {
+    img->idr_pic_id = ue_v("SH: idr_pic_id", currStream);
+  }
+
+  // POC200301
+  if (img->pic_order_cnt_type == 0)
+  {
+    img->pic_order_cnt_lsb = u_v(active_sps->log2_max_pic_order_cnt_lsb_minus4 + 4, "SH: pic_order_cnt_lsb", currStream);
+    if( img->pic_order_present_flag  ==  1 &&  !img->field_pic_flag )
+      img->delta_pic_order_cnt_bottom = se_v("SH: delta_pic_order_cnt_bottom", currStream);
+  }
+  if( img->pic_order_cnt_type == 1 && !img->delta_pic_order_always_zero_flag ) 
+  {
+    img->delta_pic_order_cnt[ 0 ] = se_v("SH: delta_pic_order_cnt[0]", currStream);
+    if( img->pic_order_present_flag  ==  1  &&  !img->field_pic_flag )
+      img->delta_pic_order_cnt[ 1 ] = se_v("SH: delta_pic_order_cnt[1]", currStream);
+  }
+  
+  //! redundant_pic_cnt is missing here
+  if (active_pps->redundant_pic_cnt_present_flag)
+  {
+    img->redundant_pic_cnt = u_1 ("SH: redundant_pic_cnt", currStream);
+  }
+
+  img->num_ref_pic_active_fwd = active_pps->num_ref_idx_l0_active_minus1 + 1;
+  img->num_ref_pic_active_bwd = active_pps->num_ref_idx_l1_active_minus1 + 1;
+
+  if(img->type==P_SLICE || img->type == SP_SLICE || img->type==B_SLICE)
+  {
+    val = u_1 ("SH: num_ref_idx_override_flag", currStream);
+    if (val)
+    {
+      img->num_ref_pic_active_fwd = 1 + ue_v ("SH: num_ref_pic_active_fwd_minus1", currStream);
+    }
+  }
+
+  ref_pic_list_reordering(currStream);
+
+  img->apply_weights = ((img->weighted_pred_flag && (img->type == P_SLICE || img->type == SP_SLICE) )
+          || ((img->weighted_bipred_idc > 0 ) && (img->type == B_SLICE)));
+
+  assert(img->apply_weights == 0);
+
+  dec_ref_pic_marking(currStream);
+
+  if (active_pps->entropy_coding_mode && img->type!=I_SLICE && img->type!=SI_SLICE)
+  {
+    img->model_number = ue_v("SH: cabac_init_idc", currStream);
+  }
+  else 
+  {
+    img->model_number = 0;
+  }
+
+  val = se_v("SH: slice_qp_delta", currStream);
+  img->qp = 26 + active_pps->pic_init_qp_minus26 + val;
+
+  // assertion by Hyunuk 2003. 11. 26
+  assert(img->type != SP_SLICE);
+  assert(img->type != SI_SLICE);
+  /////////////////////////////////////////////////////////
+
+  if (active_pps->deblocking_filter_parameters_present_flag)
+  {
+    deblockparams->LFDisableIdc = ue_v ("SH: disable_deblocking_filter_idc", currStream);
+
+    if (deblockparams->LFDisableIdc!=1)
+    {
+      deblockparams->LFAlphaC0Offset = 2 * se_v("SH: slice_alpha_c0_offset_div2", currStream);
+
+      deblockparams->LFBetaOffset = 2 * se_v("SH: slice_beta_offset_div2", currStream);
+    }
+  }
+
+  if (active_pps->num_slice_groups_minus1>0 && active_pps->slice_group_map_type>=3 &&
+      active_pps->slice_group_map_type<=5)
+  {
+    len = (active_sps->pic_height_in_map_units_minus1+1)*(active_sps->pic_width_in_mbs_minus1+1)/ 
+          (active_pps->slice_group_change_rate_minus1+1);
+    if (((active_sps->pic_height_in_map_units_minus1+1)*(active_sps->pic_width_in_mbs_minus1+1))% 
+          (active_pps->slice_group_change_rate_minus1+1))
+          len +=1;
+    len = CeilLog2(len);
+
+    img->slice_group_change_cycle = u_v (len, "SH: slice_group_change_cycle", currStream);
+  }
+  // 5. Finally, read Reference Picture ID (same as TR here).  Note that this is an
+  // optional field that is not present if the input parameters do not indicate
+  // multiframe prediction ??
+
+  // Ok, the above comment is nonsense.  There is no way how a decoder could
+  // know that we use multiple reference frames (except probably through a
+  // sequence header).  Hence, it's now an if (1) -- PHRefPicID is always present
+
+  // Of course, the decoder can know. It is indicated by the previously decoded
+  // parameter "PHPictureType". So, I changed the if-statement again to be
+  // compatible with the encoder.
+
+  // WYK: Oct. 16, 2001. Now I use this for the reference frame ID (non-B frame ID). 
+  // Thus, we can know how many  non-B frames are lost, and then we can adjust 
+  // the reference frame buffers correctly.
+
+  img->PicHeightInMbs = img->FrameHeightInMbs / ( 1 + img->field_pic_flag );
+  img->PicSizeInMbs   = img->PicWidthInMbs * img->PicHeightInMbs;
+  img->FrameSizeInMbs = img->PicWidthInMbs * img->FrameHeightInMbs;
+
+  //img->max_mb_nr = (IMG_WIDTH * IMG_HEIGHT) / (MB_BLOCK_SIZE * MB_BLOCK_SIZE);
+  assert(img->PicSizeInMbs == MAX_MB_NR);
+ 
+  //calculate pocs  POC200301
+  decoding_poc(img);
+  //note  UsedBits is probably inaccurate
+  return UsedBits;
+}
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *    read the reference picture reordering information
+ ************************************************************************
+ */
+static void ref_pic_list_reordering(Bitstream *currStream)
+{
+  //Bitstream *currStream = &bitstream;
+  int val;
+
+  if (img->type!=I_SLICE && img->type!=SI_SLICE)
+  {
+    val = u_1 ("SH: ref_pic_list_reordering_flag_l0", currStream);
+    assert(val == 0);
+    
+  }
+
+}
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *    read the memory control operations
+ ************************************************************************
+ */
+static void dec_ref_pic_marking(Bitstream *currStream)
+{
+  if (img->idr_flag)
+  {
+    int long_term_reference_flag;
+    img->no_output_of_prior_pics_flag = u_1("SH: no_output_of_prior_pics_flag", currStream);
+    long_term_reference_flag = u_1("SH: long_term_reference_flag", currStream);
+    assert(long_term_reference_flag == 0);
+  }
+  else
+  {
+    img->adaptive_ref_pic_buffering_flag = u_1("SH: adaptive_ref_pic_buffering_flag", currStream);
+    assert(img->adaptive_ref_pic_buffering_flag == 0);
+  }
+}
+
+/*!
+ ************************************************************************
+ * \brief
+ *    To calculate the poc values
+ *        based upon JVT-F100d2
+ *  POC200301: Until Jan 2003, this function will calculate the correct POC
+ *    values, but the management of POCs in buffered pictures may need more work.
+ * \return
+ *    none
+ ************************************************************************
+ */
+static void decoding_poc(struct img_par *img)
+{
+  int i;
+  static int flag = 0;
+  // for POC mode 0:
+  unsigned int        MaxPicOrderCntLsb = (1<<(active_sps->log2_max_pic_order_cnt_lsb_minus4+4));
+  flag ++;
+  // for POC mode 1:
+  assert(img->pic_order_cnt_type == 0);
+  switch ( img->pic_order_cnt_type )
+  {
+  case 0: // POC MODE 0
+    // 1st
+    if(img->idr_flag)
+      img->PicOrderCntMsb = 0;
+
+    // Calculate the MSBs of current picture
+    if( img->pic_order_cnt_lsb  <  img->PrevPicOrderCntLsb  &&  
+      ( img->PrevPicOrderCntLsb - img->pic_order_cnt_lsb )  >=  ( MaxPicOrderCntLsb / 2 ) )
+	    img->CurrPicOrderCntMsb = img->PicOrderCntMsb + MaxPicOrderCntLsb;
+    else if ( img->pic_order_cnt_lsb  >  img->PrevPicOrderCntLsb  &&
+      ( img->pic_order_cnt_lsb - img->PrevPicOrderCntLsb )  >  ( MaxPicOrderCntLsb / 2 ) )
+	    img->CurrPicOrderCntMsb = img->PicOrderCntMsb - MaxPicOrderCntLsb;
+    else
+	    img->CurrPicOrderCntMsb = img->PicOrderCntMsb;
+    
+    // 2nd
+
+    img->toppoc = img->CurrPicOrderCntMsb + img->pic_order_cnt_lsb;
+    assert(img->bottom_field_flag == 0);
+    img->bottompoc = img->toppoc + img->delta_pic_order_cnt_bottom;
+
+    break;
+
+
+  case 1: // POC MODE 1
+    // 1st
+    if(img->idr_flag)
+    {
+      img->FrameNumOffset=0;     //  first pix of IDRGOP, 
+      // why the following two lines?????
+      img->FirstFieldType = img->bottom_field_flag;              //save type of first field of frame
+                                                            //NB may not work with mixed field & frame coding
+      img->delta_pic_order_cnt[0]=0;                        //ignore first delta
+      if(img->frame_num)  error("frame_num != 0 in idr pix", -1020);
+    }
+    else if (img->frame_num<img->PreviousFrameNum)
+    {             //not first pix of IDRGOP
+      img->FrameNumOffset += img->MaxFrameNum;
+    }
+
+    // 2nd
+    if(img->num_ref_frames_in_pic_order_cnt_cycle) 
+      img->AbsFrameNum = img->FrameNumOffset+img->frame_num;
+    else 
+      img->AbsFrameNum=0;
+    if(img->disposable_flag && img->AbsFrameNum>0)
+      img->AbsFrameNum--;
+
+    // 3rd
+    img->ExpectedDeltaPerPicOrderCntCycle=0;
+    if(active_sps->num_ref_frames_in_pic_order_cnt_cycle)
+    for(i=0;i<(int) active_sps->num_ref_frames_in_pic_order_cnt_cycle;i++)
+      img->ExpectedDeltaPerPicOrderCntCycle += active_sps->offset_for_ref_frame[i];
+
+    if(img->AbsFrameNum)
+    {
+      img->PicOrderCntCycleCnt = (img->AbsFrameNum-1)/img->num_ref_frames_in_pic_order_cnt_cycle;
+      img->FrameNumInPicOrderCntCycle = (img->AbsFrameNum-1)%img->num_ref_frames_in_pic_order_cnt_cycle;
+      img->ExpectedPicOrderCnt = img->PicOrderCntCycleCnt*img->ExpectedDeltaPerPicOrderCntCycle;
+      for(i=0;i<=(int)img->FrameNumInPicOrderCntCycle;i++)
+        img->ExpectedPicOrderCnt += img->offset_for_ref_frame[i];
+    }
+    else 
+      img->ExpectedPicOrderCnt=0;
+
+    assert(img->disposable_flag == 0);
+    if(img->disposable_flag)
+      img->ExpectedPicOrderCnt += img->offset_for_non_ref_pic;
+
+    // TIAN DONG: The following processing may need to be updated. POC200301
+    // and some codes can move to post_poc().
+    // post processing: for management of POC values of pictures in buffer
+    assert(img->field_pic_flag == 0);
+    if(img->field_pic_flag==0)
+    {           //frame pix
+      img->toppoc = img->ExpectedPicOrderCnt + img->delta_pic_order_cnt[0];
+      img->bottompoc = img->toppoc + img->offset_for_top_to_bottom_field + img->delta_pic_order_cnt[1];
+    }
+  
+    // 4th (last) update "Previous" stuff for next slice
+    break;
+
+  case 2: // POC MODE 2
+
+  default:
+    //error must occurs
+    assert( 1==0 );
+    break;
+  }
+
+  //temp stuff to track tr
+  img->tr = img->toppoc/2;
+
+  post_poc();
+
+}
+
+static void post_poc(void)
+{
+  assert(img->pic_order_cnt_type == 0);
+  switch ( img->pic_order_cnt_type )
+  {
+  case 0: // POC MODE 0
+    assert(img->disposable_flag == 0);
+    if( !img->disposable_flag )
+    {
+      img->PrevPicOrderCntLsb = img->pic_order_cnt_lsb;
+      img->PicOrderCntMsb = img->CurrPicOrderCntMsb;
+    }
+    break;
+
+
+  case 1: // POC MODE 1
+    img->PreviousFrameNum=img->frame_num;
+    img->Previousfield_pic_flag=img->field_pic_flag;
+    img->Previousbottom_field_flag=img->bottom_field_flag;
+    img->Previousnal_reference_idc=img->idr_flag;               
+    img->Previousdelta_pic_order_cnt[0]=img->delta_pic_order_cnt[0];
+    img->Previousdelta_pic_order_cnt[1]=img->delta_pic_order_cnt[1];
+    break;
+
+  case 2: // POC MODE 2
+
+  default:
+    //error must occurs
+    assert( 1==0 );
+    break;
+  }
+
+}
+
+
+
+/*!
+ ************************************************************************
+ * \brief
+ *    A little helper for the debugging of POC code
+ * \return
+ *    none
+ ************************************************************************
+ */
+static int dumppoc(struct img_par *img) {
+    printf ("\nPOC locals...\n");
+    printf ("toppoc                                %d\n", img->toppoc);
+    printf ("bottompoc                             %d\n", img->bottompoc);
+    printf ("frame_num                             %d\n", img->frame_num);
+    printf ("field_pic_flag                        %d\n", img->field_pic_flag);
+    printf ("bottom_field_flag                     %d\n", img->bottom_field_flag);
+    printf ("POC SPS\n");
+    printf ("log2_max_frame_num_minus4             %d\n", active_sps->log2_max_frame_num_minus4);         // POC200301
+    printf ("log2_max_pic_order_cnt_lsb_minus4     %d\n", active_sps->log2_max_pic_order_cnt_lsb_minus4);
+    printf ("pic_order_cnt_type                    %d\n", img->pic_order_cnt_type);
+    printf ("num_ref_frames_in_pic_order_cnt_cycle %d\n", img->num_ref_frames_in_pic_order_cnt_cycle);
+    printf ("delta_pic_order_always_zero_flag      %d\n", img->delta_pic_order_always_zero_flag);
+    printf ("offset_for_non_ref_pic                %d\n", img->offset_for_non_ref_pic);
+    printf ("offset_for_top_to_bottom_field        %d\n", img->offset_for_top_to_bottom_field);
+    printf ("offset_for_ref_frame[0]               %d\n", img->offset_for_ref_frame[0]);
+    printf ("offset_for_ref_frame[1]               %d\n", img->offset_for_ref_frame[1]);
+    printf ("POC in SLice Header\n");
+    printf ("pic_order_present_flag                %d\n", img->pic_order_present_flag);
+    printf ("delta_pic_order_cnt[0]                %d\n", img->delta_pic_order_cnt[0]);
+    printf ("delta_pic_order_cnt[1]                %d\n", img->delta_pic_order_cnt[1]);
+    printf ("delta_pic_order_cnt[2]                %d\n", img->delta_pic_order_cnt[2]);
+    printf ("idr_flag                              %d\n", img->idr_flag);
+    printf ("MaxFrameNum                           %d\n", img->MaxFrameNum);
+
+    return 0;
+}
+
+
+///////////////
+// paset.c ///
+// //////////////
+
+// fill sps with content of p
+
+static int InterpretSPS (Bitstream *s, seq_parameter_set_rbsp_t *sps)
+{
+  unsigned i;
+
+  assert (s != NULL);
+  assert (s->streamBuffer != 0);
+  assert (sps != NULL);
+
+  UsedBits = 0;
+
+  sps->profile_idc      = u_v  (8, "SPS: profile_idc" , s);
+  sps->level_idc        = u_v  (8, "SPS: level_idc"   , s);
+  sps->more_than_one_slice_group_allowed_flag = (Boolean)u_1  ("SPS: more_than_one_slice_group_allowed_flag"   , s);
+  sps->arbitrary_slice_order_allowed_flag     = (Boolean)u_1  ("SPS: arbitrary_slice_order_allowed_flag"       , s);
+  sps->redundant_slices_allowed_flag          = (Boolean)u_1  ("SPS: redundant_slices_allowed_flag"            , s);
+  sps->seq_parameter_set_id   = ue_v ("SPS: seq_parameter_set_id" , s);
+  sps->log2_max_frame_num_minus4 = ue_v ("SPS: log2_max_frame_num_minus4" , s);
+  sps->pic_order_cnt_type        = ue_v ("SPS: pic_order_count_type"  , s);
+  // POC200301
+  if (sps->pic_order_cnt_type == 0)
+    sps->log2_max_pic_order_cnt_lsb_minus4 = ue_v ("SPS: log2_max_pic_order_cnt_lsb_minus4"           , s);
+  else if (sps->pic_order_cnt_type == 1)
+  {
+    sps->delta_pic_order_always_zero_flag      = (Boolean)u_1  ("SPS: delta_pic_order_always_zero_flag"       , s);
+    sps->offset_for_non_ref_pic  = se_v ("SPS: offset_for_non_ref_pic"  , s);
+    sps->offset_for_top_to_bottom_field        = se_v ("SPS: offset_for_top_to_bottom_field"         , s);
+    sps->num_ref_frames_in_pic_order_cnt_cycle = ue_v ("SPS: num_ref_frames_in_pic_order_cnt_cycle"  , s);
+    for(i=0; i<sps->num_ref_frames_in_pic_order_cnt_cycle; i++)
+      sps->offset_for_ref_frame[i]               = se_v ("SPS: offset_for_ref_frame[i]"              , s);
+  }
+  sps->num_ref_frames                        = ue_v ("SPS: num_ref_frames"                         , s);
+  sps->required_frame_num_update_behaviour_flag = (Boolean)u_1 ("SPS: required_frame_num_update_behaviour_flag", s);
+  sps->pic_width_in_mbs_minus1               = ue_v ("SPS: pic_width_in_mbs_minus1"                , s);
+  sps->pic_height_in_map_units_minus1        = ue_v ("SPS: pic_height_in_map_units_minus1"         , s);
+  sps->frame_mbs_only_flag                   = (Boolean)u_1  ("SPS: frame_mbs_only_flag"                    , s);
+  if (!sps->frame_mbs_only_flag)
+  {
+    sps->mb_adaptive_frame_field_flag          = (Boolean)u_1  ("SPS: mb_adaptive_frame_field_flag"           , s);
+  }
+  sps->direct_8x8_inference_flag             = (Boolean)u_1  ("SPS: direct_8x8_inference_flag"       , s);
+  sps->vui_parameters_present_flag           = (Boolean)u_1  ("SPS: vui_parameters_present_flag"             , s);
+  if (sps->vui_parameters_present_flag)
+  {
+    printf ("VUI sequence parameters present but not supported, ignored, proceeding to next NALU\n");
+  }
+  sps->Valid = (Boolean)TRUE;
+  return UsedBits;
+}
+
+
+static int InterpretPPS (Bitstream* s, pic_parameter_set_rbsp_t *pps)
+{
+  unsigned i;
+  int NumberBitsPerSliceGroupId;
+  
+  assert (s != NULL);
+  assert (s->streamBuffer != 0);
+  assert (pps != NULL);
+
+  UsedBits = 0;
+
+  pps->pic_parameter_set_id                  = ue_v ("PPS: pic_parameter_set_id"                   , s);
+  pps->seq_parameter_set_id                  = ue_v ("PPS: seq_parameter_set_id"                   , s);
+  pps->entropy_coding_mode                   = (Boolean)u_1  ("PPS: entropy_coding_mode"                    , s);
+  //! Note: as per JVT-F078 the following bit is unconditional.  If F078 is not accepted, then
+  //! one has to fetch the correct SPS to check whether the bit is present (hopefully there is
+  //! no consistency problem :-(
+  //! The current encoder code handles this in the same way.  When you change this, don't forget
+  //! the encoder!  StW, 12/8/02
+  pps->pic_order_present_flag                = (Boolean)u_1  ("PPS: pic_order_present_flag"                 , s);
+
+  pps->num_slice_groups_minus1               = ue_v ("PPS: num_slice_groups_minus1"                , s);
+
+  // FMO stuff begins here
+  if (pps->num_slice_groups_minus1 > 0)
+  {
+    pps->slice_group_map_type               = ue_v ("PPS: slice_group_map_type"                , s);
+    if (pps->slice_group_map_type == 0)
+    {
+      for (i=0; i<=pps->num_slice_groups_minus1; i++)
+        pps->run_length_minus1 [i]                  = ue_v ("PPS: run_length_minus1 [i]"              , s);
+    }
+    else if (pps->slice_group_map_type == 2)
+    {
+      for (i=0; i<pps->num_slice_groups_minus1; i++)
+      {
+        //! JVT-F078: avoid reference of SPS by using ue(v) instead of u(v)
+        pps->top_left [i]                          = ue_v ("PPS: top_left [i]"                        , s);
+        pps->bottom_right [i]                      = ue_v ("PPS: bottom_right [i]"                    , s);
+      }
+    }
+    else if (pps->slice_group_map_type == 3 ||
+             pps->slice_group_map_type == 4 ||
+             pps->slice_group_map_type == 5)
+    {
+      pps->slice_group_change_direction_flag     = (Boolean)u_1  ("PPS: slice_group_change_direction_flag"      , s);
+      pps->slice_group_change_rate_minus1        = ue_v ("PPS: slice_group_change_rate_minus1"         , s);
+    }
+    else if (pps->slice_group_map_type == 6)
+    {
+      if (pps->num_slice_groups_minus1+1 >= 4)
+        NumberBitsPerSliceGroupId = 3;
+      else if (pps->num_slice_groups_minus1+1 >= 2)
+        NumberBitsPerSliceGroupId = 2;
+      else if (pps->num_slice_groups_minus1+1 >= 1)
+        NumberBitsPerSliceGroupId = 1;
+      else
+        NumberBitsPerSliceGroupId = 0;
+      //! JVT-F078, exlicitly signal number of MBs in the map
+      pps->num_slice_group_map_units_minus1      = ue_v ("PPS: num_slice_group_map_units_minus1"               , s);
+      for (i=0; i<=pps->num_slice_group_map_units_minus1; i++)
+        pps->slice_group_id[i] = u_v (NumberBitsPerSliceGroupId, "slice_group_id[i]", s);
+    }
+  }
+
+  // End of FMO stuff
+
+  pps->num_ref_idx_l0_active_minus1          = ue_v ("PPS: num_ref_idx_l0_active_minus1"           , s);
+  pps->num_ref_idx_l1_active_minus1          = ue_v ("PPS: num_ref_idx_l1_active_minus1"           , s);
+  pps->weighted_pred_flag                    = (Boolean)u_1  ("PPS: weighted prediction flag"               , s);
+  pps->weighted_bipred_idc                   = (Boolean)u_v  ( 2, "PPS: weighted_bipred_idc"                , s);
+  pps->pic_init_qp_minus26                   = se_v ("PPS: pic_init_qp_minus26"                    , s);
+  pps->pic_init_qs_minus26                   = se_v ("PPS: pic_init_qs_minus26"                    , s);
+  pps->chroma_qp_index_offset                = se_v ("PPS: chroma_qp_index_offset"                 , s);
+  pps->deblocking_filter_parameters_present_flag = (Boolean)u_1 ("PPS: deblocking_filter_parameters_present_flag", s);
+  pps->constrained_intra_pred_flag           = (Boolean)u_1  ("PPS: constrained_intra_pred_flag"            , s);
+  // assertion by Hyunuk
+  assert(pps->constrained_intra_pred_flag == 0);
+  /////////////////////////////////
+  //
+  //
+  //
+  pps->redundant_pic_cnt_present_flag        = (Boolean)u_1  ("PPS: redundant_pic_cnt_present_flag"         , s);
+  pps->frame_cropping_flag                   = (Boolean)u_1  ("PPS: frame_cropping_flag"                , s);
+
+  if (pps->frame_cropping_flag)
+  {
+    pps->frame_cropping_rect_left_offset      = ue_v ("PPS: frame_cropping_rect_left_offset"           , s);
+    pps->frame_cropping_rect_right_offset     = ue_v ("PPS: frame_cropping_rect_right_offset"          , s);
+    pps->frame_cropping_rect_top_offset       = ue_v ("PPS: frame_cropping_rect_top_offset"            , s);
+    pps->frame_cropping_rect_bottom_offset    = ue_v ("PPS: frame_cropping_rect_bottom_offset"         , s);
+  }
+  pps->Valid = (Boolean)TRUE;
+  return UsedBits;
+}
+
+
+static void DumpSPS (seq_parameter_set_rbsp_t *sps)
+{
+  printf ("Dumping a sequence parset, to be implemented\n");
+};
+
+static void DumpPPS (pic_parameter_set_rbsp_t *pps)
+{
+  printf ("Dumping a picture parset, to be implemented\n");
+}
+
+static void PPSConsistencyCheck (pic_parameter_set_rbsp_t *pps)
+{
+  printf ("Consistency checking a picture parset, to be implemented\n");
+//  if (pps->seq_parameter_set_id invalid then do something)
+}
+
+static void SPSConsistencyCheck (seq_parameter_set_rbsp_t *sps)
+{
+  printf ("Consistency checking a sequence parset, to be implemented\n");
+}
+
+static void MakePPSavailable (int id, pic_parameter_set_rbsp_t *pps)
+{
+  assert (pps->Valid == TRUE);
+
+  if (PicParSet[id].Valid == TRUE && PicParSet[id].slice_group_id != NULL)
+    free (PicParSet[id].slice_group_id);
+
+  memcpy (&PicParSet[id], pps, sizeof (pic_parameter_set_rbsp_t));
+  if ((PicParSet[id].slice_group_id = (unsigned int *)calloc (PicParSet[id].num_slice_group_map_units_minus1+1, sizeof(int))) == NULL)
+    no_mem_exit ("MakePPSavailable: Cannot calloc slice_group_id");
+  
+  memcpy (PicParSet[id].slice_group_id, pps->slice_group_id, (pps->num_slice_group_map_units_minus1+1)*sizeof(int));
+}
+
+static void MakeSPSavailable (int id, seq_parameter_set_rbsp_t *sps)
+{
+  assert (sps->Valid == TRUE);
+  memcpy (&SeqParSet[id], sps, sizeof (seq_parameter_set_rbsp_t));
+}
+
+
+static void ProcessSPS (NALU_t *nalu)
+{
+  Bitstream s;
+  seq_parameter_set_rbsp_t *sps = AllocSPS();
+  int dummy;
+
+  memcpy (s.streamBuffer, &nalu->buf[1], nalu->len-1);
+  s.bitstream_length = nalu->len-1;
+  s.frame_bitoffset = 0;
+  dummy = InterpretSPS (&s, sps);
+  MakeSPSavailable (sps->seq_parameter_set_id, sps);
+  FreeSPS (sps);
+}
+
+
+static void ProcessPPS (NALU_t *nalu)
+{
+  Bitstream s;
+  pic_parameter_set_rbsp_t *pps;
+  int dummy;
+
+  pps = AllocPPS();
+  memcpy (s.streamBuffer, &nalu->buf[1], nalu->len-1);
+  s.bitstream_length = nalu->len-1;
+  s.frame_bitoffset = 0;
+  dummy = InterpretPPS (&s, pps);
+  MakePPSavailable (pps->pic_parameter_set_id, pps);
+  FreePPS (pps);
+}
+
+
+static void UseParameterSet (int PicParsetId)
+{
+  seq_parameter_set_rbsp_t *sps = &SeqParSet[PicParSet[PicParsetId].seq_parameter_set_id];
+  pic_parameter_set_rbsp_t *pps = &PicParSet[PicParsetId];
+  static unsigned int ExpectedDeltaPerPicOrderCntCycle;  // POC200301 Can it be deleted?
+  int i;
+  int width, height;
+
+
+  if (PicParSet[PicParsetId].Valid != TRUE)
+    printf ("Trying to use an invalid (uninitialized) Picture Parameter Set with ID %d, expect the unexpected...\n", PicParsetId);
+  if (SeqParSet[PicParSet[PicParsetId].seq_parameter_set_id].Valid != TRUE)
+    printf ("PicParset %d references an invalid (uninitialized) Sequence Parameter Set with ID %d, expect the unexpected...\n", PicParsetId, PicParSet[PicParsetId].seq_parameter_set_id);
+
+  sps =  &SeqParSet[PicParSet[PicParsetId].seq_parameter_set_id];
+
+  active_sps = sps;
+  active_pps = pps;
+
+  // In theory, and with a well-designed software, the lines above
+  // are everything necessary.  In practice, we need to patch many values
+  // in img-> (but no more in inp-> -- these have been taken care of)
+
+
+  // Sequence Parameter Set Stuff first
+
+//  printf ("Using Picture Parameter set %d and associated Sequence Parameter Set %d\n", PicParsetId, PicParSet[PicParsetId].seq_parameter_set_id);
+
+//  img->log2_max_frame_num_minus4 = sps->log2_max_frame_num_minus4;
+  img->MaxFrameNum = 1<<(sps->log2_max_frame_num_minus4+4);
+  
+  img->pic_order_cnt_type = sps->pic_order_cnt_type;
+  // POC200301
+  if (img->pic_order_cnt_type < 0 || img->pic_order_cnt_type > 2)  // != 1
+  {
+    printf ("sps->pic_order_cnt_type %d, expected 1, expect the unexpected...\n", sps->pic_order_cnt_type);
+    assert (sps->pic_order_cnt_type == 1);
+    error ("pic_order_cnt_type != 1", -1000);
+  }
+
+  if (img->pic_order_cnt_type == 0)
+  {
+//    img->log2_max_pic_order_cnt_lsb_minus4 = sps->log2_max_pic_order_cnt_lsb_minus4;
+  }
+  else if (img->pic_order_cnt_type == 1) // POC200301
+  {
+    img->num_ref_frames_in_pic_order_cnt_cycle = sps->num_ref_frames_in_pic_order_cnt_cycle;
+    if(img->num_ref_frames_in_pic_order_cnt_cycle != 1)
+      error("num_ref_frames_in_pic_order_cnt_cycle != 1",-1001);
+    if(img->num_ref_frames_in_pic_order_cnt_cycle >= MAX_LENGTH_POC_CYCLE)
+      error("num_ref_frames_in_pic_order_cnt_cycle too large",-1011);
+
+    img->delta_pic_order_always_zero_flag = sps->delta_pic_order_always_zero_flag;
+    if(img->delta_pic_order_always_zero_flag != 0)
+      error ("delta_pic_order_always_zero_flag != 0",-1002);
+ 
+    img->offset_for_non_ref_pic = sps->offset_for_non_ref_pic;
+  
+    img->offset_for_top_to_bottom_field = sps->offset_for_top_to_bottom_field;
+  
+
+    ExpectedDeltaPerPicOrderCntCycle=0;
+    if (sps->num_ref_frames_in_pic_order_cnt_cycle)
+      for(i=0;i<(int)sps->num_ref_frames_in_pic_order_cnt_cycle;i++) 
+      {
+        img->offset_for_ref_frame[i] = sps->offset_for_ref_frame[i];
+        ExpectedDeltaPerPicOrderCntCycle += sps->offset_for_ref_frame[i];
+      }
+  }
+  
+  img->PicWidthInMbs = (active_sps->pic_width_in_mbs_minus1 +1);
+  img->PicHeightInMapUnits = (active_sps->pic_height_in_map_units_minus1 +1);
+  img->FrameHeightInMbs = ( 2 - active_sps->frame_mbs_only_flag ) * img->PicHeightInMapUnits;
+
+  width = img->PicWidthInMbs * MB_BLOCK_SIZE;
+  height = img->FrameHeightInMbs * MB_BLOCK_SIZE;
+
+  assert(width == IMG_WIDTH);
+  assert(height == IMG_HEIGHT);
+
+  // Picture Parameter Stuff
+
+  img->weighted_pred_flag = pps->weighted_pred_flag;
+  img->weighted_bipred_idc = pps->weighted_bipred_idc;
+  assert(img->weighted_pred_flag == 0);
+  assert(img->weighted_bipred_idc == 0);
+
+  img->pic_order_present_flag = pps->pic_order_present_flag;
+  // POC200301 DELETE
+//  if(img->pic_order_present_flag != 0)
+//    error ("pic_order_present_flag != 0",-1004);
+
+  img->constrained_intra_pred_flag = pps->constrained_intra_pred_flag;
+  assert(img->constrained_intra_pred_flag == 0);
+  assert(pps->entropy_coding_mode == (Boolean)UVLC);
+}
+
+/*!
+ ************************************************************************
+ * \brief
+ *    returns if new start code is found at byte aligned position buf.
+ *    new-startcode is of form N 0x00 bytes, followed by a 0x01 byte.
+ *
+ *  \return
+ *     1 if start-code is found or                      \n
+ *     0, indicating that there is no start code
+ *
+ *  \param Buf
+ *     pointer to byte-stream
+ *  \param zeros_in_startcode
+ *     indicates number of 0x00 bytes in start-code.
+ ************************************************************************
+ */
+static int FindStartCode (unsigned char *Buf, int zeros_in_startcode)
+{
+  int info;
+  int i;
+
+  info = 1;
+  for (i = 0; i < zeros_in_startcode; i++)
+    if(Buf[i] != 0)
+      info = 0;
+
+  if(Buf[i] != 1)
+    info = 0;
+  return info;
+}
+
+
+static int GetAnnexbNALU (void)
+{
+  int info2, info3, pos = 0;
+  int StartCodeFound, rewind;
+  volatile static int Bugfix;
+  volatile int flag = 0;
+  char Buf[MAX_CODED_FRAME_SIZE];
+  NALU_t *nalu = &(nalunit);
+    
+  nalu->startcodeprefix_len=3;
+
+  info2 = 0;
+  info3 = 0;
+  
+  if (3 != fread (Buf, 1, 3, fd))
+  {
+    return 0;
+  }
+
+  info2 = FindStartCode ((unsigned char *)Buf, 2);
+  if(info2 != 1) {
+    if(1 != fread(Buf+3, 1, 1, fd))
+    {
+      return 0;
+    }
+    info3 = FindStartCode ((unsigned char *)Buf, 3);
+  }
+
+  if (info2 != 1 && info3 != 1)
+  {
+    printf ("GetAnnexbNALU: no Start Code at the begin of the NALU, return -1\n");
+    return -1;
+  }
+
+  if( info2 == 1) {
+    nalu->startcodeprefix_len = 3;
+    pos = 3;
+  }
+  else if(info3 ==1 ) {
+    pos = 4;
+    nalu->startcodeprefix_len = 4;
+  }
+  else
+    printf( " Panic: Error \n");
+
+  StartCodeFound = 0;
+  Bugfix = 0;
+  info2 = 0;
+  info3 = 0;
+
+  // whie(!StartCodeFound)
+  while (!Bugfix)
+  {
+    if (feof (fd))
+    {
+	  /*
+      nalu->len = (pos-1)-nalu->startcodeprefix_len;
+      memcpy (nalu->buf, &Buf[nalu->startcodeprefix_len], nalu->len);     
+      nalu->forbidden_bit = (nalu->buf[0]>>7) & 1;
+      nalu->nal_reference_idc = (nalu->buf[0]>>5) & 3;
+      nalu->nal_unit_type = (nalu->buf[0]) & 0x1f;
+
+      return pos-1;
+      */
+	  Bugfix = 1;
+      flag = 1;
+	  break;
+    }
+    Buf[pos++] = fgetc (fd);
+    info3 = FindStartCode((unsigned char *)&Buf[pos-4], 3);
+    if(info3 != 1)
+      info2 = FindStartCode((unsigned char *)&Buf[pos-3], 2);
+    StartCodeFound = (info2 == 1 || info3 == 1);
+    Bugfix = (info2 == 1 || info3 == 1);
+  }
+
+ 
+  // Here, we have found another start code (and read length of startcode bytes more than we should
+  // have.  Hence, go back in the file
+  rewind = 0;
+  if(!flag) {
+  if(info3 == 1)
+    rewind = -4;
+  else if (info2 == 1)
+    rewind = -3;
+  else
+    printf(" Panic: Error in next start code search \n");
+  }
+    
+  if (0 != fseek (fd, rewind, SEEK_CUR))
+  {
+    snprintf (errortext, ET_SIZE, "GetAnnexbNALU: Cannot fseek %d in the bit stream file", rewind);
+    error(errortext, 600);
+  }
+
+  // Here the Start code, the complete NALU, and the next start code is in the Buf.  
+  // The size of Buf is pos, pos+rewind are the number of bytes excluding the next
+  // start code, and (pos+rewind)-startcodeprefix_len is the size of the NALU
+
+  nalu->len = (pos+rewind)-nalu->startcodeprefix_len;
+  memcpy (nalu->buf, &Buf[nalu->startcodeprefix_len], nalu->len);
+  nalu->forbidden_bit = (nalu->buf[0]>>7) & 1;
+  nalu->nal_reference_idc = (nalu->buf[0]>>5) & 3;
+  nalu->nal_unit_type = (nalu->buf[0]) & 0x1f;
+
+  return (pos+rewind);
+}
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_outFrame = PORT_INITIALIZE(TASK_ID, "outFrame");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+  if ((fd=fopen("input_video.26l", "rb")) == NULL)
+  {
+    printf ("Cannot open Annex B ByteStream file %s\b", "input_video.26l");
+    exit(-1);
+  }
+  printf(" Input H.26L bitstream                   : %s\n", "input_video.26l");
+  
+  
+  currStream = (Bitstream*)malloc(sizeof(Bitstream));
+  sliceparams = (SliceParams*)malloc(sizeof(SliceParams));
+  deblockparams = (DeblockParams*)malloc(sizeof(DeblockParams));
+
+  memset(currStream->streamBuffer, 0, MAX_CODED_FRAME_SIZE);
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static int tr_old = -1;
+TASK_GO
+{
+    // TODO: task main code
+    int current_header;
+    int ret;
+    int BitsUsedByHeader;
+    int newframe;
+    int currSlice_pps_id;
+    int ret_flag = 0;
+    int terminate = FALSE;
+
+    while(1){
+    ret=GetAnnexbNALU();
+
+    if (ret < 0) {
+      printf ("Error while getting the NALU in file format Annex B, exit\n");
+      exit(1);
+    }
+    if (ret == 0)
+    {
+      fprintf(stderr, "End of Input File!\n");
+      SYS_REQ(END_TASK, "H264Dec_VIDEO");
+      terminate = TRUE;
+      break;
+    }
+
+    // Got a NALU
+    if (nalunit.forbidden_bit)
+    {
+//      printf ("Found NALU w/ forbidden_bit set, bit error?  Let's try...\n");
+    }
+
+    switch (nalunit.nal_unit_type)
+    {
+      case NALU_TYPE_SLICE:
+//      printf ("read_new_slice: Found NALU_TYPE_SLICE, len %d\n", nalunit.len);
+      case NALU_TYPE_IDR:
+        img->idr_flag = (nalunit.nal_unit_type == NALU_TYPE_IDR);
+//  if(img->idr_flag)
+//        printf ("read_new_slice: Found NALU_TYPE_IDR, len %d\n", nalunit.len);
+        img->disposable_flag = (nalunit.nal_reference_idc == NALU_PRIORITY_DISPOSABLE);
+        assert(img->disposable_flag == 0);
+        //currStream = &bitstream;
+        currStream->frame_bitoffset = 0;
+        memcpy (currStream->streamBuffer, &(nalunit.buf[1]), nalunit.len-1);
+        currStream->bitstream_length = nalunit.len-1;
+
+        // Some syntax of the Slice Header depends on the parameter set, which depends on
+        // the parameter set ID of the SLice header.  Hence, read the pic_parameter_set_id
+        // of the slice header first, then setup the active parameter sets, and then read
+        // the rest of the slice header
+        BitsUsedByHeader = FirstPartOfSliceHeader(&currSlice_pps_id,currStream);
+        UseParameterSet (currSlice_pps_id);
+        BitsUsedByHeader+= RestOfSliceHeader(currStream, deblockparams);
+
+        // From here on, active_sps, active_pps and the slice header are valid
+//        printf ("img->frame num %d, img->tr %d, img->disposable_flag %d\n", img->frame_num, img->tr, img->disposable_flag);
+
+        if (tr_old != img->tr)
+        {
+          newframe=1;
+          tr_old = img->tr;
+        }
+        else
+          newframe = 0;
+
+        if(newframe)
+          current_header = SOP;
+        else
+          current_header = SOS;
+
+    assert(active_pps->entropy_coding_mode == (Boolean)UVLC);
+// printf ("read_new_slice: returning %s\n", current_header == SOP?"SOP":"SOS");
+        //FreeNALU(nalu);
+    sliceparams->type = img->type;
+    sliceparams->qp = img->qp;
+    sliceparams->num_ref_pic_active_fwd = img->num_ref_pic_active_fwd;
+    sliceparams->num_ref_pic_active_bwd = img->num_ref_pic_active_bwd;
+        ret_flag = 1;
+        break;
+      case NALU_TYPE_DPA:
+        //! The state machine here should follow the same ideas as the old readSliceRTP()
+        //! basically:
+        //! work on DPA (as above)
+        //! read and process all following SEI/SPS/PPS/PD/Filler NALUs
+        //! if next video NALU is dpB, 
+        //!   then read and check whether it belongs to DPA, if yes, use it
+        //! else
+        //!   ;   // nothing
+        //! read and process all following SEI/SPS/PPS/PD/Filler NALUs
+        //! if next video NALU is dpC
+        //!   then read and check whether it belongs to DPA (and DPB, if present), if yes, use it, done
+        //! else
+        //!   use the DPA (and the DPB if present)
+
+        assert (0==1);
+        break;
+      case NALU_TYPE_DPB:
+        printf ("read_new_slice: Found unexpected NALU_TYPE_DPB, len %d\n", nalunit.len);
+        printf ("ignoring... moving on with next NALU\n");
+        //! Note: one could do something smarter here, e.g. checking the Slice ID
+        //! in conjunction with redundant_pic_cnt to identify lost pictures
+        assert (0==1);
+        break;
+      case NALU_TYPE_DPC:
+        printf ("read_new_slice: Found NALU_TYPE_DPC, len %d\n", nalunit.len);
+        printf ("ignoring... moving on with next NALU\n");
+        //! Note: one could do something smarter here, e.g. checking the Slice ID
+        //! in conjunction with redundant_pic_cnt to identify lost pictures
+        assert (0==1);
+        break;
+      case NALU_TYPE_SEI:
+    //assert(0 == 1);
+        printf ("read_new_slice: Found NALU_TYPE_SEI, len %d\n", nalunit.len);
+        //InterpretSEIMessage(nalu->buf,nalu->len,img);
+        break;
+      case NALU_TYPE_PPS:
+        printf ("read_new_slice: Found NALU_TYPE_PPS, len %d\n", nalunit.len);
+        ProcessPPS(&(nalunit));
+        break;
+
+      case NALU_TYPE_SPS:
+        printf ("read_new_slice: Found NALU_TYPE_SPS, len %d\n", nalunit.len);
+        ProcessSPS(&nalunit);
+        break;
+      case NALU_TYPE_PD:
+        printf ("read_new_slice: Found NALU_TYPE_PD, len %d\n, ignored", nalunit.len);
+        break;
+      case NALU_TYPE_FILL:
+        printf ("read_new_slice: Found NALU_TYPE_FILL, len %d\n", nalunit.len);
+        printf ("Skipping these filling bits, proceeding w/ next NALU\n");
+        break;
+      default:
+        printf ("Found NALU type %d, len %d undefined, ignore NALU, moving on\n", nalunit.nal_unit_type, nalunit.len);
+    }
+    if(ret_flag == 1)   break;
+    }
+    if(terminate != TRUE)
+    {
+    if(sliceparams->type == 2){
+        SYS_REQ(SET_MTM_PARAM_INT, TASK_NAME, "FrameVar", 2);
+    }
+    else{
+        SYS_REQ(SET_MTM_PARAM_INT, TASK_NAME, "FrameVar", 1);
+    }
+    memcpy(&fp.currStream, currStream, sizeof(Bitstream));
+    memcpy(&fp.sliceparams, sliceparams, sizeof(SliceParams));
+    memcpy(&fp.deblockparams, deblockparams, sizeof(DeblockParams));
+
+    MQ_SEND(port_outFrame, (unsigned char*)&fp, sizeof(FramePacket));
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(currStream);
+    free(sliceparams);
+    free(deblockparams);
+    fclose(fd);
+}
+
+TASK_CODE_END

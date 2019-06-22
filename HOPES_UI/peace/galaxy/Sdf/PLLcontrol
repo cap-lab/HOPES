@@ -1,0 +1,44 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Star "./icon/Integrator.icon" I0 148 132 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "0.99" "top" FLOAT "1/8" "bottom" FLOAT "-1/8" "saturate" INT "YES" "state" FLOAT "0.0"
+Star "./icon/ConstInt.icon" I4 60 248 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Star "./library/Peace/Port/inport.ilink" I6 44 140 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Gain.icon" I8 84 140 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "0.03"
+Star "./icon/Add2.icon" I11 284 148 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Integrator.icon" I15 348 148 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1.0" "top" FLOAT "1.0" "bottom" FLOAT "0.0" "saturate" INT "NO" "state" FLOAT "1/3"
+Star "./icon/Const.icon" I19 180 204 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "1/8"
+Star "./icon/Fork2.icon" I21 412 164 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Sub.icon" I25 484 156 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Quant.icon" I29 544 140 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "0.0" "levels" FLOATARRAY ""
+Star "./icon/Xgraph.icon" I32 268 72 0
+StarParameter 8 "procId" INT "-1" "title" STRING "timing control" "saveFile" STRING "" "options" STRING "-bb -tk =800x200+0+675" "ignore" INT "0" "xUnits" FLOAT "1.0" "xInit" FLOAT "0.0" "resources" STRINGARRAY "STDIO"
+Star "./library/Peace/Port/outport.ilink" I34 612 156 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I36 "" Star I4 "output" Star I0 "reset" 1 108 264 148 172 
+Line I37 "" Star I6 "output" Star I8 "input" 1 76 156 84 156 
+Line I38 "" Star I8 "output" Star I0 "data" 1 140 156 148 156 
+Line I39 "" Star I0 "output" Star I11 "input#1" 1 204 164 284 164 
+Line I40 "" Star I11 "output" Star I15 "data" 1 340 164 348 172 
+Line I41 "" Star I19 "output" Star I11 "input#2" 1 227 220 311 192 
+Line I42 "" Star I15 "output" Star I21 "input" 1 404 180 412 180 
+Line I43 "1" Star I21 "output#1" Star I25 "pos" 1 465 172 484 172 
+Line I44 "" Star I21 "output#2" Star I25 "neg" 1 465 188 511 200 
+Line I45 "" Star I0 "output" Star I32 "input" 1 204 164 268 104 
+Line I46 "" Star I25 "output" Star I29 "input" 1 540 172 544 172 
+Line I47 "" Star I29 "output" Star I34 "input" 1 600 172 612 172 
+Line I48 "" Star I4 "output" Star I15 "reset" 2 108 264 332 264 348 188 
+CommText 264 16 20 -16777216 "Timing control"
+CommText 92 92 18 -16777216 "loop filter"
+CommText 420 200 18 -16777216 "VCO"
+CommText 160 224 18 -16777216 "nominal frequency"

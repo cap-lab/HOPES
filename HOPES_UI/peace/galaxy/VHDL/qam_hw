@@ -1,0 +1,54 @@
+Domain "VHDL"
+Target "CoSimVSS-VHDL"
+TargetParameter "host" STRING "147.46.121.205"
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/VHDL"
+TargetParameter "display?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "clockPeriod(ns)" INT "20"
+TargetParameter "Analyze" INT "NO"
+TargetParameter "schedName(NONE,BILI,ILP)" STRING "NONE"
+TargetParameter "Width Decision Mode(DEFAULT, FILE)" STRING "DEFAULT"
+TargetParameter "Default Width(bit)" INT "8"
+TargetParameter "Standard Interface Width(bit)" INT "32"
+TargetParameter "Default IWL" INT "7"
+TargetParameter "Width File" STRING "$HOME/PEACE_SYSTEMS/CGC/width.txt"
+TargetParameter "WIDTHVARIABLE MIN" INT "-10"
+TargetParameter "WIDTHVARIABLE MAX" INT "32"
+TargetParameter "loginName" STRING ""
+TargetParameter "OptMode" INT "2"
+TargetParameter "parallel Interface ? " INT "NO"
+Run 10
+Star "./icon/Ramp.icon" I0 96 112 0
+StarParameter 4 "step" FLOAT "0.125" "value" FLOAT "0.0" "WIDTH" INT "9" "IWL" INT "5"
+Star "./icon/Mpy2.icon" I2 352 32 0
+StarParameter 2 "InputWidth" INT "12" "InputIWL" INT "4"
+Star "./icon/Mpy2.icon" I6 360 168 0
+StarParameter 2 "InputWidth" INT "12" "InputIWL" INT "4"
+Star "./icon/Add2.icon" I10 424 32 0
+StarParameter 2 "WIDTH" INT "16" "IWL" INT "5"
+Star "./icon/MCos.icon" I14 224 80 0
+StarParameter 2 "InputWidth" INT "4" "OutputWidth" INT "8"
+Star "./icon/MSin.icon" I17 224 152 0
+StarParameter 2 "InputWidth" INT "4" "OutputWidth" INT "8"
+Star "./icon/inport.icon" I20 8 32 0
+StarParameter 4 "name" string "inReal" "direction" string "in" "multi?" boolean "false" "type" string "int"
+Star "./icon/inport.icon" I22 8 216 0
+StarParameter 4 "name" string "inImage" "direction" string "in" "multi?" boolean "false" "type" string "int"
+Star "./icon/outport.icon" I24 496 32 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "int"
+Star "./icon/RaisedCosine.icon" I26 64 200 0
+StarParameter 11 "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "16" "InputWidth" INT "6" "InputIWL" INT "3" "TapWidth" INT "6" "TapIWL" INT "0" "length" INT "64" "symbol_interval" INT "16" "excessBW" FLOAT "0.25" "square_root" INT "NO"
+Star "./icon/RaisedCosine.icon" I29 64 16 0
+StarParameter 11 "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "16" "InputWidth" INT "6" "InputIWL" INT "3" "TapWidth" INT "6" "TapIWL" INT "0" "length" INT "64" "symbol_interval" INT "16" "excessBW" FLOAT "0.25" "square_root" INT "NO"
+Line I32 "" Star I0 "output" Star I14 "input" 1 192 144 224 112 
+Line I33 "" Star I17 "output" Star I6 "input#1" 1 352 184 360 183 
+Line I34 "" Star I0 "output" Star I17 "input" 1 192 144 224 184 
+Line I35 "" Star I2 "input#2" Star I14 "output" 1 379 75 352 112 
+Line I36 "" Star I2 "output" Star I10 "input#1" 1 408 47 424 47 
+Line I37 "" Star I10 "output" Star I24 "input" 1 480 47 496 48 
+Line I38 "" Star I6 "output" Star I10 "input#2" 1 416 183 451 75 
+Line I39 "" Star I29 "signalOut" Star I2 "input#1" 1 192 48 352 47 
+Line I40 "" Star I20 "output" Star I29 "signalIn" 1 40 48 64 48 
+Line I41 "" Star I22 "output" Star I26 "signalIn" 1 40 232 64 232 
+Line I42 "" Star I26 "signalOut" Star I6 "input#2" 2 192 232 384 232 387 211 

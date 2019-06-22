@@ -1,0 +1,35 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "wStart" float "0"
+Parameter "wStep" float "2*PI/256"
+Parameter "dtftNumIn" int "256"
+Parameter "dtftNumOut" int "256"
+Parameter "dtftTime" float "1.0"
+Star "./icon/inport.icon" I0 16 16 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 396 32 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Const.icon" I4 16 56 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0.0"
+Star "./icon/RectToCx.icon" I6 112 16 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/DTFT.icon" I10 184 24 0
+StarParameter 4 "procId" INT "-1" "length" INT "dtftNumIn" "numberOfSamples" INT "dtftNumOut" "timeBetweenSamples" FLOAT "dtftTime"
+Star "./icon/CxToRect.icon" I14 248 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToPolar.icon" I18 324 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Ramp.icon" I23 108 68 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "wStep" "value" FLOAT "wStart"
+Star "./icon/BlackHole.icon" I25 384 76 0
+StarParameter 1 "procId" INT "-1"
+Line I27 "" Star I0 "output" Star I6 "real" 1 48 32 112 40 
+Line I28 "" Star I6 "imag" Star I4 "output" 1 112 56 63 72 
+Line I29 "" Star I6 "output" Star I10 "signal" 1 168 48 184 48 
+Line I30 "" Star I10 "omega" Star I23 "output" 1 184 64 160 100 
+Line I31 "" Star I10 "dtft" Star I14 "input" 1 240 56 248 56 
+Line I32 "" Star I14 "real" Star I18 "x" 1 304 48 324 48 
+Line I33 "" Star I14 "imag" Star I18 "y" 1 304 64 324 64 
+Line I34 "" Star I18 "phase" Star I25 "input" 1 380 64 384 80 
+Line I35 "" Star I2 "input" Star I18 "magnitude" 1 396 48 380 48 

@@ -1,0 +1,156 @@
+/************************************
+ *
+ * File : se.cic
+ * Date : Aug 23, 2016 12:29 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#define INPUT_DIMENSION 500
+#define OUTPUT_DIMENSION 500 
+
+static double weights[OUTPUT_DIMENSION][INPUT_DIMENSION];
+
+static double inputAc[INPUT_DIMENSION];
+static double outputNet[OUTPUT_DIMENSION];
+static double outputAc[OUTPUT_DIMENSION];
+
+static double delta[OUTPUT_DIMENSION];
+static double error[INPUT_DIMENSION];
+
+static double fanIn;
+static double learningRate;
+static double initWeight;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_n;
+STATIC int port_in_e;
+STATIC int port_in_i;
+STATIC int port_out_w;
+STATIC int port_out_e;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+static double getRandomGaussian()
+{
+	double v1, v2, s;
+	do{
+		v1 = 2.0f * ((double)rand()/RAND_MAX) -1.0f;
+		v2 = 2.0f * ((double)rand()/RAND_MAX) -1.0f;
+		s = v1*v1 + v2*v2;
+	} while(s >= 1.0 || s == 0);
+
+	s = sqrt( (-2.0 * log(s)) / s);
+	return v1 * s;
+}
+
+static void initWeights()
+{
+    int i, j;
+	for(i = 0; i < OUTPUT_DIMENSION; i++)
+	{
+		for(j = 0; j < INPUT_DIMENSION; j++)
+		{
+		    //weights[i][j] = ((i+1)/(i+j+1)) * initWeight * fanIn;
+		    weights[i][j] = getRandomGaussian() * initWeight * fanIn;
+		}
+	}
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_n = PORT_INITIALIZE(TASK_ID, "in_output");
+    port_in_e = PORT_INITIALIZE(TASK_ID, "in_error");
+    port_in_i = PORT_INITIALIZE(TASK_ID, "in_prev_output");
+    port_out_w = PORT_INITIALIZE(TASK_ID, "out_weight");
+    port_out_e = PORT_INITIALIZE(TASK_ID, "out_error");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    fanIn = sqrt(1.0 / INPUT_DIMENSION);
+    learningRate = 0.3 * fanIn;
+    initWeight = 0.2;
+    
+    initWeights();
+    
+    MQ_SEND(port_out_w, (unsigned char*)&weights[0][0], sizeof(double) * OUTPUT_DIMENSION * INPUT_DIMENSION);
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static double neuron_Derivative(double x){
+    if (x>=0){
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+TASK_GO
+{
+    // TODO: task main code	
+	int i, j;
+    double deltaWeight;
+    MQ_RECEIVE(port_in_n, outputNet, sizeof(double)*OUTPUT_DIMENSION); 
+    MQ_RECEIVE(port_in_i, inputAc, sizeof(double)*INPUT_DIMENSION); 
+    MQ_RECEIVE(port_in_e, delta, sizeof(double)*OUTPUT_DIMENSION);
+        
+    for(i = 0; i < INPUT_DIMENSION; i++)
+    {
+        error[i] = 0;
+    }
+    for(i = 0; i < OUTPUT_DIMENSION; i++)
+	{
+		deltaWeight = neuron_Derivative(outputNet[i]) * delta[i]; 
+		for(j = 0; j < INPUT_DIMENSION; j++)
+		{
+			error[j] += deltaWeight * weights[i][j];
+			weights[i][j] += inputAc[j] * deltaWeight * learningRate;
+		}
+	}
+	
+	//printf("2nd_back\n"); fflush(stdout);
+	MQ_SEND(port_out_w, (unsigned char*)&weights[0][0], sizeof(double) * OUTPUT_DIMENSION * INPUT_DIMENSION);
+	MQ_SEND(port_out_e, error, sizeof(double)*INPUT_DIMENSION);
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

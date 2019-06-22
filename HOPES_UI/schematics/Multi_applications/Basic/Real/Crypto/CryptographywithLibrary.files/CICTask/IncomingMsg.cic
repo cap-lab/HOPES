@@ -1,0 +1,86 @@
+/************************************
+ *
+ * File : In.cic
+ * Date : Sep 16, 2014 10:08 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#include <stdio.h>
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_outAck;
+STATIC int port_outMsg;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_outAck = PORT_INITIALIZE(TASK_ID, "outAck");
+    port_outMsg = PORT_INITIALIZE(TASK_ID, "outMsg");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+STATIC unsigned char buf[1024];
+STATIC int count;
+STATIC int ack = 1;
+
+TASK_GO
+{
+    // TODO: task main code
+
+    FILE *fp;
+    char fileName[255];
+
+    	sprintf(fileName, "./inText/%d", count++);
+    	strcat(fileName, ".txt");
+    	fp = fopen(fileName, "rb");
+    	if(fp == NULL) printf("null check: %s\n", fileName);
+    	fread(buf, 1024, sizeof(unsigned char), fp);
+    	fclose(fp);
+	printf("(IncomingMsg.cic) --%d %s\n", count, fileName);
+	if(count%10 == 0)	count = 0;
+
+	MQ_SEND(port_outAck, (unsigned char*)&ack, sizeof(int));
+	MQ_SEND(port_outMsg, (unsigned char*)buf, sizeof(unsigned char)*1024);
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

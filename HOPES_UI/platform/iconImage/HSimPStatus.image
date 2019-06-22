@@ -1,0 +1,7 @@
+"./platform/iconImage/HSimPStatus.image"
+68 72
+Rectangle 4 12 56 48 16777164 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "HSimPStatus"
+InArrowLine 32 64 0 -2 16762880
+Image "./platform/icon/block_status.gif" 16 22 32 32

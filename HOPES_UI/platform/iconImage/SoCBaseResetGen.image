@@ -1,0 +1,9 @@
+"./platform/iconImage/SoCBaseresetgen.image"
+68 72
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "SoCBaseresetgen"
+InArrowLine 0 28 2 0 0
+InArrowLine 0 44 2 0 0
+OutArrowLine 61 36 1 0 0
+InArrowLine 32 64 0 -2 16762880

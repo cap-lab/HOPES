@@ -1,0 +1,38 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "type" string "for"
+Parameter "conName" int "count"
+Parameter "condition" int "1"
+Star "./icon/Const.icon" I0 232 168 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "1.0"
+Star "./icon/Xgraph.icon" I2 488 120 0
+StarParameter 8 "procId" INT "-1" "title" STRING "Ptolemy Xgraph" "saveFile" STRING "" "options" STRING "-bb -P -tk =800x400" "ignore" INT "0" "xUnits" FLOAT "1.0" "xInit" FLOAT "0.0" "resources" STRINGARRAY "STDIO"
+Star "./icon/WaveForm.icon" I4 60 72 0
+StarParameter 5 "procId" INT "-1" "value" FLOATARRAY "1 0 0" "haltAtEnd" INT "NO" "periodic" INT "YES" "period" INT "0"
+Star "./icon/Piggyback.icon" I6 160 112 0
+StarParameter 4 "procId" INT "-1" "period" INT "1" "offset" INT "0" "stateName" STRINGARRAY "condition"
+Star "./icon/Fork2.icon" I10 240 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/inport.ilink" I14 8 136 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Mux2.icon" I16 416 120 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Star "./icon/DownCounter.icon" I21 64 120 0
+StarParameter 2 "procId" INT "-1" "count" INT "count"
+Galaxy "./icon/ifElse.icon" I24 328 104 0
+StarParameter 3 "type" string "if" "conName" int "condition" "conValue" int "1"
+Galaxy "./icon/else.icon" I28 324 144 0
+StarParameter 3 "type" string "if" "conName" int "condition" "conValue" int "0"
+Line I32 "" Star I6 "output" Star I10 "input" 1 212 144 240 144 
+Line I33 "" Star I16 "output" Star I2 "input" 1 468 152 488 152 
+Line I34 "" Star I4 "output" Star I6 "param" 1 116 104 160 136 
+Line I35 "" Star I21 "output" Star I6 "input" 1 120 152 160 152 
+Line I36 "" Star I14 "output" Star I21 "input" 1 40 152 64 152 
+Line I37 "" Star I4 "output" Star I16 "control" 3 116 104 160 220 444 220 444 171 
+Line I38 "" Star I10 "output#1" Star I24 "input1" 1 293 136 328 128 
+Line I39 "" Star I24 "output" Star I16 "input#1" 1 384 136 416 145 
+Line I40 "" Star I0 "output" Star I24 "input2" 1 279 184 328 144 
+Line I41 "" Star I0 "output" Star I28 "input2" 1 279 184 324 184 
+Line I42 "" Star I10 "output#2" Star I28 "input1" 1 293 152 324 168 
+Line I43 "" Star I28 "output" Star I16 "input#2" 1 380 176 416 160 

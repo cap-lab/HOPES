@@ -1,0 +1,8 @@
+Platform
+Bus
+"I2CBus"
+101 20
+"./platform/iconImage/I2CBus.image"
+"" ""
+"" ""
+lineport "I2CBus" "I2CBus"

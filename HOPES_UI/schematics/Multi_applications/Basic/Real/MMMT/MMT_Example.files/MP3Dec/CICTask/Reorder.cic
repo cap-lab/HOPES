@@ -1,0 +1,205 @@
+/************************************
+ *
+ * File : Reorder.cic
+ * Date : Sep 18, 2012 1:47 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <math.h>
+#include "mp3_struct.h"
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+struct  {
+    int l[23];
+    int s[14];} sfBandIndex_49[6] =
+{{{0,6,12,18,24,30,36,44,54,66,80,96,116,140,168,200,238,284,336,396,464,522,576},
+    {0,4,8,12,18,24,32,42,56,74,100,132,174,192}},
+{{0,6,12,18,24,30,36,44,54,66,80,96,114,136,162,194,232,278,330,394,464,540,576},
+    {0,4,8,12,18,26,36,48,62,80,104,136,180,192}},
+{{0,6,12,18,24,30,36,44,54,66,80,96,116,140,168,200,238,284,336,396,464,522,576},
+    {0,4,8,12,18,26,36,48,62,80,104,134,174,192}},
+
+{{0,4,8,12,16,20,24,30,36,44,52,62,74,90,110,134,162,196,238,288,342,418,576},
+    {0,4,8,12,16,22,30,40,52,66,84,106,136,192}},
+{{0,4,8,12,16,20,24,30,36,42,50,60,72,88,106,128,156,190,230,276,330,384,576},
+    {0,4,8,12,16,22,28,38,50,64,80,100,126,192}},
+{{0,4,8,12,16,20,24,30,36,44,54,66,82,102,126,156,194,240,296,364,448,550,576},
+    {0,4,8,12,16,22,30,42,58,78,104,138,180,192}}};
+
+static void III_reorder (
+    REAL                 xr[SBLIMIT][SSLIMIT],
+    REAL                 ro[SBLIMIT][SSLIMIT],
+    gr_info_s    *gr_info,
+    frame_params        *fr_ps)
+{
+    int         sfreq;
+    int         sfb, sfb_start, sfb_lines;
+    int         sb, ss, window, freq, src_line, des_line;
+
+    sfreq=fr_ps->header.sampling_frequency + (fr_ps->header.version * 3);
+
+#ifdef OPTIMIZE
+
+    if (gr_info->window_switching_flag && (gr_info->block_type == 2)) {
+
+        /* Clear the whole array */
+        memset((void *)&ro[0][0], 0, sizeof(REAL)*SBLIMIT*SSLIMIT);
+
+        if (gr_info->mixed_block_flag) {
+            /* No reorder for low 2 subbands */
+            for (sb=0 ; sb < 2 ; sb++)
+                for (ss=0 ; ss < SSLIMIT ; ss++) {
+                    ro[sb][ss] = xr[sb][ss];
+                }
+            /* Reordering for rest switched short */
+            for (sfb = 3, sfb_start = sfBandIndex_49[sfreq].s[3],
+                        sfb_lines=sfBandIndex_49[sfreq].s[4] - sfb_start;
+                        sfb < 13; sfb++,sfb_start=sfBandIndex_49[sfreq].s[sfb],
+                        (sfb_lines=sfBandIndex_49[sfreq].s[sfb+1] - sfb_start))
+                for(window=0; window<3; window++)
+                    for(freq=0;freq<sfb_lines;freq++) {
+                        src_line = sfb_start*3 + window*sfb_lines + freq;
+                        des_line = (sfb_start*3) + window + (freq*3);
+                        ro[des_line/SSLIMIT][des_line%SSLIMIT] =
+                                xr[src_line/SSLIMIT][src_line%SSLIMIT];
+                    }
+
+        } else {        /* pure short */
+
+            for (sfb=0,sfb_start=0,sfb_lines=sfBandIndex_49[sfreq].s[1];
+                        sfb < 13; sfb++,sfb_start=sfBandIndex_49[sfreq].s[sfb],
+                        (sfb_lines=sfBandIndex_49[sfreq].s[sfb+1] - sfb_start))
+                for (window=0; window<3; window++)
+                    for(freq=0;freq<sfb_lines;freq++) {
+                        src_line = sfb_start*3 + window*sfb_lines + freq;
+                        des_line = (sfb_start*3) + window + (freq*3);
+                        ro[des_line/SSLIMIT][des_line%SSLIMIT] =
+                                xr[src_line/SSLIMIT][src_line%SSLIMIT];
+                    }
+        }
+
+    } else {    /* long blocks */
+
+        /* Copy array xr[] to ro[] */
+        memcpy((void *)&ro[0][0], (void *)&xr[0][0],
+                sizeof(REAL)*SBLIMIT*SSLIMIT);
+    }
+
+#else
+    /* Original code */
+
+    for (sb=0; sb<SBLIMIT; sb++)
+        for (ss=0; ss<SSLIMIT; ss++)
+            ro[sb][ss] = 0.0;
+
+    if (gr_info->window_switching_flag && (gr_info->block_type == 2)) {
+        if (gr_info->mixed_block_flag) {
+            /* No reorder for low 2 subbands */
+            for (sb=0 ; sb < 2 ; sb++)
+                for (ss=0 ; ss < SSLIMIT ; ss++) {
+                    ro[sb][ss] = xr[sb][ss];
+                }
+            /* Reordering for rest switched short */
+            for (sfb = 3, sfb_start = sfBandIndex_49[sfreq].s[3],
+                        sfb_lines=sfBandIndex_49[sfreq].s[4] - sfb_start;
+                        sfb < 13; sfb++,sfb_start=sfBandIndex_49[sfreq].s[sfb],
+                        (sfb_lines=sfBandIndex_49[sfreq].s[sfb+1] - sfb_start))
+                for(window=0; window<3; window++)
+                    for(freq=0;freq<sfb_lines;freq++) {
+                        src_line = sfb_start*3 + window*sfb_lines + freq;
+                        des_line = (sfb_start*3) + window + (freq*3);
+                        ro[des_line/SSLIMIT][des_line%SSLIMIT] =
+                                xr[src_line/SSLIMIT][src_line%SSLIMIT];
+                    }
+
+        } else {        /* pure short */
+
+            for (sfb=0,sfb_start=0,sfb_lines=sfBandIndex_49[sfreq].s[1];
+                        sfb < 13; sfb++,sfb_start=sfBandIndex_49[sfreq].s[sfb],
+                        (sfb_lines=sfBandIndex_49[sfreq].s[sfb+1] - sfb_start))
+                for (window=0; window<3; window++)
+                    for(freq=0;freq<sfb_lines;freq++) {
+                        src_line = sfb_start*3 + window*sfb_lines + freq;
+                        des_line = (sfb_start*3) + window + (freq*3);
+                        ro[des_line/SSLIMIT][des_line%SSLIMIT] =
+                                xr[src_line/SSLIMIT][src_line%SSLIMIT];
+                    }
+        }
+
+    } else {    /* long blocks */
+
+        for (sb=0 ; sb < SBLIMIT ; sb++)
+            for (ss=0 ; ss < SSLIMIT ; ss++)
+                ro[sb][ss] = xr[sb][ss];
+    }
+#endif /* OPTIMIZE */
+}
+
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+STATIC Packet3 packet;
+STATIC struct MP3DeQData out_data;
+
+TASK_GO
+{
+    // TODO: task main code
+
+    MQ_RECEIVE(port_input, (unsigned char*)&packet, sizeof(Packet3));
+    III_reorder(packet.output.data, out_data.data, &packet.groupInformation, &packet.frameHeader);
+    memcpy(&packet.output.data, &out_data.data, sizeof(struct MP3DeQData));
+
+    MQ_SEND(port_output, (unsigned char*)&packet, sizeof(Packet3));
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="INIT" x="268" y="120" initial_state="true" hierarchical="false" />
+      <state name="AUTO" x="612" y="0" initial_state="false" hierarchical="true" hierarchical_mode="HISTORY" />
+      <state name="FINISH" x="860" y="224" initial_state="false" hierarchical="false" />
+      <state name="RC" x="556" y="344" initial_state="false" hierarchical="true" hierarchical_mode="HISTORY" />
+    </state_list>
+    <transition_list>
+      <transition name="init2auto" src_state="INIT" dst_state="AUTO" curve0_x="404" curve0_y="160" curve1_x="496" curve1_y="72">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_4" src_state="AUTO" dst_state="FINISH" curve0_x="628" curve0_y="80" curve1_x="864" curve1_y="248">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_2" src_state="INIT" dst_state="RC" curve0_x="300" curve0_y="152" curve1_x="536" curve1_y="296">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_3" src_state="AUTO" dst_state="RC" curve0_x="576" curve0_y="140" curve1_x="612" curve1_y="308">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_4" src_state="RC" dst_state="FINISH" curve0_x="604" curve0_y="308" curve1_x="912" curve1_y="248">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_5" src_state="RC" dst_state="AUTO" curve0_x="616" curve0_y="360" curve1_x="644" curve1_y="76">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+  <fsm name="AUTO_1">
+    <state_list>
+      <state name="MOVE" x="380" y="84" initial_state="true" hierarchical="false" />
+      <state name="TURN" x="1004" y="76" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="move2turn" src_state="MOVE" dst_state="TURN" curve0_x="556" curve0_y="128" curve1_x="748" curve1_y="156">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="turn2move" src_state="TURN" dst_state="MOVE" curve0_x="768" curve0_y="232" curve1_x="632" curve1_y="228">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+  <fsm name="RC_1">
+    <state_list>
+      <state name="TLDMode" x="760" y="112" initial_state="false" hierarchical="false" />
+      <state name="Move" x="268" y="156" initial_state="true" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_RC_1_0" src_state="Move" dst_state="TLDMode" curve0_x="376" curve0_y="180" curve1_x="720" curve1_y="196">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_RC_1_1" src_state="TLDMode" dst_state="Move" curve0_x="776" curve0_y="192" curve1_x="360" curve1_y="196">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

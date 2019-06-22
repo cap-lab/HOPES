@@ -1,0 +1,160 @@
+/************************************
+ *
+ * File : TLDController.cic
+ * Date : Aug 13, 2015 5:30 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <string>
+#include "format.h"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <cstdlib>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+/************CMD DEFINITION START************/
+#define CMD_FAIL -1
+#define CMD_STOP 0 
+
+
+#define CMD_TLD_MOVE_FORWARD 9
+#define CMD_TLD_FORWARD_LEFT 10
+#define CMD_TLD_FORWARD_RIGHT 11
+/************CMD DEFINITION END************/
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out_tld_cmd;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC int out_cmd;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+STATIC FuseResult result;
+STATIC cv::Mat currMat;
+STATIC cv::Rect currRect;
+STATIC FILE *fp;
+STATIC int frame;
+static int previous_val;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out_tld_cmd = PORT_INITIALIZE(TASK_ID, "out_tld_cmd");
+// ##INIT_PORT_SECTION::END
+    // TODO: task initialize code
+    out_cmd = CMD_FAIL;
+#ifdef CAP_GET_LOG
+	fp = fopen("learningData/info.txt","w");
+	frame = 1;
+#endif
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+#ifdef CAP_DEBUG
+    printf("Controller_Go function\n");
+#endif
+
+	// TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&result, sizeof(FuseResult));
+    printf("Controller_Go function MQ_RECEIVE succeed\n");
+
+#ifdef CAP_DEBUG
+    printf("Controller_Go function MQ_RECEIVE succeed\n");
+#endif
+
+	currMat = cv::Mat(imgHeight, imgWidth, CV_8UC1, result.mat.data);
+	currRect = result.BB.valid? cv::Rect(result.BB.value): cv::Rect();
+	if(result.BB.valid)
+	{
+#ifdef CAP_DEBUG_R
+		printf("Tracking Succeed - Rect Value\n");
+		printf("%d %d (x,y) %d %d (width, height)\n", currRect.x, currRect.y, currRect.width, currRect.height);
+#endif
+
+#ifdef CAP_GET_LOG
+		char buf[50];
+		sprintf(buf, "learningData/%d.jpg", frame);
+		fprintf(fp, "%s %d %d %d %d\n", buf, currRect.x, currRect.y, currRect.width, currRect.height);
+		std::string fn = buf;
+		imwrite(fn, currMat);
+		frame++;
+#else
+		int midx = imgWidth/2;
+		int midBB = currRect.x + currRect.width/2;
+		int indurance = imgWidth/20;
+		if(midBB > midx + indurance) { 
+			out_cmd = CMD_TLD_FORWARD_RIGHT ;
+			if ( previous_val != out_cmd){
+				printf("Tracking Success, cmd : Forward Right\n");
+			} 
+		}
+		else if(midBB < midx - indurance) {			
+			out_cmd = CMD_TLD_FORWARD_LEFT ;
+			if ( previous_val != out_cmd){
+				printf("Tracking Success, cmd : Forward Left\n");
+			} 
+		}
+		else { 			
+			out_cmd = CMD_TLD_MOVE_FORWARD;
+			if ( previous_val != out_cmd){
+				printf("Tracking Success, cmd : Move Forward\n");
+			} 
+		}
+		
+		BUF_SEND(port_out_tld_cmd, (unsigned char*)&out_cmd, sizeof(int));
+#endif
+		cv::rectangle(currMat, cvPoint(currRect.x, currRect.y), cvPoint(currRect.x+currRect.width, currRect.y + currRect.height), CV_RGB(255,0,0), 3);
+		previous_val = out_cmd;
+	}
+	else
+	{
+		out_cmd = CMD_FAIL;
+		if( previous_val != CMD_FAIL){
+			printf("\nTracking Failed\n");
+		}
+		BUF_SEND(port_out_tld_cmd, (unsigned char*)&out_cmd, sizeof(int));
+		previous_val = CMD_FAIL;
+#ifdef CAP_DEBUG_R
+		printf("\nTracking Failed\n");
+#endif
+	}
+#ifdef CAP_DEBUG_R
+	imshow("Input", currMat);
+	cv::waitKey(20);
+#endif
+}
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+#ifdef CAP_GET_LOG
+	fclose(fp);
+#endif
+}
+
+TASK_CODE_END

@@ -1,0 +1,30 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/BPXMgraph.icon" I0 284 112 0
+StarParameter 8 "procId" INT "-1" "title" STRING "X graph" "saveFile" STRING "" "options" STRING "-bb -tk =800x400" "ignore" INT "0" "xUnits" FLOAT "1.0" "xInit" FLOAT "0.0" "resources" STRINGARRAY "STDIO"
+Star "./library/Peace/Port/inport.ilink" I2 116 128 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/IntToFloat.icon" I4 180 132 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Line I7 "" Star I2 "output" Star I4 "input" 1 148 144 180 146 
+Line I8 "" Star I4 "output" Star I0 "input" 1 234 147 284 144 

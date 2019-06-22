@@ -1,0 +1,76 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "spacingOverSpeed" float "10.0E-6"
+Parameter "carrierFrequency" float "157080"
+Parameter "samplePeriod" float "1.0E-6"
+Star "./icon/inport.icon" I0 4 176 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 568 184 0
+StarParameter 4 "name" string "output4" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I4 564 84 0
+StarParameter 4 "name" string "output2" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I6 280 16 0
+StarParameter 4 "name" string "output1" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I8 568 128 0
+StarParameter 4 "name" string "output3" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Cos.icon" I10 492 68 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Sin.icon" I13 64 160 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I16 140 176 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "- spacingOverSpeed"
+Star "./icon/Add.icon" I19 300 84 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Fork.icon" I22 80 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Ramp.icon" I25 16 24 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "samplePeriod" "value" FLOAT "0.0"
+Star "./icon/Add.icon" I27 364 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add.icon" I30 364 184 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I33 496 112 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I36 496 168 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I39 388 84 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "carrierFrequency"
+Star "./icon/Gain.icon" I42 428 128 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "carrierFrequency"
+Star "./icon/Gain.icon" I45 428 184 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "carrierFrequency"
+Star "./icon/Gain.icon" I48 300 128 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "2.0"
+Star "./icon/Gain.icon" I51 300 184 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "3.0"
+Star "./icon/Gain.icon" I54 140 16 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "carrierFrequency"
+Star "./icon/Cos.icon" I57 208 0 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Fork3.icon" I60 208 176 0
+StarParameter 1 "procId" INT "-1"
+Line I65 "" Star I0 "output" Star I13 "input" 1 36 192 64 192 
+Line I66 "" Star I25 "output" Star I22 "input" 1 68 56 80 56 
+Line I67 "" Star I13 "output" Star I16 "input" 1 120 192 140 192 
+Line I68 "" Star I16 "output" Star I60 "input" 1 196 192 208 192 
+Line I69 "" Star I60 "output#1" Star I19 "input" 1 262 184 300 100 
+Line I70 "" Star I60 "output#2" Star I48 "input" 2 262 192 280 192 300 144 
+Line I71 "" Star I60 "output#3" Star I51 "input" 1 262 200 300 200 
+Line I72 "" Star I51 "output" Star I30 "input" 1 356 200 364 200 
+Line I73 "" Star I48 "output" Star I27 "input" 1 356 144 364 144 
+Line I74 "" Star I19 "output" Star I39 "input" 1 356 100 388 100 
+Line I75 "" Star I27 "output" Star I42 "input" 1 420 144 428 144 
+Line I76 "" Star I30 "output" Star I45 "input" 1 420 200 428 200 
+Line I77 "" Star I45 "output" Star I36 "input" 1 484 200 496 200 
+Line I78 "" Star I33 "input" Star I42 "output" 1 496 144 484 144 
+Line I79 "" Star I39 "output" Star I10 "input" 1 444 100 492 100 
+Line I80 "" Star I54 "output" Star I57 "input" 1 196 32 208 32 
+Line I81 "" Star I22 "output" Star I54 "input" 1 133 56 140 32 
+Line I82 "" Star I22 "output" Star I19 "input" 2 133 56 236 56 300 100 
+Line I83 "" Star I57 "output" Star I6 "input" 1 264 32 280 32 
+Line I84 "" Star I4 "input" Star I10 "output" 1 564 100 548 100 
+Line I85 "" Star I33 "output" Star I8 "input" 1 552 144 568 144 
+Line I86 "" Star I2 "input" Star I36 "output" 1 568 200 552 200 
+Line I87 "" Star I22 "output" Star I27 "input" 4 133 56 220 56 224 124 352 124 364 144 
+Line I88 "" Star I22 "output" Star I30 "input" 4 133 56 188 56 224 164 348 164 364 200 

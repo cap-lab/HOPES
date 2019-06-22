@@ -1,0 +1,33 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/G72xDec.icon" I0 164 60 0
+StarParameter 3 "procId" INT "-1" "samplingRate" INT "5" "codingType" INT "3"
+Star "./library/Peace/Port/inport.ilink" I3 80 76 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I5 272 76 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I7 "" Star I3 "output" Star I0 "input" 1 112 92 164 92 
+Line I8 "" Star I0 "output" Star I5 "input" 1 216 92 272 92 

@@ -1,0 +1,135 @@
+/************************************
+ *
+ * File : ReadImage.cic
+ * Date : Jul 24, 2018 10:37 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#define IMG_DROP_BIT 16
+#define LABEL_DROP_BIT 8
+
+#define SIZE_OF_TRAIN_EX 60000
+#define SIZE_OF_TEST_EX 10000
+
+#define IMG_HEIGHT 28
+#define IMG_WIDTH 28
+#define INPUT_DIMENSION 784
+#define OUTPUT_DIMENSION 10
+
+#define MAX_PATH_STR 255
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out1;
+STATIC int port_out2;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+static const char* trainImagesName;
+static const char* trainLabelsName;
+static const char* testImagesName;
+static const char* testLabelsName;
+static const char* path;
+	 
+static char pathImage[MAX_PATH_STR];
+static char pathLabel[MAX_PATH_STR];
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out1 = PORT_INITIALIZE(TASK_ID, "out1");
+    port_out2 = PORT_INITIALIZE(TASK_ID, "out2");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    trainImagesName = "train-images.idx3-ubyte";
+	trainLabelsName = "train-labels.idx1-ubyte";
+	path = "data/";
+	
+	strcpy(pathImage, path);
+	strcat(pathImage, trainImagesName);
+	strcpy(pathLabel, path);
+	strcat(pathLabel, trainLabelsName);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+struct ImgLabel{
+    char trainImage[INPUT_DIMENSION];
+    char trainLabel[1];
+};
+static struct ImgLabel givenSet[SIZE_OF_TRAIN_EX];
+
+static char train_Image[SIZE_OF_TRAIN_EX][INPUT_DIMENSION];
+static char train_Label[SIZE_OF_TRAIN_EX][1];
+
+static int count = 0; 
+TASK_GO
+{
+    // TODO: task main code
+    int n; 
+    if(count > 0)
+    {
+        sleep(10000);
+    }
+    count++;
+    FILE *imageFIS = fopen(pathImage, "r");
+	FILE *labelFIS = fopen(pathLabel, "r");
+
+	printf("%s\n", pathImage);
+	printf("%s\n", pathLabel);
+	fseek(imageFIS, IMG_DROP_BIT, SEEK_SET);
+	fseek(labelFIS, LABEL_DROP_BIT, SEEK_SET);
+
+	for (n = 0; n < SIZE_OF_TRAIN_EX; n++) {
+		//fread(givenSet.trainImage[n], sizeof(uint8_t), INPUT_DIMENSION  , imageFIS);
+		fread(train_Image[n], sizeof(uint8_t), INPUT_DIMENSION  , imageFIS);
+		//fread(givenSet.trainLabel[n], sizeof(uint8_t), 1, labelFIS);
+		fread(train_Label[n], sizeof(uint8_t), 1, labelFIS);
+	}
+
+	fclose(imageFIS);
+	fclose(labelFIS);
+    
+    printf("ReadImage Send Start\n");
+    MQ_SEND(port_out1, (unsigned char*)&train_Image, sizeof(train_Image));
+    printf("ReadImage Send Finish1\n");
+    MQ_SEND(port_out2, (unsigned char*)&train_Label, sizeof(train_Label));
+    printf("ReadImage Send Finish2\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

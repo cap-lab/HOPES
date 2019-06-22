@@ -1,0 +1,27 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "sweepTime" int "5000"
+Star "./icon/Ramp.icon" I0 12 8 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "PI/sweepTime" "value" FLOAT "0.0"
+Star "./icon/Integrator.icon" I2 128 24 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1.0" "top" FLOAT "PI" "bottom" FLOAT "-PI" "saturate" INT "NO" "state" FLOAT "0.0"
+Star "./icon/Mpy2.icon" I6 424 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I10 272 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ConstInt.icon" I13 16 68 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0.0"
+Star "./icon/IIDGaussian.icon" I15 152 92 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "1.0" "mean" FLOAT "0.0" "seed" INT "1"
+Star "./icon/Biquad.icon" I17 272 92 0
+StarParameter 6 "procId" INT "-1" "d1" FLOAT "-1.1430" "d2" FLOAT "0.41280" "n0" FLOAT "0.067455" "n1" FLOAT "0.135" "n2" FLOAT "0.067455"
+Star "./icon/outport.icon" I20 512 40 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I22 "" Star I15 "output" Star I17 "input" 1 208 124 272 124 
+Line I23 "" Star I10 "input" Star I2 "output" 1 272 56 184 56 
+Line I24 "" Star I2 "data" Star I0 "output" 1 128 48 64 40 
+Line I25 "" Star I13 "output" Star I2 "reset" 1 63 84 128 64 
+Line I26 "" Star I10 "output" Star I6 "input#1" 1 328 56 424 56 
+Line I27 "" Star I6 "input#2" Star I17 "output" 1 451 84 328 124 
+Line I28 "" Star I6 "output" Star I20 "input" 1 480 56 512 56 

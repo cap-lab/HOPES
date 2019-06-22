@@ -1,0 +1,203 @@
+/************************************
+ *
+ * File : keyboard.cic
+ * Date : 
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <termios.h>
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+/************KEYCODE & COMMAND DEFINITION************/
+#define KEYCODE_ARROW_PREFIX1 0x1B
+#define KEYCODE_ARROW_PREFIX2 0x5B
+
+#define KEYCODE_R 0x43
+#define KEYCODE_L 0x44
+#define KEYCODE_U 0x41
+#define KEYCODE_D 0x42
+
+
+//KEYKODE for lowercase alphabets
+#define KEYCODE_KEY_A 0x61 
+#define KEYCODE_KEY_R 0x72
+#define KEYCODE_KEY_F 0x66
+#define KEYCODE_KEY_T 0x74
+#define KEYCODE_KEY_H 0x68
+
+#define KEYCODE_SPACE 0x20 //stop
+
+#define NO_COMMAND -1
+#define CMD_STOP 0 
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+#define CMD_TURN_LEFT 3
+#define CMD_TURN_RIGHT 4
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+
+#define SWITCH_RC_MODE 100
+#define SWITCH_AUTO_MODE 101
+#define SWITCH_RC_TLD_MODE 102
+#define SWITCH_FINISH 103
+
+/************KEYCODE & COMMAND DEFINITION************/
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_cmd;
+// ##DEFINE_PORT_SECTION::END
+static char c;
+
+int cmd;
+int kfd = 0;
+struct termios cooked, raw;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+void printHelpMessage(){
+   puts("Remote Control,  TLD-based Tracker, and Autonomous Drive program");
+   puts("---------------------------");    
+   puts("R: SWITCH_RC_MODE");
+   puts("A: SWITCH_AUTO_MODE");
+   puts("F: SWITCH_FINISH");
+   puts("H: show help message");
+   puts("---------------------------");
+   puts("------------RC_MODE--------");
+   puts("Use arrow keys to move the robot");
+   puts("Use spacebar to stop the robot");
+   puts("T : execute TLD_MODE");
+   puts("R : return to RC_MODE");
+   puts("---------------------------");
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_cmd = PORT_INITIALIZE(TASK_ID, "cmd");
+// ##INIT_PORT_SECTION::END
+
+    cmd = NO_COMMAND;
+    // get the console in raw mode
+    tcgetattr(kfd, &cooked);
+    memcpy(&raw, &cooked, sizeof(struct termios));
+    raw.c_lflag &=~ (ICANON | ECHO);
+    // Setting a new line, then end of file
+    raw.c_cc[VEOL] = 1;
+    raw.c_cc[VEOF] = 2;
+    tcsetattr(kfd, TCSANOW, &raw);
+    printHelpMessage();
+   
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{	
+    if(read(kfd, &c, 1) < 0)
+	{
+		perror("read():");
+		exit(-1);
+	}
+
+	//printf("[DEBUG] value: 0x%02X\n", c);
+	if(c == KEYCODE_ARROW_PREFIX1){
+	   read(kfd, &c, 1);
+	   if(read(kfd, &c, 1) < 0)
+       {
+           perror("read():");
+           exit(-1);
+       }
+       if(c == KEYCODE_ARROW_PREFIX2){
+            read(kfd, &c, 1);
+             if(read(kfd, &c, 1) < 0)
+             {
+                 perror("read():");
+                 exit(-1);
+             }
+       }
+	}
+
+	switch(c){
+	   case KEYCODE_KEY_H:
+	       printHelpMessage();
+	       break;
+		case KEYCODE_SPACE:
+			printf("STOP\n");
+			cmd = CMD_STOP; 
+			break;
+		case KEYCODE_L:
+			printf("LEFT\n");
+			cmd = CMD_ACC_LEFT; 
+			break;
+		case KEYCODE_R:
+			printf("RIGHT\n");
+			cmd = CMD_ACC_RIGHT;
+			break;
+		case KEYCODE_U:
+			printf("UP\n");
+			cmd = CMD_ACC_FORWARD;
+			break;
+		case KEYCODE_D:
+			printf("DOWN\n");
+			cmd = CMD_ACC_BACKWARD;
+			break;   
+		case KEYCODE_KEY_A:
+			printf("SWITCH_AUTO_MODE\n");
+			cmd = SWITCH_AUTO_MODE;
+			break;
+		case KEYCODE_KEY_R:
+			printf("SWITCH_RC_MODE\n");
+			cmd = SWITCH_RC_MODE;
+			break;			
+		case KEYCODE_KEY_T:
+			printf("SWITCH_RC_TLD_MODE\n");
+			cmd = SWITCH_RC_TLD_MODE;
+			break;						
+		case KEYCODE_KEY_F:
+			printf("SWITCH_FINISH\n");
+			cmd = SWITCH_FINISH;
+            /*wrapup code*/
+			//printf("Keyboard task wrapup!\n");
+            raw.c_lflag = (ISIG|ICANON|ECHO|IEXTEN|ECHOE|ECHOKE|ECHOCTL); //default c_lflag
+            tcsetattr(kfd, TCSANOW, &raw);
+			break;			
+		default:
+			printf("Unknown keyboard input\n");
+			cmd = NO_COMMAND;
+			break;        
+	}
+    printf("cmd in keyboard.cic : %d\n", cmd);
+    MQ_SEND( port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+	
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+}
+
+TASK_CODE_END

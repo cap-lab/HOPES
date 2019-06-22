@@ -1,0 +1,241 @@
+# Menu
+# Files
+hae.peace.file = "파일"
+hae.peace.file.mnemonic = 'F'
+
+hae.peace.newProject = "새 프로젝트"
+hae.peace.newProject.mnemonic = 'P'
+
+hae.peace.new = "새문서"
+hae.peace.new.mnemonic = 'N'
+hae.peace.new.tooltip = "새문서 만들기"
+
+hae.peace.open = "열기"
+hae.peace.open.mnemonic = 'O'
+hae.peace.open.tooltip ="문서 열기"
+
+hae.peace.close = "닫기"
+hae.peace.close.mnemonic = 'C'
+
+hae.peace.save = "저장"
+hae.peace.save.mnemonic = 'S'
+hae.peace.save.tooltip = "문서 저장하기"
+
+hae.peace.saveAs = "새이름으로"
+hae.peace.saveAs.mnemonic = 'A'
+
+hae.peace.saveAll = "모두 저장"
+hae.peace.saveAll.mnemonic = 'l'
+
+hae.peace.export = "전달"
+hae.peace.export.mnemonic = 'E'
+
+hae.peace.printSetup = "프린트 설정"
+hae.peace.printSetup.mnemonic = 'r'
+
+hae.peace.print = "프린트"
+hae.peace.print.mnemonic = 't'
+
+hae.peace.exit = "끝내기"
+hae.peace.exit.mnemonic = 'x'
+
+# Edit
+hae.peace.edit = "편집"
+hae.peace.edit.mnemonic = 'E'
+
+hae.peace.editIcon = "아이콘 편집"
+hae.peace.editIcon.mnemonic = 'I'
+
+hae.peace.editDataBase = "데이타베이스 편집"
+hae.peace.editDataBase.mnemonic = 'D'
+
+hae.peace.substitute = "치환"
+hae.peace.substitute.mnemonic = 'S'
+
+hae.peace.undo = "되돌리기"
+hae.peace.undo.mnemonic = 'U'
+
+hae.peace.redo = "다시하기"
+hae.peace.redo.mnemonic = 'R'
+
+hae.peace.cut = "잘라내기"
+hae.peace.cut.mnemonic = 'u'
+hae.peace.cut.tooltip = "선택된 개체 오려내기"
+
+hae.peace.copy = "복사하기"
+hae.peace.copy.mnemonic = 'C'
+hae.peace.copy.tooltip = "선택된 개체 복사하기"
+
+hae.peace.paste = "붙이기"
+hae.peace.paste.mnemonic = 'P'
+hae.peace.paste.tooltip = "복사한 개체 붙여넣기"
+
+hae.peace.delete = "지우기"
+hae.peace.delete.mnemonic = 'D'
+
+# View
+hae.peace.view = "보기"
+hae.peace.view.mnemonic = 'V'
+
+hae.peace.zoomIn = "확대"
+hae.peace.zoomIn.mnemonic = 'I'
+
+hae.peace.zoomOut = "축소"
+hae.peace.zoomOut.mnemonic = 'O'
+
+hae.peace.zoomAuto = "자동크기"
+hae.peace.zoomAuto.mnemonic = 'A'
+
+hae.peace.rotate = "회전"
+hae.peace.rotate.mnemonic = 'R'
+
+hae.peace.lookInside = "내부보기"
+hae.peace.lookInside.mnemonic = 'I'
+
+hae.peace.viewParameter = "파라미터 보이기"
+hae.peace.viewParameter.mnemonic = 'P'
+
+hae.peace.viewName = "이름"
+hae.peace.viewName.mnemonic = 'N'
+
+hae.peace.viewRate = "비"
+hae.peace.viewRate.mnemonic = 't'
+
+hae.peace.displayGanttChart = "스케줄결과"
+hae.peace.displayGanttChart.mnemonic = 'n'
+
+hae.peace.manualSchedule = "수동 스케줄"
+hae.peace.manualSchedule.mnemonic = 'M'
+
+# Run
+hae.peace.run = "실행"
+hae.peace.run.mnemonic = 'R'
+
+hae.peace.runIt = "실행하기!"
+hae.peace.runIt.mnemonic = 'R'
+hae.peace.runIt.tooltip = "실행하기"
+
+hae.peace.runCount = "실행횟수"
+hae.peace.runCount.mnemonic = 'C'
+
+hae.peace.architecture = "구조설정"
+hae.peace.architecture.mnemonic = 'A'
+
+# Tool
+hae.peace.tool = "도구"
+hae.peace.tool.mnemonic = 'T'
+
+hae.peace.makeGalaxy = "갤럭시만들기"
+hae.peace.makeGalaxy.mnemonic = 'M'
+
+hae.peace.registerGalaxy = "갤럭시등록"
+hae.peace.registerGalaxy.mnemonic = 'G'
+
+hae.peace.registerStar = "스타등록"
+hae.peace.registerStar.mnemonic = 'S'
+
+hae.peace.registerStarsFromFile = "파일에서 스타등록"
+hae.peace.registerStarsFromFile.mnemonic = 'S'
+
+hae.peace.linkStar = "스타 동적 링크"
+hae.peace.linkStar.mnemonic = 'L'
+
+hae.peace.importStar = "스타 가져오기"
+hae.peace.importStar.mnemonic = 'I'
+
+hae.peace.starEditor = "스타 편집기"
+hae.peace.starEditor.mnemonic = 'E'
+
+
+# Library
+hae.peace.library = "라이브러리"
+hae.peace.library.mnemonic = 'L'
+
+hae.peace.loadIcon = "아이콘 로드"
+hae.peace.loadIcon.mnemonic = 'I'
+hae.peace.loadIcon.tooltip = "아이콘 불러들이기"
+
+hae.peace.line = "선그리기"
+hae.peace.line.mnemonic = 'L'
+hae.peace.line.tooltip = "선 연결하기"
+
+hae.peace.busLine = "버스선"
+hae.peace.busLine.mnemonic = 'B'
+
+hae.peace.junction= "연결마디"
+hae.peace.junction.mnemonic = 'J'
+
+# Option
+hae.peace.option = "옵션"
+hae.peace.option.mnemonic = 'O'
+
+hae.peace.sensitiveLine = "자동 선 연결"
+hae.peace.sensitiveLine.mnemonic = 'A'
+
+hae.peace.default = "초기설정"
+hae.peace.default.mnemonic = 'D'
+
+# Comment
+hae.peace.comment = "주석"
+hae.peace.comment.mnemonic = 'C'
+
+hae.peace.rectangle = "사각형"
+hae.peace.rectangle.mnemonic = 'R'
+
+hae.peace.oval= "타원"
+hae.peace.oval.mnemonic = 'O'
+
+hae.peace.line= "선"
+hae.peace.line.mnemonic = 'L'
+
+hae.peace.polygon= "다중선"
+hae.peace.polygon.mnemonic = 'P'
+
+hae.peace.gif= "그림"
+hae.peace.gif.mnemonic = 'G'
+
+hae.peace.text= "글"
+hae.peace.text.mnemonic = 'T'
+
+hae.peace.inArrow= "들어오는 화살표"
+hae.peace.inArrow.mnemonic = 'A'
+
+hae.peace.inMultiArrow= "들어오는 여러 화살표"
+hae.peace.inMultiArrow.mnemonic = 'M'
+
+hae.peace.outArrow= "나가는 화살표"
+hae.peace.outArrow.mnemonic = 'O'
+
+hae.peace.outMultiArrow= "나가는 여러 화살표"
+hae.peace.outMultiArrow.mnemonic = 'u'
+
+hae.peace.color= "색"
+hae.peace.color.mnemonic = 'C'
+
+hae.peace.fill= "채우기"
+hae.peace.fill.mnemonic = 'i'
+
+hae.peace.moveToFront= "앞으로 옮기기"
+hae.peace.moveToFront.mnemonic = 'F'
+
+hae.peace.moveToBack= "뒤로 옮기기"
+hae.peace.moveToBack.mnemonic = 'B'
+
+# Report
+hae.peace.report= "보고서"
+hae.peace.report.mnemonic = 'R'
+
+hae.peace.generateReport= "보고서 생성"
+hae.peace.generateReport.mnemonic = 'G'
+
+hae.peace.userInput= "사용자 입력"
+hae.peace.userInput.mnemonic = 'U'
+
+# Help
+hae.peace.help= "도움말"
+hae.peace.help.mnemonic = 'H'
+
+hae.peace.about= "대하여"
+hae.peace.about.mnemonic = 'A'
+
+

@@ -1,0 +1,126 @@
+/************************************
+ *
+ * File : Interrupt.cic
+ * Date : Oct 19, 2012 4:37 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+//#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+// ##DEFINE_SECTION::START
+#define ASCII_Q 113
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+/*
+STATIC int linux_kbhit(void)
+{
+    struct termios oldt, newt;
+    int ch;
+
+    tcgetattr( STDIN_FILENO, &oldt );
+    newt = oldt;
+
+    newt.c_cc[VMIN] = 0;
+    newt.c_cc[VTIME] = 1;
+    newt.c_lflag &= ~( ICANON | ECHO );
+    fcntl(STDIN_FILENO, F_SETFL,O_NDELAY);
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+
+    ch = getchar();
+
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+
+    // -1 if no input
+    return ch;
+}
+*/
+
+//static struct termios oldt, newt;
+static int oldf;
+static int flag;
+TASK_GO
+{
+    // TODO: task main code
+    /*
+    int input = 0;
+    tcgetattr( STDIN_FILENO, &oldt );
+    newt = oldt;
+
+    newt.c_cc[VMIN] = 0;
+    newt.c_cc[VTIME] = 1;
+    newt.c_lflag &= ~( ICANON | ECHO );
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL,O_NDELAY);
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+
+    //while((input = linux_kbhit()) != 113) {}
+    while((input = getchar()) != 113) {}
+
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+    MQ_SEND(port_out, (unsigned char*)&input, sizeof(int));
+    */
+
+    if(flag == 0){
+        int input = ASCII_Q;
+        flag++;
+        usleep(500000);
+        MQ_SEND(port_out, (unsigned char*)&input, sizeof(int));
+    }
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    //tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+    //fcntl(STDIN_FILENO, F_SETFL, oldf);
+}
+
+TASK_CODE_END

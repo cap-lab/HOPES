@@ -1,0 +1,76 @@
+/************************************
+ *
+ * File : ReadImage.cic
+ * Date : Oct 29, 2013 11:14 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+//#define WIDTH 1920
+//#define HEIGHT 1080
+#define WIDTH 600
+#define HEIGHT 400
+#define FILENAME "test.rgb"
+// ##DEFINE_SECTION::END
+
+#include <stdio.h>
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC unsigned char *src;
+STATIC FILE *fd; 
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src = (unsigned char*)malloc(WIDTH*HEIGHT*3);
+    fd = fopen(FILENAME, "rb");
+    fread((void*)(src), sizeof(unsigned char), WIDTH * HEIGHT * 3, fd);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+
+
+    MQ_SEND(port_out, (unsigned char*)src, WIDTH * HEIGHT * 3);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(src);
+    fclose(fd);
+}
+
+TASK_CODE_END

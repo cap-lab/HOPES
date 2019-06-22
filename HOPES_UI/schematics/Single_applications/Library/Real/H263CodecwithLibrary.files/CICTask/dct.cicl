@@ -1,0 +1,96 @@
+// You SHOULD NOT forget to use the access modifier "static"
+#include "struct_data.h"
+ 
+LIBFUNC(void, init, void) {
+  //.. something to do for initialization
+}
+ 
+LIBFUNC(void, wrapup, void) {
+  //.. something to do for finalization
+}
+
+
+LIBFUNC(short_block_8x8, doDCT, short_block_8x8 dct_block) 
+{
+    const int f0=46340;
+    const int f1=32138;
+    const int f2=30273;
+    const int f3=27245;
+    const int f4=23170;
+    const int f5=18204;
+    const int f6=12539;
+    const int f7=6392;
+
+    int        j1, i, j;
+    int	     b[8];
+    int        b1[8];
+    int        d[8][8];
+
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < 8; j++) {
+            b[j] = (int)dct_block.inBlock[i*8+j]<<4;
+        } 
+
+        /* Horizontal transform */
+        for (j = 0; j < 4; j++) {
+            j1 = 7 - j;
+            b1[j] = b[j] + b[j1];
+            b1[j1] = b[j] - b[j1];
+        }
+        b[0] = b1[0] + b1[3];
+        b[1] = b1[1] + b1[2];
+        b[2] = b1[1] - b1[2];
+        b[3] = b1[0] - b1[3];
+        b[4] = b1[4];
+        b[5] = ((b1[6] - b1[5]) * f0)>>16;
+        b[6] = ((b1[6] + b1[5]) * f0)>>16;
+        b[7] = b1[7];
+        d[i][0] = ((b[0] + b[1]) * f4)>>16;
+        d[i][4] = ((b[0] - b[1]) * f4)>>16;
+        d[i][2] = (b[2] * f6 + b[3] * f2)>>16;
+        d[i][6] = (b[3] * f6 - b[2] * f2)>>16;
+        b1[4] = b[4] + b[5];
+        b1[7] = b[7] + b[6];
+        b1[5] = b[4] - b[5];
+        b1[6] = b[7] - b[6];
+        d[i][1] = (b1[4] * f7 + b1[7] * f1)>>16;
+        d[i][5] = (b1[5] * f3 + b1[6] * f5)>>16;
+        d[i][7] = (b1[7] * f7 - b1[4] * f1)>>16;
+        d[i][3] = (b1[6] * f3 - b1[5] * f5)>>16;
+    }
+    /* Vertical transform */
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < 4; j++) {
+            j1 = 7 - j;
+            b1[j] = d[j][i] + d[j1][i];
+            b1[j1] = d[j][i] - d[j1][i];
+        }
+        b[0] = b1[0] + b1[3];
+        b[1] = b1[1] + b1[2];
+        b[2] = b1[1] - b1[2];
+        b[3] = b1[0] - b1[3];
+        b[4] = b1[4];
+        b[5] = ((b1[6] - b1[5]) * f0)>>16;
+        b[6] = ((b1[6] + b1[5]) * f0)>>16;
+        b[7] = b1[7];
+        d[0][i] = ((b[0] + b[1]) * f4)>>16;
+        d[4][i] = ((b[0] - b[1]) * f4)>>16;
+        d[2][i] = (b[2] * f6 + b[3] * f2)>>16;
+        d[6][i] = (b[3] * f6 - b[2] * f2)>>16;
+        b1[4] = b[4] + b[5];
+        b1[7] = b[7] + b[6];
+        b1[5] = b[4] - b[5];
+        b1[6] = b[7] - b[6];
+        d[1][i] = (b1[4] * f7 + b1[7] * f1)>>16;
+        d[5][i] = (b1[5] * f3 + b1[6] * f5)>>16;
+        d[7][i] = (b1[7] * f7 - b1[4] * f1)>>16;
+        d[3][i] = (b1[6] * f3 - b1[5] * f5)>>16;
+    }
+
+    for (i = 0; i < 8; i++)
+        for (j = 0; j < 8; j++)
+            dct_block.outBlock[i*8+j] = d[i][j]>>4;
+
+   return dct_block;
+}
+

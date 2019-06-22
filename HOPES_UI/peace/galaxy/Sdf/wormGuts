@@ -1,0 +1,36 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "-1"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/inport.icon" I0 24 24 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 200 24 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Add2.icon" I4 96 24 0
+StarParameter 3 "procId" INT "-1" "WIDTH" INT "8" "IWL" INT "7"
+Star "./icon/IIDGaussian.icon" I8 40 76 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "1.0" "mean" FLOAT "0.0" "seed" INT "1"
+Line I10 "" Star I0 "output" Star I4 "input#1" 1 56 40 96 40 
+Line I11 "" Star I4 "output" Star I2 "input" 1 152 40 200 40 
+Line I12 "" Star I4 "input#2" Star I8 "output" 1 123 68 96 108 

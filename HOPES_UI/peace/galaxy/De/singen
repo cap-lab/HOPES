@@ -1,0 +1,15 @@
+Domain "DE"
+Target "default-DE"
+TargetParameter "logFile" STRING ""
+TargetParameter "loopScheduler" STRING "DEF #choices: DEF, CLUST,ACYLOOP"
+TargetParameter "schedulePeriod" FLOAT "0.0"
+Run 10
+Star "./icon/outport.icon" I0 352 128 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I2 24 128 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/BlackHole.icon" I4 80 144 0
+StarParameter 1 "nodename" STRING ""
+Galaxy "./icon/singen.icon" I6 224 112 0
+Line I8 "" Star I2 "output" Star I4 "input" 1 56 144 80 148 
+Line I9 "" Star I6 "output" Star I0 "input" 1 280 144 352 144 

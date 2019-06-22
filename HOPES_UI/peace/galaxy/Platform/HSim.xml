@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<platform>
+  <name>HSim</name>
+  <target>HSim</target>
+  <version>1</version>
+  <description>
+    <![CDATA[HOPES Simulator
+(Cycle-approximate)]]>
+  </description>
+  <schematic>
+    <![CDATA[Domain "Archi"
+Target "platform"
+TargetParameter "PredefinedTarget" STRING "HSim ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
+Run 10
+Platform Bus "./platform/library/bus/HSimSharedBus.icon" I0 52 168 0 101
+BusPort I1 I0 "HSimSharedBus_I1" "HSimSharedBus" 128 178 true multiple "" "0" "0" "0" "0"
+BusPort I2 I0 "HSimSharedBus_I2" "HSimSharedBus" 116 178 false 0
+BusPort I3 I0 "HSimSharedBus_I3" "HSimSharedBus" 92 178 false 0
+Platform Memory "./platform/library/memory/HSimMemory.icon" I5 216 112 0
+StarParameter 3 "model" STRING "sharedMem" "category" STRING "MEMORY" "size" STRING  "0x10000000"
+Platform Core "./platform/library/core/ARM926EJS_pool.icon" I7 16 16 0
+StarParameter 8 "processorId" INT "0" "model" STRING "arm926ej-s" "category" STRING "PROCESSOR" "OS" STRING "uC-OS ##NoOS,uC-OS,Linux,Windows" "scheduler" STRING  "RR ##EDF,RM,RR" "pool_size" INT "2" "AllowDataParallel" STRING "FALSE ##TRUE,FALSE" "Simulator" STRING "ARMulator"
+Section I7 0 
+Region I7 0
+Platform Core "./platform/library/core/ARM926EJS_DSP_pool.icon" I9 144 16 0
+StarParameter 8 "processorId" INT "0" "model" STRING "arm926ej-s-dsp" "category" STRING "PROCESSOR" "OS" STRING "uC-OS ##NoOS,uC-OS,Linux,Windows" "scheduler" STRING  "RR ##EDF,RM,RR" "pool_size" INT "4" "AllowDataParallel" STRING "TRUE ##TRUE,FALSE" "Simulator" STRING "ARMulator"
+Section I9 0 
+Region I9 0
+Line I11 "0" Star I5 "Slave" Star I0 "HSimSharedBus_I1" 1 248 176 128 178 
+Line I12 "0" Star I9 "master" Star I0 "HSimSharedBus_I2" 1 176 78 116 178 
+Line I13 "0" Star I7 "master" Star I0 "HSimSharedBus_I3" 1 48 78 92 178 
+DefaultSlave I0 null
+]]>
+  </schematic>
+</platform>
+

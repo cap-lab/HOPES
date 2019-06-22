@@ -1,0 +1,8 @@
+Platform
+Bus
+"HSimSharedBus"
+101 20
+"./platform/iconImage/HSimSharedBus.image"
+"" ""
+"" ""
+lineport "HSimSharedBus" "HSimSharedBus"

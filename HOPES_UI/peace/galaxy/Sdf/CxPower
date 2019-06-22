@@ -1,0 +1,39 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "alpha" float "0.99"
+Star "./icon/CxToRect.icon" I0 76 60 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/inport.ilink" I4 24 76 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Mpy2.icon" I6 148 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I10 148 84 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add2.icon" I14 216 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Integrator.icon" I18 288 40 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "alpha" "top" FLOAT "0.0" "bottom" FLOAT "0.0" "saturate" INT "NO" "state" FLOAT "0.0"
+Star "./icon/Gain.icon" I22 348 56 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1.0-alpha"
+Star "./icon/Gain.icon" I25 476 56 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "0.5"
+Star "./icon/DB.icon" I28 416 40 0
+StarParameter 3 "procId" INT "-1" "min" FLOAT "-100" "inputIsPower" INT "FALSE"
+Star "./library/Peace/Port/outport.ilink" I31 544 56 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/ConstInt.icon" I33 228 124 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Line I35 "" Star I4 "output" Star I0 "input" 1 56 92 76 92 
+Line I36 "" Star I0 "real" Star I6 "input#1" 1 132 84 148 56 
+Line I37 "" Star I0 "real" Star I6 "input#2" 1 132 84 175 84 
+Line I38 "" Star I0 "imag" Star I10 "input#1" 1 132 100 148 100 
+Line I39 "" Star I0 "imag" Star I10 "input#2" 1 132 100 175 128 
+Line I40 "" Star I6 "output" Star I14 "input#1" 1 204 56 216 56 
+Line I41 "" Star I10 "output" Star I14 "input#2" 1 204 100 243 84 
+Line I42 "" Star I14 "output" Star I18 "data" 1 272 56 288 64 
+Line I43 "" Star I18 "output" Star I22 "input" 1 344 72 348 72 
+Line I44 "" Star I22 "output" Star I28 "input" 1 404 72 416 72 
+Line I45 "" Star I28 "output" Star I25 "input" 1 472 72 476 72 
+Line I46 "" Star I25 "output" Star I31 "input" 1 532 72 544 72 
+Line I47 "" Star I33 "output" Star I18 "reset" 1 276 140 288 80 

@@ -1,0 +1,27 @@
+Domain "FSM"
+Target "default-FSM"
+Run 10
+Parameter "InputNames" string "start stop suspend"
+Parameter "InputTypes" string "PURE PURE PURE"
+Parameter "InputScopes" string "{0,1} {0,1} {0,1}"
+Parameter "OutputNames" string ""
+Parameter "OutputTypes" string ""
+Parameter "OutputScopes" string ""
+Parameter "InternalNames" string ""
+Parameter "InternalTypes" string ""
+Parameter "InternalScopes" string ""
+Parameter "VariableNames" string ""
+Parameter "VariableTypes" string ""
+Parameter "VariableScopes" string ""
+Parameter "VariableInits" string ""
+Star "./icon/StateStar.icon" I0 280 64 0
+StarParameter 4 "name" STRING "stopped" "scripts" STRING "stop mp3" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I9 80 64 0
+StarParameter 4 "name" STRING "Playing" "scripts" STRING "run mp3" "init" STRING "TRUE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I18 184 200 0
+StarParameter 4 "name" STRING "suspended" "scripts" STRING "suspend mp3" "init" STRING "FALSE" "internalFSM" STRING ""
+Line I27  2 "condition" stringList "stop==1" "actions" stringList "" Star I9 "input6" Star I0 "input5" 2 135 73 184 32 289 73 
+Line I28  2 "condition" stringList "start==1" "actions" stringList "" Star I0 "input8" Star I9 "input7" 2 289 119 248 160 135 119 
+Line I29  2 "condition" stringList "suspend==1" "actions" stringList "" Star I9 "input3" Star I18 "input4" 2 112 128 104 200 184 232 
+Line I30  2 "condition" stringList "start==1" "actions" stringList "" Star I18 "input5" Star I9 "input7" 2 193 209 200 160 135 119 
+Line I31  2 "condition" stringList "stop==1" "actions" stringList "" Star I18 "input6" Star I0 "input8" 2 239 209 296 192 289 119 

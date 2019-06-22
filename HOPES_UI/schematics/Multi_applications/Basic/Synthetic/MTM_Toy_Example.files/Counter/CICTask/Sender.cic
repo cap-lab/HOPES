@@ -1,0 +1,83 @@
+/************************************
+ *
+ * File : Sender.cic
+ * Date : Apr 18, 2013 10:31 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+STATIC int counter;
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    counter = 0;
+    SYS_REQ(SET_MTM_PARAM_INT, "Counter_Sender", "Var", 0);
+    SYS_REQ(EXECUTE_TRANSITION, "Counter_Sender");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+TASK_GO
+{
+    // TODO: task main code
+    char* currMode = SYS_REQ(GET_CURRENT_MODE_NAME, "Counter_Sender");
+    if(strcmp(currMode, "Inc_Rate_1") == 0){
+        counter++;
+        MQ_SEND(port_output, (unsigned char*)&counter, sizeof(int));
+    }
+    else if(strcmp(currMode, "Dec_Rate_10") == 0){
+        int i=0;
+        for(i=0; i<10; i++){
+            counter--;
+            MQ_SEND(port_output, (unsigned char*)&counter, sizeof(int));
+        }
+    }
+
+    usleep(2000);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

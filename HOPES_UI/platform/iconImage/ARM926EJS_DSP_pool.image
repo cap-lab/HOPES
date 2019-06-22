@@ -1,0 +1,9 @@
+"./platform/iconImage/ARM926EJS_DSP_pool.image"
+72 76
+Rectangle 8 16 56 48 16777215 true
+Rectangle 8 16 56 48 0 false
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "ARM926EJ-S DSP Pool"
+OutArrowLine 32 62 0 1 16762880
+Image "./platform/icon/block_dsp.gif" 16 22 32 32

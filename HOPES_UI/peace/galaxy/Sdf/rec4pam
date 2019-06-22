@@ -1,0 +1,21 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Star "./icon/inport.icon" I0 36 136 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 352 136 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/DownSample.icon" I4 88 120 0
+StarParameter 3 "procId" INT "-1" "factor" INT "16" "phase" INT "0"
+Star "./icon/DeScrambler.icon" I7 284 120 0
+StarParameter 3 "procId" INT "-1" "polynomial" INT "0440001" "shiftReg" INT "-1"
+Star "./icon/Quant.icon" I10 152 120 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "-2.0 0.0 2.0" "levels" FLOATARRAY "0 1 3 2"
+Star "./icon/IntToBits.icon" I13 216 120 0
+StarParameter 2 "procId" INT "-1" "nBits" INT "2"
+Line I16 "" Star I4 "input" Star I0 "output" 1 88 152 68 152 
+Line I17 "" Star I4 "output" Star I10 "input" 1 144 152 152 152 
+Line I18 "" Star I7 "output" Star I2 "input" 1 340 152 352 152 
+Line I19 "" Star I10 "output" Star I13 "input" 1 208 152 216 152 
+Line I20 "" Star I13 "output" Star I7 "input" 1 272 152 284 152 
+CommText 48 68 20 -16777216 "Simple 4-level PAM receiver"

@@ -1,0 +1,183 @@
+/************************************
+ *
+ * File : Learn.cic
+ * Date : Aug 18, 2015 8:14 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include "format.h"
+#include <opencv/cv.h>
+#include "TLDUtil.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_learn_complete;
+// ##DEFINE_PORT_SECTION::END
+
+
+STATIC FuseResult fuseResult;
+STATIC cv::Rect* currBB;
+STATIC cv::Mat currImg;
+STATIC int end;
+
+STATIC int is_first;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_learn_complete = PORT_INITIALIZE(TASK_ID, "learn_complete");
+// ##INIT_PORT_SECTION::END
+    end = 0;
+    //MQ_SEND(port_learn_complete, (unsigned char*)&end, sizeof(int));
+    // TODO: task initialize code
+#ifdef CAP_GET_LOG
+	is_first = 1;
+#else
+	is_first = 0;
+#endif
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+	// TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&fuseResult, sizeof(FuseResult));
+#ifdef CAP_DEBUG
+	printf("Learning_start\n");
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC,&start);
+#endif
+    currBB = fuseResult.BB.valid? &fuseResult.BB.value:NULL;
+    currImg = cv::Mat(imgHeight,imgWidth,CV_8UC1,fuseResult.mat.data);
+    if(currBB != NULL && !is_first)
+    {
+	
+		NormalizedPatch patch;
+		
+		tldExtractNormalizedPatchRect(currImg, currBB, patch.values);
+	
+		float *overlap = new float[numWindows];
+		tldOverlapRect(windows, numWindows, currBB, overlap);
+ 
+		//Add all bounding boxes with high overlap
+	
+		std::vector<std::pair<int, float> > positiveIndices;
+		std::vector<int> negativeIndices;
+		std::vector<int> negativeIndicesForNN;
+	
+		//First: Find overlapping positive and negative patches
+	
+		for(int i = 0; i < numWindows; i++)
+		{
+	
+			if(overlap[i] > 0.6)
+			{
+				positiveIndices.push_back(std::pair<int, float>(i, overlap[i]));
+			}
+	
+			if(overlap[i] < 0.2)
+			{
+				if(detectionResult->posteriors[i] > 0.1)   //TODO: Shouldn't this read as 0.5?
+				{
+					negativeIndices.push_back(i);
+				}
+        
+				if(detectionResult->posteriors[i] > 0.5)
+				{
+					negativeIndicesForNN.push_back(i);
+				}
+	
+			}
+		}
+	
+		sort(positiveIndices.begin(), positiveIndices.end(), tldSortByOverlapDesc);
+	
+		std::vector<NormalizedPatch> patches;
+	
+		patch.positive = 1;
+		patches.push_back(patch);
+		//TODO: Flip
+	
+	
+		int numIterations = std::min<size_t>(positiveIndices.size(), 10); //Take at most 10 bounding boxes (sorted by overlap)
+	
+		for(size_t i = 0; i < negativeIndices.size(); i++)
+		{
+			int idx = negativeIndices.at(i);
+			//TODO: Somewhere here image warping might be possible
+			LIBCALL(EC, learn, &windows[TLD_WINDOW_SIZE * idx], false, &detectionResult->featureVectors[numTrees * idx]);
+		}
+	
+		//TODO: Randomization might be a good idea
+		for(int i = 0; i < numIterations; i++)
+		{
+			int idx = positiveIndices.at(i).first;
+                //TODO: Somewhere here image warping might be possible
+                LIBCALL(EC, learn, &windows[TLD_WINDOW_SIZE * idx], true, &detectionResult->featureVectors[numTrees * idx]);
+		}
+	
+		for(size_t i = 0; i < negativeIndicesForNN.size(); i++)
+		{
+			int idx = negativeIndicesForNN.at(i);
+	
+			NormalizedPatch patch;
+			tldExtractNormalizedPatchBB(currImg, &windows[TLD_WINDOW_SIZE * idx], patch.values);
+			patch.positive = 0;
+			patches.push_back(patch);
+		}
+	
+		LIBCALL(NC, learn, patches);
+	
+		//cout << "NN has now " << detectorCascade->nnClassifier->truePositives->size() << " positives and " << detectorCascade->nnClassifier->falsePositives->size() << " negatives.\n";
+	
+		delete[] overlap;
+	}
+	else
+	{
+		is_first = 0;
+	}
+#ifdef CAP_DEBUG
+	clock_gettime(CLOCK_MONOTONIC,&end);
+	uint64_t diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	printf("Learning function END - time spent : %llu\n", (long long unsigned int) diff / 1000);
+#endif
+	MQ_SEND(port_learn_complete, (unsigned char*)&end, sizeof(int));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

@@ -1,0 +1,387 @@
+/************************************
+ *
+ * File : Init_3.cic
+ * Date : Jul 23, 2009 11:24 AM
+ *
+ *************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_p71;
+// ##DEFINE_PORT_SECTION::END
+
+/* Define macro for prototyping functions on ANSI & non-ANSI compilers */
+#ifndef ARGS
+#if defined(__STDC__) || defined(__cplusplus)
+#define ARGS(args) args
+#else
+#define ARGS(args) ()
+#endif
+#endif
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+// by jwlee
+#include "ME.h"
+
+/* Define constants TRUE and FALSE for portability */
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+/* Define a complex data type if one has not been defined */
+#if !defined(COMPLEX_DATA)
+#define COMPLEX_DATA 1
+typedef struct complex_data { double real; double imag; } complex;
+#endif
+
+#define CGC_MOD(a,b) ((a)>=(b) ? (a-b):(a))
+#ifndef __CIC__
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
+/* original global declaration */
+typedef struct
+{
+    uint8_t bufYData[(176+64) * 144];
+    uint8_t bufUData[(176/2+32) * 144/2];
+    uint8_t bufVData[(176/2+32) * 144/2];
+} YUVFrameData;
+typedef struct { int m_nCurrFrame; int m_nCurrRef; int m_nPrevRef; } IPoc;
+#define REFERENCE_FRAME_COUNT 1
+#define MAX_GOP_SIZE		250
+#define MIN_GOP_SIZE		25
+#define SCENE_CUT			40 // How aggressively to insert extra I-frames
+#define MIN_QP_VALUE		10
+#define MAX_QP_VALUE		51
+#define BITRATE_VALUE		1000
+#define MAX_QP_STEP			4
+#define MAX_ME_RANGE		16
+#define SUBPIXEL_ME_P		5
+#define FPS_NUM				25
+#define FPS_DEN				2
+#define RATE_TOLERANCE		1.0
+#define IP_FACTOR			1.4
+
+#define LEVEL_IDC			51
+#define LEVEL_FRAME_SIZE	36864 	// max frame size (macroblocks)
+#define LEVEL_DPB			70778880 // max decoded picture buffer (bytes)
+#define LEVEL_MBPS			983040   // max macroblock processing rate (macroblocks/sec)
+#define LEVEL_MV_RANGE		512
+
+
+// added by jwlee 2008.05.09
+//#define FILE_NAME "/home/iloy/FOREMAN.QCIF"
+//#define FILE_NAME "/home/dac09/workspace/Hae/schematic/CELL_x264.files/CICTask/FOREMAN.QCIF"
+#define FILE_NAME "FOREMAN.QCIF"
+#define FRAME_TYPE_IDR		0
+#define FRAME_TYPE_P		1
+
+#define SPS_CROP_RIGHT		((-176)&5)
+#define SPS_CROP_BOTTOM		((-144)&15)
+#define SPS_B_CROP			(SPS_CROP_RIGHT||SPS_CROP_BOTTOM)
+#define SPS_MAX_FRAME_NUM	8
+#define SPS_MAX_POC_LSB		(SPS_MAX_FRAME_NUM+1)
+FILE *fpYUV_1872 = NULL;
+int g_iFrame_1873 = -1;
+int i_last_idr_1874 = -MAX_GOP_SIZE;
+int i_idr_pic_id = 0;
+typedef struct
+{
+    int i_type;
+    int i_first_mb;
+    int i_last_mb;		
+    int i_frame_num;		
+    int i_idr_pic_id;
+    int i_poc_lsb;		
+    int b_num_ref_idx_override;		
+    int i_qp;
+    int i_qp_delta;		
+    int i_disable_deblocking_filter_idc;		
+} SliceHeader;
+
+/////////////////////////////////////
+
+typedef struct{
+    int output[99];
+    int o_intFrameType;
+    SliceHeader o_msgSliceHeader;
+    init_info i_s_info;
+} InitMEPacket;
+
+#define SPS_MB_WIDTH ((176+15)/16)    
+#define SPS_MB_HEIGHT ((144+15)/16)
+#define QP_CONSTANT 26
+#define QP_CONSTANT_I 23
+// by iloy 2008.07.06
+#if 0
+struct Uint8_tArr256
+{
+    uint8_t data[256];
+};
+struct Uint8_tArr64
+{
+    uint8_t data[64];
+};
+#endif
+/* lambda = pow(2,qp/6-2) */
+STATIC const int i_qp0_cost_table[52] = 
+{
+    1, 1, 1, 1, 1, 1, 1, 1,  /*  0-7 */
+    1, 1, 1, 1,              /*  8-11 */
+    1, 1, 1, 1, 2, 2, 2, 2,  /* 12-19 */
+    3, 3, 3, 4, 4, 4, 5, 6,  /* 20-27 */
+    6, 7, 8, 9,10,11,13,14,  /* 28-35 */
+    16,18,20,23,25,29,32,36,  /* 36-43 */
+    40,45,51,57,64,72,81,91   /* 44-51 */
+};
+
+
+YUVFrameData o_msgFrameData_1837;
+int o_intFrameNum_1838;
+int o_intFrameType_1839;
+IPoc o_msgIPoc_1840;
+SliceHeader o_msgSliceHeader_1841;
+int o_intLambda_1843;
+struct Uint8_tArr256 o_msgYBlock_1844;
+struct Uint8_tArr64 o_msgUBlock_1845;
+struct Uint8_tArr64 o_msgVBlock_1846;
+int output_1854;
+int output_1857[99];
+
+// jwlee for index port
+int o_MB_index;
+
+init_info i_s_info;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+STATIC inline void plane_copy( uint8_t *dst, int i_dst,
+        uint8_t *src, int i_src, int w, int h)
+{
+    for( ; h > 0; h-- )
+    {
+        memcpy( dst, src, w );
+        dst += i_dst;
+        src += i_src;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+STATIC int read_frame_yuv( YUVFrameData *pFrameData, int iFrame, FILE *handle)
+{
+    uint8_t buffer[176*144];
+
+    if (ftell(handle) != iFrame * 176 * 144 * 3 / 2)
+        fseek(handle, iFrame * 176 * 144 * 3 / 2, SEEK_SET);
+
+    if (fread(buffer, 1, 176 * 144, handle ) <= 0)
+        return -1;
+    else
+    {
+        plane_copy( pFrameData->bufYData, 176+64,
+                buffer, 176, 176, 144 );	
+    }
+
+    if (fread( buffer, 1, 176 * 144/4, handle ) <= 0)
+        return -1;
+    else
+    {
+        plane_copy( pFrameData->bufUData, (176+64)/2,
+                buffer, 176/2, 176/2, 144/2 );	
+    }
+
+    if (fread( buffer, 1, 176 * 144/4, handle ) <= 0)
+        return -1;
+    else
+    {
+        plane_copy( pFrameData->bufVData, (176+64)/2,
+                buffer, 176/2, 176/2, 144/2 );	
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+TASK_INIT
+{
+    // ##INIT_PORT_SECTION::START
+    port_p71 = PORT_INITIALIZE(TASK_ID, "p71");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    o_intFrameNum_1838 = 0;
+    o_intFrameType_1839 = 0;
+    fpYUV_1872 = fopen(FILE_NAME, "rb");
+
+    if (NULL == fpYUV_1872)
+    {
+        printf("%s open error...\n", FILE_NAME);
+        exit(0);
+    }
+    o_intLambda_1843 = 0;
+    output_1854 = 0;
+    {int i; for(i=0;i<99;i++) output_1857[i] = 0;}
+
+    o_MB_index = 0 ;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    STATIC int phase_99 = 0;
+    STATIC int q_index = 0;
+    InitMEPacket t;
+    // phase 0
+    if ( phase_99 == 0 )
+    {
+        {  /* initI113.XAVIReaderI0 (class CGCXAVIReader) */
+            g_iFrame_1873++;
+            if (read_frame_yuv(&o_msgFrameData_1837, g_iFrame_1873, fpYUV_1872) <0) {
+                //printf("File Open Error.\n");
+                exit(0);
+            }
+
+            o_intFrameNum_1838 = g_iFrame_1873;
+
+            if (g_iFrame_1873 - i_last_idr_1874 >= MAX_GOP_SIZE)
+            {
+                i_s_info.inter_do_it = FRAME_TYPE_IDR;
+                i_last_idr_1874 = g_iFrame_1873;
+                o_msgIPoc_1840.m_nCurrRef = 0;
+                //o_msgIPoc_1840.m_nPrevRef = -1;
+            }
+            else
+            {
+                i_s_info.inter_do_it = FRAME_TYPE_P;
+                o_msgIPoc_1840.m_nCurrRef = 2 * (g_iFrame_1873 - i_last_idr_1874);
+            }
+
+            o_msgIPoc_1840.m_nCurrFrame = 2 * (g_iFrame_1873 - i_last_idr_1874);
+        }
+
+        {  /* initI113.RepeatI38 (class CGCRepeat) */
+            int i;
+            for (i = 0; i < 99; i++) {
+                output_1857[(98-(i))] = i_s_info.inter_do_it;
+            }
+        }
+
+        {  /* initI113.XPreProcessI5 (class CGCXPreProcess) */
+            o_msgSliceHeader_1841.i_type = o_intFrameType_1839;
+            o_msgSliceHeader_1841.i_first_mb = 0;
+            o_msgSliceHeader_1841.i_last_mb = SPS_MB_WIDTH * SPS_MB_HEIGHT;
+            o_msgSliceHeader_1841.i_frame_num = o_intFrameNum_1838;
+            o_msgSliceHeader_1841.i_poc_lsb = 0;
+            o_msgSliceHeader_1841.i_disable_deblocking_filter_idc = 0;
+
+            if (FRAME_TYPE_IDR == o_intFrameType_1839)
+            {
+                o_msgSliceHeader_1841.i_idr_pic_id = i_idr_pic_id;
+                o_msgSliceHeader_1841.b_num_ref_idx_override = 0;
+                o_msgSliceHeader_1841.i_qp = QP_CONSTANT_I;
+                i_idr_pic_id = (i_idr_pic_id + 1) % 65536;
+            }
+            else
+            {
+                o_msgSliceHeader_1841.i_idr_pic_id = -1;
+                o_msgSliceHeader_1841.b_num_ref_idx_override = 1;
+                o_msgSliceHeader_1841.i_qp = QP_CONSTANT;
+            }
+
+            o_msgSliceHeader_1841.i_qp_delta = o_msgSliceHeader_1841.i_qp - QP_CONSTANT;
+            o_msgSliceHeader_1841.i_poc_lsb = o_msgIPoc_1840.m_nCurrRef & ((1<<(SPS_MAX_POC_LSB))-1);
+        }
+
+        memcpy(&t.output, &output_1857, sizeof(int)*99);
+        memcpy(&t.o_msgSliceHeader, &o_msgSliceHeader_1841, sizeof(SliceHeader));
+        t.o_intFrameType = o_intFrameType_1839;
+    } //phase 0 end
+
+
+    { 
+        {
+
+            {  /*initI113.XMBInitI10 (class CGCXMBInit) */
+                int i, j;
+                int mb_phase = phase_99;
+
+                int i_mb_x = mb_phase % SPS_MB_WIDTH;
+                int i_mb_y = mb_phase / SPS_MB_WIDTH;
+                uint8_t *p_plane;
+                uint8_t *p_buf;
+
+                o_MB_index= mb_phase;
+
+                o_intLambda_1843 = i_qp0_cost_table[(FRAME_TYPE_IDR == o_intFrameType_1839) ? QP_CONSTANT_I : QP_CONSTANT];
+
+                for (i = 0; i < 3; i++)
+                {
+                    const int w = (i == 0 ? 16 : 8);
+                    const int i_stride = !i ? (176+64) : (176+64)/2;
+                    p_plane = !i ? o_msgFrameData_1837.bufYData : ((i == 1) ? o_msgFrameData_1837.bufUData : o_msgFrameData_1837.bufVData);
+                    p_buf = !i ? i_s_info.src_block_Y.data : ((i == 1) ? i_s_info.src_block_U.data : i_s_info.src_block_V.data);
+
+                    for (j = 0; j < w; j++)
+                        memcpy(&p_buf[j*w],  &p_plane[ w * ( i_mb_x + i_mb_y * i_stride ) + j * i_stride], w);
+                }
+            }
+
+            {  /* initI113.XInverterI31 (class CGCXInverter) */
+                i_s_info.intra_do_it = !output_1857[q_index];
+            }
+
+            memcpy(&t.i_s_info, &i_s_info, sizeof(init_info));
+            MQ_SEND(port_p71, (unsigned char *)&t, sizeof(InitMEPacket)); // to ME
+        }
+    } /* end repeat, depth 2*/
+
+    phase_99++;
+    q_index++;
+
+    if(phase_99 == 99)
+    {
+        phase_99 = 0;
+        q_index = 0;
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    fclose(fpYUV_1872);
+}
+
+TASK_CODE_END

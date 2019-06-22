@@ -1,0 +1,9 @@
+"./platform/iconImage/SoCBaseSimpleMemoryP.image"
+68 72
+Rectangle 4 12 56 48 15790320 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "SoCBaseSimpleMemoryP"
+InArrowLine 0 28 2 0 0
+InArrowLine 0 44 2 0 0
+InArrowLine 32 64 0 -2 16762880
+Image "./platform/icon/block_memory.gif" 16 20 32 32

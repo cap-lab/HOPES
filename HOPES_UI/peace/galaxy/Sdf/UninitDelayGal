@@ -1,0 +1,16 @@
+Domain "CGC"
+Target "TclTk_Target"
+TargetParameter "logFile" STRING ""
+TargetParameter "loopScheduler" STRING "DEF #choices: DEF, CLUST,ACYLOOP"
+TargetParameter "schedulePeriod" FLOAT "0.0"
+Run 10
+Star "./icon/Ramp.icon" I0 8 40 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0" "value" FLOAT "0.0"
+Star "./icon/Ramp.icon" I2 8 104 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0" "value" FLOAT "0.0"
+Star "./icon/outport.icon" I4 184 56 0
+StarParameter 4 "name" string "output1" "direction" string "out" "multi?" boolean "false" "type" string "FLOAT"
+Star "./icon/outport.icon" I6 184 120 0
+StarParameter 4 "name" string "output2" "direction" string "out" "multi?" boolean "false" "type" string "FLOAT"
+Line I8 "{-1.5 1.5}" Star I0 "output" Star I4 "input" 1 60 72 184 72 
+Line I9 "5" Star I2 "output" Star I6 "input" 1 60 136 184 136 

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="Menu" x="360" y="392" initial_state="true" hierarchical="false" />
+      <state name="VideoPlay" x="364" y="136" initial_state="false" hierarchical="false" />
+      <state name="VideoPhone" x="652" y="136" initial_state="false" hierarchical="false" />
+      <state name="MusicPlay" x="652" y="388" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_UItoVP" src_state="Menu" dst_state="VideoPlay" curve0_x="288" curve0_y="320" curve1_x="332" curve1_y="204">
+        <condition_list>
+          <condition type="Input" inport_name="in_UserInput" value="1" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_VPtoUI" src_state="VideoPlay" dst_state="Menu" curve0_x="436" curve0_y="236" curve1_x="420" curve1_y="360">
+        <condition_list>
+          <condition type="Task Status" taskName="H264Dec_VIDEO" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="MP3Dec" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_UItoMP" src_state="Menu" dst_state="MusicPlay" curve0_x="448" curve0_y="516" curve1_x="624" curve1_y="500">
+        <condition_list>
+          <condition type="Input" inport_name="in_UserInput" value="3" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_MPtoUI" src_state="MusicPlay" dst_state="Menu" curve0_x="584" curve0_y="420" curve1_x="508" curve1_y="420">
+        <condition_list>
+          <condition type="Task Status" taskName="MP3Dec" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_VPhtoMP" src_state="MusicPlay" dst_state="VideoPhone" curve0_x="776" curve0_y="348" curve1_x="756" curve1_y="212">
+        <condition_list>
+          <condition type="Input" inport_name="in_Interrupt" value="q" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_MPtoVPh" src_state="VideoPhone" dst_state="MusicPlay" curve0_x="660" curve0_y="232" curve1_x="652" curve1_y="324">
+        <condition_list>
+          <condition type="Task Status" taskName="H264Dec_PHONE" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="x264Enc" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="G723Enc" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="G723Dec" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_VPhtoVP" src_state="VideoPhone" dst_state="VideoPlay" curve0_x="588" curve0_y="92" curve1_x="456" curve1_y="108">
+        <condition_list>
+          <condition type="Task Status" taskName="H264Dec_PHONE" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="x264Enc" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="G723Enc" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="G723Dec" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_VPtoVPh" src_state="VideoPlay" dst_state="VideoPhone" curve0_x="468" curve0_y="172" curve1_x="592" curve1_y="168">
+        <condition_list>
+          <condition type="Input" inport_name="in_Interrupt" value="q" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_UItoVPh" src_state="Menu" dst_state="VideoPhone" curve0_x="508" curve0_y="360" curve1_x="632" curve1_y="264">
+        <condition_list>
+          <condition type="Input" inport_name="in_UserInput" value="2" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_VPhtoUI" src_state="VideoPhone" dst_state="Menu" curve0_x="552" curve0_y="228" curve1_x="460" curve1_y="292">
+        <condition_list>
+          <condition type="Task Status" taskName="H264Dec_PHONE" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="x264Enc" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="G723Enc" status="Stop" comparator="0" />
+          <condition type="Task Status" taskName="G723Dec" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

@@ -1,0 +1,71 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "FirstHarmonicDFTLength" int "205"
+Parameter "SecondHarmonicDFTLength" int "201"
+Parameter "MinFirstHarmonicPower" float "2.0E-12"
+Parameter "MinRatioLowToHighFreq" float "1/3      # 1 / (twist ratio)"
+Parameter "MaxRatioLowToHighFreq" float "6        # reverse twist ratio"
+Parameter "MinRatioSecondToFirstHarmonic" float "0.25"
+Parameter "MinRatioOtherToMaxAmplitude" float "0.25"
+Parameter "SamplingRate" int "8000"
+Parameter "scheduler" string "loop"
+Star "./icon/inport.icon" I0 0 152 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Gain.icon" I2 48 152 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1.0"
+Star "./icon/Fork2.icon" I5 108 152 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/DTMFDecoderBank.icon" I9 176 96 0
+StarParameter 13 "DFTLengthFirstHarmonic" int "FirstHarmonicDFTLength" "DFTLengthSecondHarmonic" int "SecondHarmonicDFTLength" "DFTCoeffFreq1Harmonic1" int "(FirstHarmonicDFTLength*697+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq1Harmonic2" int "(SecondHarmonicDFTLength*2*697+SamplingRate/2)/SamplingRate  #round up" "DFTCoeffFreq2Harmonic1" int "(FirstHarmonicDFTLength*770+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq2Harmonic2" int "(SecondHarmonicDFTLength*2*770+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq3Harmonic1" int "(FirstHarmonicDFTLength*852+SamplingRate/2)/SamplingRate    # round up" "DFTCoeffFreq3Harmonic2" int "(SecondHarmonicDFTLength*2*852+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq4Harmonic1" int "(FirstHarmonicDFTLength*941+SamplingRate/2)/SamplingRate    # round up" "DFTCoeffFreq4Harmonic2" int "(SecondHarmonicDFTLength*2*941+SamplingRate/2)/SamplingRate   # round up" "MinFirstHarmonicAmplitude" int "MinFirstHarmonicPower" "MinRationSecondToFirstHarmonic" float "MinRatioSecondToFirstHarmonic" "MinRatioOtherToMaxAmplitude" float "MinRatioOtherToMaxAmplitude"
+Galaxy "./icon/DTMFDecoderBank.icon" I14 176 208 0
+StarParameter 13 "DFTLengthFirstHarmonic" int "FirstHarmonicDFTLength" "DFTLengthSecondHarmonic" int "SecondHarmonicDFTLength" "DFTCoeffFreq1Harmonic1" int "(FirstHarmonicDFTLength*1209+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq1Harmonic2" int "(SecondHarmonicDFTLength*2*1209+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq2Harmonic1" int "(FirstHarmonicDFTLength*1336+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq2Harmonic2" int "(SecondHarmonicDFTLength*2*1336+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq3Harmonic1" int "(FirstHarmonicDFTLength*1477+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq3Harmonic2" int "(SecondHarmonicDFTLength*2*1477+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq4Harmonic1" int "(FirstHarmonicDFTLength*1633+SamplingRate/2)/SamplingRate   # round up" "DFTCoeffFreq4Harmonic2" int "(SecondHarmonicDFTLength*2*1633+SamplingRate/2)/SamplingRate   # round up" "MinFirstHarmonicAmplitude" int "MinFirstHarmonicPower" "MinRationSecondToFirstHarmonic" float "MinRatioSecondToFirstHarmonic" "MinRatioOtherToMaxAmplitude" float "0.25"
+Star "./icon/Gain.icon" I19 268 152 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1/MaxRatioLowToHighFreq"
+Star "./icon/Gain.icon" I22 268 180 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "MinRatioLowToHighFreq"
+Star "./icon/GainInt.icon" I25 468 68 0
+StarParameter 2 "procId" INT "-1" "gain" INT "4"
+Star "./icon/AddInt2.icon" I28 532 68 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Test.icon" I32 372 104 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "GE" "crossingsOnly" INT "FALSE"
+Star "./icon/Test.icon" I36 380 216 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "GE" "crossingsOnly" INT "FALSE"
+Star "./icon/And.icon" I40 488 160 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/TableInt.icon" I43 612 52 0
+StarParameter 3 "procId" INT "-1" "values" INTARRAY "1 2 3 10 4 5 6 11 7 8 9 12 14 0 15 13" "runTimeCheck" INT "YES"
+Star "./icon/DTMFPostTest.icon" I46 608 148 0
+StarParameter 2 "procId" INT "-1" "initialLastInput" INT "-1"
+Star "./icon/outport.icon" I50 688 68 0
+StarParameter 4 "name" string "key" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I52 684 164 0
+StarParameter 4 "name" string "valid" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I54 "" Star I2 "output" Star I5 "input" 1 104 168 108 168 
+Line I55 "" Star I2 "input" Star I0 "output" 1 48 168 32 168 
+Line I56 "" Star I28 "input#1" Star I25 "output" 1 532 84 524 84 
+Line I57 "" Star I28 "output" Star I43 "input" 1 568 84 612 84 
+Line I58 "" Star I40 "output" Star I46 "valid" 1 581 191 608 188 
+Line I59 "" Star I43 "output" Star I50 "input" 1 668 84 688 84 
+Line I60 "" Star I46 "output" Star I52 "input" 1 664 180 684 180 
+Line I61 "" Star I5 "output#2" Star I14 "input" 1 161 176 176 240 
+Line I62 "" Star I5 "output#1" Star I9 "input" 1 161 160 176 128 
+Line I63 "" Star I9 "freqPower" Star I32 "upper" 1 232 120 372 128 
+Line I64 "" Star I9 "freqPower" Star I19 "input" 1 232 120 268 168 
+Line I65 "" Star I14 "freqPower" Star I22 "input" 1 232 232 268 196 
+Line I66 "" Star I22 "output" Star I32 "lower" 1 324 196 372 144 
+Line I67 "" Star I19 "output" Star I36 "lower" 1 324 168 380 256 
+Line I68 "" Star I14 "freqPower" Star I36 "upper" 1 232 232 380 240 
+Line I69 "" Star I32 "output" Star I40 "input" 1 428 136 488 192 
+Line I70 "" Star I36 "output" Star I40 "input" 1 436 248 488 192 
+Line I71 "" Star I14 "valid" Star I40 "input" 1 232 248 488 192 
+Line I72 "" Star I9 "valid" Star I40 "input" 1 232 136 488 192 
+Line I73 "" Star I9 "index" Star I25 "input" 1 232 128 468 84 
+Line I74 "" Star I14 "index" Star I28 "input#2" 2 232 240 352 268 550 103 
+Line I75 "" Star I28 "output" Star I46 "input" 1 568 84 608 172 
+CommText 184 4 20 -16777216 "Dual-Tone Modulated-Frequency Decoder"
+CommText 108 48 16 -16777216 "Low frequency\ndetection bank"
+CommText 124 264 16 -16777216 "High frequency\ndetection bank"
+CommText 380 56 16 -16777216 "row index"
+CommText 364 284 16 -16777216 "column index"

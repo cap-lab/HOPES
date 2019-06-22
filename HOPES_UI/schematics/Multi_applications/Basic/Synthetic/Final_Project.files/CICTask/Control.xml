@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0" >
+    <state_list>
+      <state name="IDLE" x="216" y="136" initial_state="true" hierarchical="false"/>
+      <state name="GRAPH" x="452" y="92" initial_state="false" hierarchical="false"/>
+      <state name="IMAGE" x="440" y="272" initial_state="false" hierarchical="false"/>
+    </state_list>
+    <transition_list>
+      <transition name="transition_0" src_state="IDLE" dst_state="GRAPH" curve0_x="316" curve0_y="100" curve1_x="368" curve1_y="88">
+        <condition_list>
+          <condition type="Input" inport_name="in" value="1" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_1" src_state="GRAPH" dst_state="IDLE" curve0_x="460" curve0_y="208" curve1_x="312" curve1_y="208">
+        <condition_list>
+          <condition type="Task Status" taskName="Graph" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_2" src_state="IDLE" dst_state="IMAGE" curve0_x="256" curve0_y="224" curve1_x="344" curve1_y="332">
+        <condition_list>
+          <condition type="Input" inport_name="in" value="2" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_3" src_state="IMAGE" dst_state="IDLE" curve0_x="472" curve0_y="304" curve1_x="244" curve1_y="184">
+        <condition_list>
+          <condition type="Task Status" taskName="Image" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+
+</fsms>
+

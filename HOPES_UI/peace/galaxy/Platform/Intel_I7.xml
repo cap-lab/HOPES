@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<platform>
+  <name>Intel_I7</name>
+  <target>MulticoreHost</target>
+  <version>1</version>
+  <description>
+    <![CDATA[]]>
+  </description>
+  <schematic>
+    <![CDATA[Domain "Archi"
+Target "platform"
+TargetParameter "PredefinedTarget" STRING "HSim ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
+Run 10
+Platform Bus "./platform/library/bus/SharedBus.icon" I0 88 152 0 101
+BusPort I1 I0 "SharedBus_I1" "SharedBus" 116 162 false 0
+BusPort I2 I0 "SharedBus_I2" "SharedBus" 160 162 true multiple "" "0" "0" "0" "0"
+Platform Core "./platform/library/core/Intel_I7_core.icon" I4 16 16 0
+StarParameter 8 "processorId" INT "0" "model" STRING "intel_i7" "category" STRING "PROCESSOR" "OS" STRING "uC-OS ##NoOS,uC-OS,Linux,Windows" "scheduler" STRING  "RR ##EDF,RM,RR" "pool_size" INT "4" "AllowDataParallel" STRING "FALSE ##TRUE,FALSE" "ipAddress" STRING  "000.000.000.000"
+Section I4 0 
+Region I4 0
+Platform Memory "./platform/library/memory/HostMemory.icon" I6 204 8 0
+StarParameter 3 "model" STRING "sharedMem" "category" STRING "MEMORY" "size" STRING  "0x10000000"
+Line I8 "0" Star I4 "master" Star I0 "SharedBus_I1" 1 48 78 116 162 
+Line I9 "0" Star I6 "Slave" Star I0 "SharedBus_I2" 1 236 72 160 162 
+DefaultSlave I0 null
+]]>
+  </schematic>
+</platform>
+

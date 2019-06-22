@@ -1,0 +1,10 @@
+"./platform/iconImage/DynsocVLD.image"
+68 72
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "DynsocVLD"
+InArrowLine 0 28 2 0 0
+InArrowLine 0 44 2 0 0
+OutArrowLine 61 36 1 0 0
+InArrowLine 24 64 0 -2 16762880
+OutArrowLine 40 62 0 1 16762880

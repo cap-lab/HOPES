@@ -1,0 +1,56 @@
+Domain "CGC"
+Target "CGC-SystemC"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING "-DDISPLAY -DCC -D_READ_OPTIMIZE"
+TargetParameter "linkOptions" STRING "-lm -lX11 -lXext -L/usr/X11R6/lib"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "Init. to Global?" INT "YES ##NO, YES"
+Run 10
+Parameter "period" int "-1"
+Parameter "width" int "176"
+Parameter "height" int "144"
+Star "./icon/BlackHole.icon" I0 112 208 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ConstInt.icon" I2 160 184 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Star "./library/Peace/Port/inport.ilink" I4 28 20 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/H263DisplayFrame_cpp.icon" I6 468 8 0
+StarParameter 4 "procId" INT "-1" "enable" INT "1" "width" INT "176" "height" INT "144"
+Star "./icon/H263FrameDecodeStream_cpp.icon" I10 96 4 0
+StarParameter 8 "procId" INT "-1" "use_gobsync" INT "1" "tdr" INT "3" "width" INT "176" "height" INT "144" "trace" INT "0" "inputFile" STRING "stream.263" "blk_cnt" INT "6"
+Galaxy "./icon/DecForDec_cpp.icon" I21 368 8 0
+StarParameter 2 "width" int "width" "height" int "height"
+Line I34 "" Star I21 "Y" Star I6 "Y" 1 424 32 468 32 
+Line I35 "" Star I21 "U" Star I6 "U" 1 424 40 468 40 
+Line I36 "" Star I21 "V" Star I6 "V" 1 424 48 468 48 
+Line I37 "" Star I10 "YBlock" Star I21 "YQ" 1 152 28 368 32 
+Line I38 "" Star I10 "UBlock" Star I21 "UQ" 1 152 36 368 40 
+Line I39 "" Star I10 "VBlock" Star I21 "VQ" 1 152 44 368 48 
+Line I40 "" Star I4 "output" Star I10 "varin" 1 60 36 96 36 
+Line I41 "" Star I10 "dx" Star I21 "dx" 1 152 52 368 72 
+Line I42 "" Star I10 "dy" Star I21 "dy" 1 152 60 368 80 
+Line I43 "" Star I10 "type" Star I0 "input" 1 152 92 112 212 
+Line I44 "" Star I2 "output" Star I21 "type" 1 247 200 368 88 
+Line I45 "" Star I10 "QP" Star I21 "Q" 1 152 84 368 56 
+Line I46 "" Star I10 "mode" Star I21 "mode" 1 152 68 368 64 
+Line I47 "" Star I10 "CBP" Star I21 "CBP" 1 152 76 368 96 
+CommText 168 216 10 -16777216 "It is OK since 'mode' replaces 'type'"
+CommText 232 248 24 -16777216 "H.263 Decoder"

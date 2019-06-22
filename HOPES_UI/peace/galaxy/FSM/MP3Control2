@@ -1,0 +1,35 @@
+Domain "FSM"
+Target "default-FSM"
+Run 10
+Parameter "InputNames" string "start stop suspend prev next"
+Parameter "InputTypes" string "PURE PURE PURE PURE PURE"
+Parameter "InputScopes" string "{0,1} {0,1} {0,1} {0,1} {0,1}"
+Parameter "OutputNames" string "outtr"
+Parameter "OutputTypes" string "VALUE"
+Parameter "OutputScopes" string "{1,3}"
+Parameter "InternalNames" string ""
+Parameter "InternalTypes" string ""
+Parameter "InternalScopes" string ""
+Parameter "VariableNames" string "track"
+Parameter "VariableTypes" string "VALUE"
+Parameter "VariableScopes" string "{0,2}"
+Parameter "VariableInits" string "0"
+Star "./icon/StateStar.icon" I0 280 64 0
+StarParameter 4 "name" STRING "stopped" "scripts" STRING "stop mp3" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I9 80 64 0
+StarParameter 4 "name" STRING "Playing" "scripts" STRING "run mp3" "init" STRING "TRUE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I18 184 200 0
+StarParameter 4 "name" STRING "suspended" "scripts" STRING "suspend mp3" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I27 80 320 0
+StarParameter 4 "name" STRING "Set_Track" "scripts" STRING "set mp3 gtrack track-1" "init" STRING "TRUE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I36 256 320 0
+StarParameter 4 "name" STRING "Set_Track1" "scripts" STRING "set mp3 gtrack track+1" "init" STRING "FALSE" "internalFSM" STRING ""
+Line I45  2 "condition" stringList "stop==1" "actions" stringList "" Star I9 "input6" Star I0 "input5" 2 135 73 184 32 289 73 
+Line I46  2 "condition" stringList "start==1" "actions" stringList "" Star I0 "input8" Star I9 "input7" 2 289 119 248 160 135 119 
+Line I47  2 "condition" stringList "suspend==1" "actions" stringList "" Star I9 "input3" Star I18 "input4" 2 112 128 104 200 184 232 
+Line I48  2 "condition" stringList "start==1" "actions" stringList "" Star I18 "input5" Star I9 "input7" 2 193 209 200 160 135 119 
+Line I49  2 "condition" stringList "stop==1" "actions" stringList "" Star I18 "input6" Star I0 "input8" 2 239 209 296 192 289 119 
+Line I50  2 "condition" stringList "prev==1 && track>0 " "actions" stringList "{track=track-1} {outtr=track}" Star I27 "input7" Star I27 "input3" 3 135 375 152 408 104 416 112 384 
+Line I51  2 "condition" stringList "next==1 && track<2" "actions" stringList "{track=track+1} {outtr=track+2}" Star I27 "input6" Star I36 "input5" 3 135 329 168 296 232 304 265 329 
+Line I52  2 "condition" stringList "prev==1 && track>0" "actions" stringList "{track=track-1} {outtr=track}" Star I36 "input8" Star I27 "input7" 3 265 375 224 392 168 384 135 375 
+Line I53  2 "condition" stringList "next==1 && track<2" "actions" stringList "{track=track+1} {outtr=track+2}" Star I36 "input7" Star I36 "input3" 3 311 375 336 400 280 408 288 384 

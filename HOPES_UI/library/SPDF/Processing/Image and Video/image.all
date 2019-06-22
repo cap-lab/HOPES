@@ -1,0 +1,52 @@
+Domain "CGC"
+Target "default-CGC"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+Run 10
+Star "./icon/Contrast.icon" I0 180 188 0
+StarParameter 7 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "contrastType" STRING "Uniform ##Uniform,Hyperbolic" "maxInMatrix" INT "255" "minInMatrix" INT "0"
+Star "./icon/DisplayRGB.icon" I3 168 84 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "command" STRING "xv" "imageName" STRING "temp" "saveImage" STRING "no ##yes,no"
+Star "./icon/DisplayImage.icon" I8 172 16 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "command" STRING "xv" "imageName" STRING "temp" "saveImage" STRING "no ##yes,no"
+Star "./icon/DisplayVideo.icon" I11 292 12 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "machine" STRING "UNIX ##UNIX,WINDOW"
+Star "./icon/Dither.icon" I13 304 224 0
+StarParameter 8 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "ditherType" STRING "Err-Diffusion ##Err-Diffusion,Clustered,Dispersed,Own" "ownMask" FLOATARRAY "" "rowsOwnMask" INT "4" "colsOwnMask" INT "4"
+Star "./icon/EdgeDetect.icon" I16 264 380 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "unsigned char" "threshold" FLOAT "50" "detectorName" STRING "Sobel ##Sobel,Roberts,Prewitt,Frei-Chen"
+Star "./icon/MedianImage.icon" I19 296 288 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "order" INT "3"
+Star "./icon/RGBToYUV.icon" I22 508 220 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "CCIR_601" STRING "YES ##YES,NO"
+Star "./icon/ReadImage.icon" I29 12 16 0
+StarParameter 7 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "unsigned char" "fileName" STRING "$PEACE/src/domains/sdf/demo/ptimage" "frameId" INT "0" "fileType" STRING "PGM ##PGM,BMP"
+Star "./icon/ReadRGB.icon" I34 12 88 0
+StarParameter 7 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "unsigned char" "fileName" STRING "$PEACE/src/domains/sdf/demo/ptimage" "frameId" INT "0" "fileType" STRING "PPM ##PPM,BMP"
+Star "./icon/YUVToRGB.icon" I41 244 152 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "CCIR_601" STRING "YES ##YES,NO"
+Star "./icon/DownImage.icon" I48 428 184 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "factor" INT "2" "phase" INT "0"
+Star "./icon/ImageFilter.icon" I51 372 380 0
+StarParameter 7 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "ownMask" FLOATARRAY "" "rowsOwnMask" INT "4" "colsOwnMask" INT "4"
+Star "./icon/TargetDetect.icon" I54 152 368 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "threshold" FLOAT "50" "detectorName" STRING "DEF ##DEF"
+Star "./icon/MarkImage.icon" I59 200 280 0
+StarParameter 6 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "markDuration" INT "300" "markSize" INT "10"
+Star "./icon/DisplayRGBVideo.icon" I67 296 92 0
+StarParameter 5 "procId" INT "-1" "Width" INT "width" "Height" INT "height" "Type" STRING "{type}" "machine" STRING "UNIX ##UNIX,WINDOW"

@@ -1,0 +1,11 @@
+"./platform/iconImage/DynsocLcdcon_ahb.image"
+68 72
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "DynsocLcdcon_ahb"
+InArrowLine 0 28 2 0 0
+InArrowLine 0 44 2 0 0
+OutArrowLine 61 36 1 0 0
+InArrowLine 16 64 0 -2 16762880
+OutArrowLine 32 62 0 1 16762880
+OutArrowLine 48 62 0 1 16762880

@@ -1,0 +1,8 @@
+"./platform/iconImage/DynsocAPB.image"
+100 20
+OutArrowLine 8 -2 0 1 -16777216
+OutArrowLine 20 -2 0 1 -16777216
+OutArrowLine 20 22 0 -1 -13312
+bus 1 2 99 16 -256 true
+bus 1 2 99 16 -16777216 false
+Text 5 -3 11 -16777216 "DynsocAPB"

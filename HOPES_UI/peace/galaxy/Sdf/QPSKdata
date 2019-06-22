@@ -1,0 +1,30 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "rotateReal" float "1.0"
+Parameter "rotateImag" float "0.0"
+Star "./icon/Sin.icon" I0 168 156 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I3 168 80 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToCx.icon" I6 236 116 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/outport.ilink" I10 440 132 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/GainCx.icon" I12 304 132 0
+StarParameter 2 "procId" INT "-1" "gain" COMPLEX "(rotateReal, rotateImag)"
+Star "./icon/Quant.icon" I15 84 108 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "0.25 0.5 0.75" "levels" FLOATARRAY "0.785398 2.35619449 3.9269908 5.497787"
+Star "./icon/IIDUniform.icon" I18 16 108 0
+StarParameter 4 "procId" INT "-1" "lower" FLOAT "0.0" "upper" FLOAT "1.0" "seed" INT "1"
+Star "./icon/Repeat.icon" I20 372 116 0
+StarParameter 2 "procId" INT "-1" "numTimes" INT "N"
+Line I23 "" Star I3 "output" Star I6 "real" 1 224 112 236 140 
+Line I24 "" Star I0 "output" Star I6 "imag" 1 224 188 236 156 
+Line I25 "" Star I15 "input" Star I18 "output" 1 84 140 72 140 
+Line I26 "" Star I15 "output" Star I3 "input" 1 140 140 168 112 
+Line I27 "" Star I15 "output" Star I0 "input" 1 140 140 168 188 
+Line I28 "" Star I6 "output" Star I12 "input" 1 292 148 304 147 
+Line I29 "" Star I12 "output" Star I20 "input" 1 360 147 372 148 
+Line I30 "" Star I20 "output" Star I10 "input" 1 424 148 440 148 
+CommText 48 24 20 -16777216 "Data source with rectangular pulse shape"

@@ -1,0 +1,10 @@
+Platform
+Core
+"IRobotCreate_core"
+68 72
+"./platform/iconImage/IRobotCreate_core.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "MasterOut"
+outport "output" 62 36 false
+inport "input" 0 36 false

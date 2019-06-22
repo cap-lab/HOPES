@@ -1,0 +1,52 @@
+Domain "DE"
+Target "<parent>"
+Run 10
+Parameter "Size" int "25"
+Star "./icon/inport.icon" I0 16 8 0
+StarParameter 4 "name" string "demand" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I2 16 48 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I4 200 72 0
+StarParameter 4 "name" string "losses" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Case2.icon" I6 72 40 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/FIFOQueue.icon" I11 288 24 1
+StarParameter 4 "nodename" STRING "" "capacity" INT "Size" "numDemandsPending" INT "1" "consolidateDemands" INT "TRUE"
+Star "./icon/outport.icon" I17 328 136 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/BlackHole.icon" I19 360 96 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Fork.icon" I21 376 64 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/outport.icon" I24 448 48 0
+StarParameter 4 "name" string "length" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/TestLevel.icon" I26 264 176 2
+StarParameter 3 "nodename" STRING "" "threshold" FLOAT "Size" "crossingsOnly" INT "TRUE"
+Star "./icon/TestLevel.icon" I29 264 256 2
+StarParameter 3 "nodename" STRING "" "threshold" FLOAT "1" "crossingsOnly" INT "TRUE"
+Star "./icon/And2.icon" I32 128 256 2
+StarParameter 2 "nodename" STRING "" "logic" STRING "AND"
+Star "./icon/Or2.icon" I36 88 176 2
+StarParameter 2 "nodename" STRING "" "logic" STRING "AND"
+Star "./icon/Sampler.icon" I40 64 344 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Fork2.icon" I44 200 360 0
+StarParameter 1 "nodename" STRING ""
+Line I48 "" Star I6 "output#2" Star I4 "input" 1 163 84 200 88 
+Line I49 "" Star I6 "output#1" Star I11 "inData" 1 163 48 307 24 
+Line I50 "" Star I0 "output" Star I11 "demand" 2 48 24 248 16 273 88 
+Line I51 "" Star I11 "outData" Star I17 "input" 1 307 152 328 152 
+Line I52 "" Star I19 "input" Star I11 "overflow" 1 360 100 337 98 
+Line I53 "" Star I11 "size" Star I21 "input" 1 337 76 376 80 
+Line I54 "" Star I21 "output" Star I24 "input" 1 429 80 448 64 
+Line I55 "" Star I21 "output" Star I26 "input" 1 429 80 320 192 
+Line I56 "" Star I21 "output" Star I29 "input" 1 429 80 320 272 
+Line I57 "" Star I36 "input#2" Star I26 "output" 1 144 184 264 192 
+Line I58 "" Star I32 "output" Star I36 "input#1" 2 128 288 232 248 144 200 
+Line I59 "1" Star I44 "output#1" Star I32 "input#1" 1 253 368 222 304 
+Line I60 "" Star I40 "output" Star I44 "input" 1 176 376 200 376 
+Line I61 "" Star I36 "output" Star I40 "input" 2 88 192 56 208 64 376 
+Line I62 "1" Star I44 "output#2" Star I6 "control" 3 253 384 24 424 112 120 116 92 
+Line I63 "" Star I21 "output" Star I40 "clock" 1 429 80 120 410 
+Line I64 "" Star I2 "output" Star I6 "input" 1 48 64 72 68 
+Line I65 "" Star I29 "output" Star I32 "input#2" 1 264 272 222 273 

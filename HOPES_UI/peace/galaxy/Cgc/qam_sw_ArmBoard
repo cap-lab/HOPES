@@ -1,0 +1,97 @@
+Domain "CGC"
+Target "CGC-ArmBoard"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PTOLEMY_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "interfaceArch" STRING "Shared memory"
+TargetParameter "sndNum" STRING "1"
+TargetParameter "rcvNum" STRING "1"
+TargetParameter "sndFWL" STRING "8"
+TargetParameter "rcvFWL" STRING "8"
+Run 10
+Star "./icon/IIDUniform.icon" I0 16 16 0
+StarParameter 4 "procId" INT "-1" "lower" FLOAT "0.0" "upper" FLOAT "2.0" "seed" INT "1"
+Star "./icon/Quant.icon" I2 136 16 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "1.0" "levels" FLOATARRAY ""
+Star "./icon/BitsToInt.icon" I5 432 16 0
+StarParameter 2 "procId" INT "-1" "nBits" INT "2"
+Star "./icon/Distributor2.icon" I8 56 112 0
+StarParameter 2 "procId" INT "-1" "blockSize" INT "1"
+Star "./icon/TableInt.icon" I12 240 120 0
+StarParameter 3 "procId" INT "-1" "values" INTARRAY "1 0 2 3" "runTimeCheck" INT "YES"
+Star "./icon/AddInt2.icon" I15 440 144 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ModuloInt.icon" I19 512 128 0
+StarParameter 2 "procId" INT "-1" "modulo" INT "4"
+Star "./icon/Fork2.icon" I22 656 144 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/GainInt.icon" I26 368 200 2
+StarParameter 2 "procId" INT "-1" "gain" INT "4"
+Star "./icon/TableCx.icon" I29 32 240 0
+StarParameter 3 "procId" INT "-1" "values" COMPLEXARRAY "(1,1) (3,1) (1,3) (3,3) (-1,1) (-1,3) (-3,1) (-3,3) (-1,-1) (-3,-1) (-1,-3) (-3,-3) (1,-1) (1,-3) (3,-1) (3,-3)" "runTimeCheck" INT "YES"
+Star "./icon/CxToRect.icon" I32 24 328 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/AddInt2.icon" I36 168 192 2
+StarParameter 1 "procId" INT "-1"
+Star "./icon/FloatToInt.icon" I40 288 16 0
+StarParameter 2 "procId" INT "-1" "numSample" INT "1"
+Star "./icon/RaisedCosine.icon" I43 208 248 0
+StarParameter 8 "procId" INT "-1" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "16" "length" INT "64" "symbol_interval" INT "16" "excessBW" FLOAT "0.25" "square_root" INT "NO"
+Star "./icon/RaisedCosine.icon" I46 208 328 0
+StarParameter 8 "procId" INT "-1" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "16" "length" INT "64" "symbol_interval" INT "16" "excessBW" FLOAT "0.25" "square_root" INT "NO"
+Star "./icon/ArmBoardSMSnd.icon" I49 440 264 0
+StarParameter 2 "procId" INT "-1" "id" INT "0"
+Star "./icon/ArmBoardSMSnd.icon" I53 440 344 0
+StarParameter 2 "procId" INT "-1" "id" INT "1"
+Star "./icon/ArmBoardSMRcv.icon" I57 88 432 0
+StarParameter 2 "procId" INT "-1" "id" INT "0"
+Star "./icon/Fork.icon" I61 360 264 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Fork.icon" I64 360 344 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/BlackHole.icon" I67 248 464 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Ramp.icon" I69 336 432 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0" "value" FLOAT "0.0"
+Star "./icon/ArmBoardDisplay.icon" I71 464 432 0
+StarParameter 8 "procId" INT "-1" "maxX" FLOAT "6.0" "minX" FLOAT "-6.0" "maxY" FLOAT "0" "minY" FLOAT "160" "lastX" INT "0" "lastY" INT "120" "drawLine" INT "1"
+Line I74 "" Star I0 "output" Star I2 "input" 1 112 48 136 48 
+Line I75 "" Star I5 "output" Star I8 "input" 2 560 48 56 104 56 144 
+Line I76 "" Star I8 "output#1" Star I12 "input" 2 184 128 240 136 240 152 
+Line I77 "" Star I12 "output" Star I15 "input#2" 1 368 152 467 187 
+Line I78 "" Star I15 "output" Star I19 "input" 1 496 159 512 160 
+Line I79 "" Star I19 "output" Star I22 "input" 1 640 160 656 159 
+Line I80 "" Star I22 "output#2" Star I26 "input" 1 712 167 424 216 
+Line I81 "" Star I26 "output" Star I36 "input#1" 1 368 216 224 220 
+Line I82 "" Star I36 "input#2" Star I8 "output#2" 1 197 192 184 144 
+Line I83 "" Star I36 "output" Star I29 "input" 2 168 220 24 224 32 272 
+Line I84 "1" Star I22 "output#1" Star I15 "input#1" 3 712 151 704 120 440 120 440 159 
+Line I85 "" Star I2 "output" Star I40 "input" 1 264 48 288 31 
+Line I86 "" Star I40 "output" Star I5 "input" 1 344 31 432 48 
+Line I87 "" Star I29 "output" Star I32 "input" 2 160 272 24 312 24 360 
+Line I88 "" Star I32 "imag" Star I46 "signalIn" 1 152 360 208 360 
+Line I89 "" Star I32 "real" Star I43 "signalIn" 2 152 344 208 344 208 280 
+Line I90 "" Star I43 "signalOut" Star I61 "input" 1 336 280 360 279 
+Line I91 "" Star I61 "output" Star I49 "input" 1 416 279 440 280 
+Line I92 "" Star I46 "signalOut" Star I64 "input" 1 336 360 360 359 
+Line I93 "" Star I64 "output" Star I53 "input" 1 416 359 440 360 
+Line I94 "" Star I61 "output" Star I49 "arcIn" 1 416 279 440 296 
+Line I95 "" Star I64 "output" Star I53 "arcIn" 1 416 359 440 376 
+Line I96 "" Star I53 "arcOut" Star I57 "arcIn" 4 568 376 616 376 616 416 64 416 88 464 
+Line I97 "" Star I49 "arcOut" Star I57 "arcIn" 4 568 296 632 296 632 424 80 424 88 464 
+Line I98 "" Star I57 "arcOut" Star I67 "input" 1 216 464 248 468 
+Line I99 "" Star I71 "inputX" Star I69 "output" 2 464 448 432 448 432 464 
+Line I100 "" Star I57 "output" Star I71 "inputY" 4 216 448 312 448 312 504 464 504 464 464 

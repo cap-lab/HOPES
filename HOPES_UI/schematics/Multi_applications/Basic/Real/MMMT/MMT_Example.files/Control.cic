@@ -1,0 +1,272 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Oct 8, 2012 1:37 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_MENU 0
+#define ID_STATE_VIDEOPLAY 1
+#define ID_STATE_VIDEOPHONE 2
+#define ID_STATE_MUSICPLAY 3
+#define ID_TRANSITION_TRANSITION_UITOVP 0
+#define ID_TRANSITION_TRANSITION_VPTOUI 1
+#define ID_TRANSITION_TRANSITION_UITOMP 2
+#define ID_TRANSITION_TRANSITION_MPTOUI 3
+#define ID_TRANSITION_TRANSITION_VPHTOMP 4
+#define ID_TRANSITION_TRANSITION_MPTOVPH 5
+#define ID_TRANSITION_TRANSITION_VPHTOVP 6
+#define ID_TRANSITION_TRANSITION_VPTOVPH 7
+#define ID_TRANSITION_TRANSITION_UITOVPH 8
+#define ID_TRANSITION_TRANSITION_VPHTOUI 9
+
+#define ASCII_Q 113
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_UserInput;
+STATIC int port_in_Interrupt;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state;
+static int previous_state;
+// ##VARIABLE_SECTION::END
+
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_in_UserInput = init_task_port(TASK_ID, "in_UserInput");
+    port_in_Interrupt = init_task_port(TASK_ID, "in_Interrupt");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+// ##INIT_SECTION::END
+
+
+    // TODO: task initialize code
+    SYS_REQ(STOP_TASK, "H264Dec_VP");
+    SYS_REQ(STOP_TASK, "H264Dec_PHONE");
+    SYS_REQ(STOP_TASK, "MP3Dec");
+    SYS_REQ(STOP_TASK, "x264Enc");
+    SYS_REQ(STOP_TASK, "G723Dec");
+    SYS_REQ(STOP_TASK, "G723Enc");
+    SYS_REQ(STOP_TASK, "Interrupt");
+    //SYS_REQ(RUN_TASK, "UserInput", 0, 0);
+    current_state = ID_STATE_MENU;
+}
+
+
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+        int event = -1;
+        int signal = 0;
+
+        int H264Dec_VP = 0;
+        int H264Dec_PHONE = 0;
+        int x264Enc = 0;
+        int MP3Dec = 0;
+        int G723Dec = 0;
+        int G723Enc = 0;
+        int UI = 0;
+        int Interrupt = 0;
+
+        while(1){
+            Interrupt = MQ_AVAILABLE(port_in_Interrupt);
+            if(Interrupt != 0){
+                MQ_RECEIVE(port_in_Interrupt, (unsigned char*)&signal, sizeof(int));
+                break;
+            }
+
+            if(current_state == ID_STATE_MENU){
+                UI = MQ_AVAILABLE(port_in_UserInput);
+                if(UI != 0){ 
+                    MQ_RECEIVE(port_in_UserInput, (unsigned char*)&event, sizeof(int));
+                    break;
+                }
+            }
+            else if(current_state == ID_STATE_VIDEOPLAY){
+                H264Dec_VP = SYS_REQ(CHECK_TASK_STATE, "H264Dec_VP");
+                MP3Dec = SYS_REQ(CHECK_TASK_STATE, "MP3Dec");
+                if(H264Dec_VP == STOP && MP3Dec == STOP)    break;   
+            }
+            else if(current_state == ID_STATE_VIDEOPHONE){
+                H264Dec_PHONE = SYS_REQ(CHECK_TASK_STATE, "H264Dec_PHONE");
+                x264Enc = SYS_REQ(CHECK_TASK_STATE, "x264Enc");
+                G723Enc = SYS_REQ(CHECK_TASK_STATE, "G723Enc");
+                G723Dec = SYS_REQ(CHECK_TASK_STATE, "G723Dec");
+                if(H264Dec_PHONE == STOP && x264Enc == STOP && G723Dec == STOP && G723Enc == STOP)    break;   
+            }
+            else if(current_state == ID_STATE_MUSICPLAY){
+                MP3Dec = SYS_REQ(CHECK_TASK_STATE, "MP3Dec");
+                if(MP3Dec == STOP)    break;   
+            }
+        }
+
+        unsigned int time_base = SYS_REQ(GET_CURRENT_TIME_BASE);
+        switch( current_state )
+        {
+            case ID_STATE_MENU:
+                if(event == 1)
+                {
+                    // ID_TRANSITION_TRANSITION_UITOVP
+                    SYS_REQ(STOP_TASK, "UserInput");
+                    current_state = ID_STATE_VIDEOPLAY;
+                    SYS_REQ(RUN_TASK, "H264Dec_VP");
+                    SYS_REQ(RUN_TASK, "MP3Dec");
+                    SYS_REQ(RUN_TASK, "Interrupt");
+                    previous_state = ID_STATE_MENU;
+                }
+                else if(event == 2)
+                {
+                    // ID_TRANSITION_TRANSITION_UITOMP
+                    SYS_REQ(STOP_TASK, "UserInput");
+                    current_state = ID_STATE_VIDEOPHONE;
+                    SYS_REQ(RUN_TASK, "H264Dec_PHONE");
+                    SYS_REQ(RUN_TASK, "x264Enc");
+                    SYS_REQ(RUN_TASK, "G723Enc");
+                    SYS_REQ(RUN_TASK, "G723Dec");
+                    previous_state = ID_STATE_MENU;
+                }
+                else if(event == 3)
+                {
+                    // ID_TRANSITION_TRANSITION_UITOVPH
+                    SYS_REQ(STOP_TASK, "UserInput");
+                    current_state = ID_STATE_MUSICPLAY;
+                    SYS_REQ(RUN_TASK, "MP3Dec");
+                    SYS_REQ(RUN_TASK, "Interrupt");
+                    previous_state = ID_STATE_MENU;
+                }
+                else if(event == 4)
+                {
+                    SYS_REQ(STOP);
+                }
+                break;
+            case ID_STATE_VIDEOPLAY:
+                if(signal == ASCII_Q){
+                    SYS_REQ(SUSPEND_TASK, "H264Dec_VP");
+                    SYS_REQ(SUSPEND_TASK, "MP3Dec");
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    current_state = ID_STATE_VIDEOPHONE;
+                    SYS_REQ(RUN_TASK, "H264Dec_PHONE");
+                    SYS_REQ(RUN_TASK, "x264Enc");
+                    SYS_REQ(RUN_TASK, "G723Enc");
+                    SYS_REQ(RUN_TASK, "G723Dec");
+                    previous_state = ID_STATE_VIDEOPLAY;
+                }
+                else{
+                    // ID_TRANSITION_TRANSITION_VPTOUI
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    SYS_REQ(STOP_TASK, "H264Dec_VP");
+                    SYS_REQ(STOP_TASK, "MP3Dec");
+                    current_state = ID_STATE_MENU;
+                    SYS_REQ(RUN_TASK, "UserInput");
+                    previous_state = ID_STATE_VIDEOPLAY;
+                }
+                break;
+            case ID_STATE_VIDEOPHONE:
+                if(previous_state == ID_STATE_MUSICPLAY)
+                {
+                    // ID_TRANSITION_TRANSITION_MPTOVPH
+                    SYS_REQ(STOP_TASK, "H264Dec_PHONE");
+                    SYS_REQ(STOP_TASK, "x264Enc");
+                    SYS_REQ(STOP_TASK, "G723Dec");
+                    SYS_REQ(STOP_TASK, "G723Enc");
+                    current_state = ID_STATE_MUSICPLAY;
+                    SYS_REQ(RESUME_TASK, "MP3Dec");
+                    SYS_REQ(RUN_TASK, "Interrupt");
+                    previous_state = ID_STATE_VIDEOPHONE;
+                }
+                else if(previous_state == ID_STATE_VIDEOPLAY)
+                {
+                    // ID_TRANSITION_TRANSITION_VPHTOVP
+                    SYS_REQ(STOP_TASK, "H264Dec_PHONE");
+                    SYS_REQ(STOP_TASK, "x264Enc");
+                    SYS_REQ(STOP_TASK, "G723Dec");
+                    SYS_REQ(STOP_TASK, "G723Enc");
+                    current_state = ID_STATE_VIDEOPLAY;
+                    SYS_REQ(RESUME_TASK, "H264Dec_VP");
+                    SYS_REQ(RESUME_TASK, "MP3Dec");
+                    SYS_REQ(RUN_TASK, "Interrupt");
+                    previous_state = ID_STATE_VIDEOPHONE;
+                }
+                else if(previous_state == ID_STATE_MENU)
+                {
+                    // ID_TRANSITION_TRANSITION_VPHTOUI
+                    SYS_REQ(STOP_TASK, "H264Dec_PHONE");
+                    SYS_REQ(STOP_TASK, "x264Enc");
+                    SYS_REQ(STOP_TASK, "G723Dec");
+                    SYS_REQ(STOP_TASK, "G723Enc");
+                    current_state = ID_STATE_MENU;
+                    SYS_REQ(RUN_TASK, "UserInput");
+                    previous_state = ID_STATE_VIDEOPHONE;
+                }
+                break;
+            case ID_STATE_MUSICPLAY:
+                if(signal == ASCII_Q){
+                    SYS_REQ(SUSPEND_TASK, "MP3Dec");
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    current_state = ID_STATE_VIDEOPHONE;
+                    SYS_REQ(RUN_TASK, "H264Dec_PHONE");
+                    SYS_REQ(RUN_TASK, "x264Enc");
+                    SYS_REQ(RUN_TASK, "G723Enc");
+                    SYS_REQ(RUN_TASK, "G723Dec");
+                    previous_state = ID_STATE_MUSICPLAY;
+                }
+                else{
+                    // ID_TRANSITION_TRANSITION_MPTOUI
+                    SYS_REQ(STOP_TASK, "MP3Dec");
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    current_state = ID_STATE_MENU;
+                    SYS_REQ(RUN_TASK, "UserInput");
+                    previous_state = ID_STATE_MUSICPLAY;
+                }
+                break;
+        }
+    // ##GO_SECTION::END
+
+
+    // TODO: task main code
+
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+    // This is automatically generated code. do not edit this part.
+    // ##WRAPUP_SECTION::START
+    // ##WRAPUP_SECTION::END
+
+
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

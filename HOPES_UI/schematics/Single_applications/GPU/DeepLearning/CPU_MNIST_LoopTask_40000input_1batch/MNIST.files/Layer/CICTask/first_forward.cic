@@ -1,0 +1,111 @@
+/************************************
+ *
+ * File : f.cic
+ * Date : Aug 20, 2016 6:33 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#define INPUT_DIMENSION 784
+#define OUTPUT_DIMENSION 500 
+
+static double weights[OUTPUT_DIMENSION][INPUT_DIMENSION];
+ 
+static double inputAc[INPUT_DIMENSION];
+static double outputNet[OUTPUT_DIMENSION];
+static double outputAc[OUTPUT_DIMENSION];
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_in_w;
+STATIC int port_out;
+STATIC int port_out_n;
+STATIC int port_out2;
+// ##DEFINE_PORT_SECTION::END
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in_input");
+    port_in_w = PORT_INITIALIZE(TASK_ID, "in_weight");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+    port_out_n = PORT_INITIALIZE(TASK_ID, "out_n");
+    port_out2 = PORT_INITIALIZE(TASK_ID, "out2");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static double neuron_Activate (double x){
+	if (x>=0){
+        return x;
+    }
+    else{ 
+        return 0;
+    }
+}
+
+TASK_GO
+{
+    // TODO: task main code
+    int i, j;
+    MQ_RECEIVE(port_in, (unsigned char*)inputAc, sizeof(double)*INPUT_DIMENSION);
+    MQ_RECEIVE(port_in_w, (unsigned char*)&weights[0][0], sizeof(double) * OUTPUT_DIMENSION * INPUT_DIMENSION);
+    
+    for( i = 0; i < OUTPUT_DIMENSION; i++)
+	{
+		outputAc[i] = 0;
+		outputNet[i] = 0;
+		for( j = 0; j < INPUT_DIMENSION; j++)
+		{
+			outputNet[i] += weights[i][j] * inputAc[j];
+		}
+		outputAc[i] = neuron_Activate(outputNet[i]);			
+	}
+	
+	//printf("first_ff: %d\n", sizeof(double)*OUTPUT_DIMENSION); fflush(stdout);
+	MQ_SEND(port_out, outputAc, sizeof(double)*OUTPUT_DIMENSION);
+	MQ_SEND(port_out2, outputAc, sizeof(double)*OUTPUT_DIMENSION);
+	MQ_SEND(port_out_n, outputNet, sizeof(double)*OUTPUT_DIMENSION); 
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

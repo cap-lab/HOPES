@@ -1,0 +1,20 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "lengthOfSineBurst" int "50"
+Parameter "frequency" int "PI/5"
+Parameter "center" int "50"
+Star "./icon/Ramp.icon" I0 16 128 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0" "value" FLOAT "0.0"
+Star "./icon/Rect.icon" I2 72 248 0
+StarParameter 4 "procId" INT "-1" "height" FLOAT "1.0" "width" INT "8" "period" INT "0"
+Star "./icon/Cos.icon" I4 136 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I7 288 144 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/outport.icon" I11 408 144 0
+StarParameter 4 "name" string "out" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I13 "" Star I0 "output" Star I4 "input" 1 112 160 136 160 
+Line I14 "" Star I4 "output" Star I7 "input#1" 1 264 160 288 159 
+Line I15 "" Star I7 "output" Star I11 "input" 1 344 159 408 160 
+Line I16 "center/2" Star I2 "output" Star I7 "input#2" 2 168 280 312 280 315 187 

@@ -1,0 +1,27 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "var" float "2*PI*deltanuT/N"
+Parameter "initPhase" float "0"
+Star "./icon/IIDGaussian.icon" I0 36 108 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "var" "mean" FLOAT "0.0" "seed" INT "1"
+Star "./icon/Integrator.icon" I2 104 116 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1.0" "top" FLOAT "0.0" "bottom" FLOAT "0.0" "saturate" INT "YES" "state" FLOAT "initPhase"
+Star "./icon/Sin.icon" I6 184 140 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I9 184 96 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToCx.icon" I12 256 124 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ConstInt.icon" I16 40 164 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Star "./library/Peace/Port/outport.ilink" I18 320 140 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I20 "" Star I0 "output" Star I2 "data" 1 92 140 104 140 
+Line I21 "" Star I16 "output" Star I2 "reset" 1 88 180 104 156 
+Line I22 "" Star I2 "output" Star I9 "input" 1 160 148 184 128 
+Line I23 "" Star I2 "output" Star I6 "input" 1 160 148 184 172 
+Line I24 "" Star I9 "output" Star I12 "real" 1 240 128 256 148 
+Line I25 "" Star I6 "output" Star I12 "imag" 1 240 172 256 164 
+Line I26 "" Star I12 "output" Star I18 "input" 1 312 156 320 156 
+CommText 32 36 20 -16777216 "Generate coherent laser phase noise"

@@ -1,0 +1,144 @@
+/************************************
+ *
+ * File : Wheel.cic
+ * Date : Sep 10, 2018 7:07 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#include <Arduino.h>
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+// ##DEFINE_PORT_SECTION::END
+
+static const int AIA = 3;
+static const int AIB = 5;
+static const int BIA = 11;
+static const int BIB = 6;
+static int isInit = 0;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    if(isInit == 0)
+    {
+        pinMode(AIA, OUTPUT);
+        pinMode(AIB, OUTPUT);
+        pinMode(BIA, OUTPUT);
+        pinMode(BIB, OUTPUT);
+        
+        isInit = 1;
+     }
+}
+
+
+void forward(int speed) {
+	//delay(50);
+	analogWrite(AIA, speed);
+	analogWrite(AIB, 0);
+	analogWrite(BIA, speed);
+	analogWrite(BIB, 0);
+	//delay(1000);
+}
+
+
+void reverse(int speed) {
+	//delay(50);
+	analogWrite(AIA, 0);
+	analogWrite(AIB, speed);
+	analogWrite(BIA, 0);
+	analogWrite(BIB, speed);
+	//delay(1000);
+}
+
+void left(int speed) {
+	//delay(50);
+	analogWrite(AIA, 0);
+	analogWrite(AIB, speed);
+	analogWrite(BIA, speed);
+	analogWrite(BIB, 0);
+
+}
+
+
+void right(int speed) {
+	//delay(50);
+	analogWrite(AIA, speed);
+	analogWrite(AIB, 0);
+	analogWrite(BIA, 0);
+	analogWrite(BIB, speed);
+}
+
+
+void brake() {
+	analogWrite(AIA, 0);
+	analogWrite(AIB, 0);
+	analogWrite(BIA, 0);
+	analogWrite(BIB, 0);
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    int motor;
+    int speed;
+    // TODO: task main code
+    motor = SYS_REQ(GET_PARAM_INT, (char *) "Wheel", (char *) "motor");
+    speed = SYS_REQ(GET_PARAM_INT, (char *) "Wheel", (char *) "speed");
+
+    UEM_DEBUG_PRINT("motor: %d, speed: %d\n", motor, speed);
+    switch(motor)
+    {
+    case 0: // forward
+        forward(speed);;
+        break;
+    case 1: // reverse
+        reverse(speed);
+        break;
+    case 2: // right
+        right(speed);
+        break;
+    case 3: // left
+        left(speed);
+        break;
+    case 4: //stop
+        brake();
+        break;
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

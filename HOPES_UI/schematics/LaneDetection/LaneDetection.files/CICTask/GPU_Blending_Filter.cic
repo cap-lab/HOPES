@@ -1,0 +1,98 @@
+/************************************
+ *
+ * File : CPU_Blend.cic
+ * Date : Mar 21, 2018 12:30 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+#include "cuda.h"
+#include "cuda_runtime.h"
+
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input_knn;
+STATIC int port_input_nlm;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC unsigned char *src_k;
+STATIC unsigned char *src_n;
+STATIC unsigned char *dst;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input_knn = PORT_INITIALIZE(TASK_ID, "input_knn");
+    port_input_nlm = PORT_INITIALIZE(TASK_ID, "input_nlm");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    
+    cudaMalloc((void **) &src_k, WIDTH*HEIGHT*3);
+    cudaMalloc((void **) &src_n, WIDTH*HEIGHT*3);
+    cudaMalloc((void **) &dst, WIDTH*HEIGHT*3);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+__global__ void Blending(unsigned char *src_k, unsigned char *src_n, unsigned char *dst, int imageW, int image_H)
+{
+    const int ix = blockDim.x * blockIdx.x + threadIdx.x;
+    const int iy = blockDim.y * blockIdx.y + threadIdx.y;
+
+    dst[(WIDTH * iy + ix) * 3 + 0] = (src_k[(WIDTH * iy + ix) * 3 + 0] + src_n[(WIDTH * iy + ix) * 3 + 0])/2;
+    dst[(WIDTH * iy + ix) * 3 + 1] = (src_k[(WIDTH * iy + ix) * 3 + 1] + src_n[(WIDTH * iy + ix) * 3 + 1])/2;
+    dst[(WIDTH * iy + ix) * 3 + 2] = (src_k[(WIDTH * iy + ix) * 3 + 2] + src_n[(WIDTH * iy + ix) * 3 + 2])/2;
+}
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_input_knn, (unsigned char*)src_k, WIDTH * HEIGHT * 3);
+    MQ_RECEIVE(port_input_nlm, (unsigned char*)src_n, WIDTH * HEIGHT * 3);
+   
+    KERNEL_CALL(Blending, src_k, src_n, dst, WIDTH, HEIGHT);
+
+    MQ_SEND(port_output, (unsigned char*)dst, WIDTH * HEIGHT * 3);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    cudaFree(src_k);
+    cudaFree(src_n);
+    cudaFree(dst);
+}
+
+TASK_CODE_END

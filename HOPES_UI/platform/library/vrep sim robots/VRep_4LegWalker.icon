@@ -1,0 +1,8 @@
+Platform
+Core
+"VRep_4LegWalker"
+68 72
+"./platform/iconImage/VRep_4LegWalker.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "AHBMasterOut"

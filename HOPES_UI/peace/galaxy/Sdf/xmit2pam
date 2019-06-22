@@ -1,0 +1,20 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "excessBW" float "1.0"
+Parameter "fiterLength" int "32"
+Star "./icon/inport.icon" I0 20 88 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Scrambler.icon" I2 64 72 0
+StarParameter 3 "procId" INT "-1" "polynomial" INT "0440001" "shiftReg" INT "-1"
+Star "./icon/Table.icon" I5 128 72 0
+StarParameter 3 "procId" INT "-1" "values" FLOATARRAY "-2 2" "runTimeCheck" INT "YES"
+Star "./icon/RaisedCosine.icon" I8 196 72 0
+StarParameter 8 "procId" INT "-1" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "16" "length" INT "filterLength" "symbol_interval" INT "16" "excessBW" FLOAT "excessBW" "square_root" INT "YES"
+Star "./icon/outport.icon" I11 268 88 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I13 "" Star I0 "output" Star I2 "input" 1 52 104 64 104 
+Line I14 "" Star I5 "input" Star I2 "output" 1 128 104 120 104 
+Line I15 "" Star I5 "output" Star I8 "signalIn" 1 184 104 196 104 
+Line I16 "" Star I8 "signalOut" Star I11 "input" 1 252 104 268 104 
+CommText 32 20 20 -16777216 "A simple 2-level PAM transimiiter"

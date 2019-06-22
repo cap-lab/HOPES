@@ -1,0 +1,27 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "fwdTaps" floatArray "1"
+Parameter "fdbkTaps" floatArray "0"
+Parameter "noisePwr" float "0"
+Star "./icon/inport.icon" I0 8 24 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 440 24 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/FIR.icon" I4 64 8 0
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "fwdTaps" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "1"
+Star "./icon/Sub.icon" I7 216 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add2.icon" I11 368 24 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/FIR.icon" I15 276 52 2
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "fdbkTaps" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "1"
+Star "./icon/IIDGaussian.icon" I18 272 108 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "1.0" "mean" FLOAT "0.0" "seed" INT "1"
+Line I20 "1" Star I15 "signalOut" Star I7 "neg" 1 274 68 243 68 
+Line I21 "" Star I4 "signalOut" Star I7 "pos" 1 120 40 216 40 
+Line I22 "" Star I7 "output" Star I11 "input#1" 1 272 40 368 40 
+Line I23 "" Star I0 "output" Star I4 "signalIn" 1 40 40 64 40 
+Line I24 "" Star I7 "output" Star I15 "signalIn" 2 272 40 336 40 330 68 
+Line I25 "" Star I11 "output" Star I2 "input" 1 424 40 440 40 
+Line I26 "" Star I18 "output" Star I11 "input#2" 1 328 140 395 68 

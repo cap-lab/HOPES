@@ -1,0 +1,13 @@
+"./platform/iconImage/SoCBaseTimer.image"
+68 84
+Rectangle 4 12 56 60 16777215 true
+Rectangle 4 12 56 60 0 false
+Text 4 -5 11 0 "SoCBaseTimer"
+InArrowLine 0 30 2 0 0
+InArrowLine 0 42 2 0 0
+InArrowLine 0 54 2 0 0
+OutArrowLine 61 24 1 0 0
+OutArrowLine 61 36 1 0 0
+OutArrowLine 61 48 1 0 0
+OutArrowLine 61 60 1 0 0
+InArrowLine 32 76 0 -2 16762880

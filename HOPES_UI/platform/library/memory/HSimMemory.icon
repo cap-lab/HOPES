@@ -1,0 +1,8 @@
+Platform
+Memory
+"HSimMemory"
+68 72
+"./platform/iconImage/HSimMemory.image"
+"" ""
+"" ""
+businport "Slave" 32 64 false "AHBSlaveIn"

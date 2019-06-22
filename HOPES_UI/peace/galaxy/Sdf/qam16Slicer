@@ -1,0 +1,22 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "gain" float "1.0"
+Star "./icon/inport.icon" I0 24 64 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 512 64 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/CxToRect.icon" I4 88 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Quant.icon" I8 224 8 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "-2.0 0 2.0" "levels" FLOATARRAY "-3.0 -1.0 1.0 3.0"
+Star "./icon/Quant.icon" I11 224 80 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "-2.0 0.0 2.0" "levels" FLOATARRAY "-3.0 -1.0 1.0 3.0"
+Star "./icon/RectToCx.icon" I14 368 48 0
+StarParameter 1 "procId" INT "-1"
+Line I18 "" Star I4 "real" Star I8 "input" 1 144 72 224 40 
+Line I19 "" Star I4 "imag" Star I11 "input" 1 144 88 224 112 
+Line I20 "" Star I4 "input" Star I0 "output" 1 88 80 56 80 
+Line I21 "" Star I8 "output" Star I14 "real" 1 280 40 368 72 
+Line I22 "" Star I11 "output" Star I14 "imag" 1 280 112 368 88 
+Line I23 "" Star I14 "output" Star I2 "input" 1 424 80 512 80 

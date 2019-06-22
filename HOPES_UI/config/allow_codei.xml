@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<codesign type='general'>
+	<version>0.2</version>
+	<step> 
+		<name>allow</name>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>CGC</name>
+				<target type='default'> 
+					<name>default-CGC</name>
+				</target>
+				<target type='candidate'> 
+					<name>TclTk_Target</name>
+				</target>
+				<target type='candidate'> 
+					<name>RangeEstimation</name>
+				</target>
+				<target type='candidate'> 
+					<name>WLOptimization</name>
+				</target>
+				<target type='candidate'> 
+					<name>FixedEstimation</name>
+				</target>
+				<target type='candidate'> 
+					<name>worm-CGC</name>
+				</target>
+
+			</domain>
+
+			<domain type='candidate' allow='listed'> 
+				<name>VHDL</name>
+				<target type='default'> 
+					<name>default-VHDL</name>
+				</target>
+				<target type='candidate'> 
+					<name>ModelSim-VHDL</name>
+				</target>
+			</domain>
+
+			<domain type='candidate' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>default-BP</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+</codesign>

@@ -1,0 +1,81 @@
+/************************************
+ *
+ * File : L.cic
+ * Date : Mar 18, 2019 5:19 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define NO_COMMAND -1
+/*
+#define CMD_STOP 0 
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+#define CMD_TURN_LEFT 3
+#define CMD_TURN_RIGHT 4
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+*/
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_cmd;
+STATIC int port_out_cmd;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_cmd = PORT_INITIALIZE(TASK_ID, "in_cmd");
+    port_out_cmd = PORT_INITIALIZE(TASK_ID, "out_cmd");
+// ##INIT_PORT_SECTION::END
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code    
+    int cmd = NO_COMMAND;
+    //if(MQ_AVAILABLE(port_in_cmd)){
+    MQ_RECEIVE(port_in_cmd, (unsigned char*)&cmd, sizeof(int));
+    MQ_SEND( port_out_cmd, (unsigned char*)&cmd, sizeof(int));
+    //}       
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

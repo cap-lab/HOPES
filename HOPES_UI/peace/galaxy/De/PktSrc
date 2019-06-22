@@ -1,0 +1,21 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "startValue" float "0.0"
+Parameter "destination" int "0"
+Parameter "priority" int "0"
+Star "./icon/inport.icon" I0 24 40 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/DERamp.icon" I2 80 24 0
+StarParameter 3 "nodename" STRING "" "value" FLOAT "startValue" "step" FLOAT "1.0"
+Star "./icon/Packetize.icon" I5 240 24 0
+StarParameter 2 "nodename" STRING "" "maxLength" INT "1"
+Star "./icon/CellLoad.icon" I9 384 24 0
+StarParameter 4 "nodename" STRING "" "mssgSize" INT "1" "destination" INT "destination" "priority" INT "priority"
+Star "./icon/outport.icon" I12 544 40 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I14 "" Star I2 "input" Star I0 "output" 1 80 56 56 56 
+Line I15 "" Star I2 "output" Star I5 "data" 1 136 56 240 48 
+Line I16 "" Star I2 "output" Star I5 "demand" 1 136 56 240 64 
+Line I17 "" Star I5 "output" Star I9 "input" 1 296 56 384 56 
+Line I18 "" Star I9 "output" Star I12 "input" 1 440 56 544 56 

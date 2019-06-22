@@ -1,0 +1,21 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Star "./icon/inport.icon" I0 16 76 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork.icon" I2 64 76 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Sin.icon" I5 144 84 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I8 144 36 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToCx.icon" I11 220 64 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I15 288 80 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I17 "" Star I0 "output" Star I2 "input" 1 48 92 64 92 
+Line I18 "" Star I2 "output" Star I8 "input" 1 117 92 144 68 
+Line I19 "" Star I2 "output" Star I5 "input" 1 117 92 144 116 
+Line I20 "" Star I5 "output" Star I11 "imag" 1 200 116 220 104 
+Line I21 "" Star I8 "output" Star I11 "real" 1 200 68 220 88 
+Line I22 "" Star I11 "output" Star I15 "input" 1 276 96 288 96 

@@ -1,0 +1,41 @@
+Domain "CGC"
+Target "CGC-ARMulator"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PTOLEMY_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/Add.icon" I0 80 88 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/MPolarToRect.icon" I3 160 88 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/inport.icon" I8 24 88 0
+StarParameter 4 "name" string "input1" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/XYgraph.icon" I10 312 88 0
+StarParameter 6 "procId" INT "-1" "title" STRING "X graph" "saveFile" STRING "" "options" STRING "-bb -tk =800x400" "ignore" INT "0" "resources" STRINGARRAY "STDIO"
+Star "./icon/inport.icon" I13 24 168 0
+StarParameter 4 "name" string "input3" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I15 24 128 0
+StarParameter 4 "name" string "input2" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I17 112 160 0
+StarParameter 4 "name" string "phaseIn" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I19 "" Star I0 "output" Star I3 "magnitude" 1 136 103 160 104 
+Line I20 "" Star I8 "output" Star I0 "input" 1 56 104 80 103 
+Line I21 "" Star I3 "x" Star I10 "input" 1 288 104 312 104 
+Line I22 "" Star I3 "y" Star I10 "xInput" 1 288 120 312 120 
+Line I23 "" Star I17 "output" Star I3 "phase" 1 144 176 160 120 
+Line I24 "" Star I15 "output" Star I0 "input" 2 56 144 80 144 80 103 
+Line I25 "" Star I13 "output" Star I0 "input" 2 56 184 80 184 80 103 

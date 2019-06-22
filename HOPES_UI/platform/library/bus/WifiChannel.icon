@@ -1,0 +1,8 @@
+Platform
+Bus
+"WifiChannel"
+101 36
+"./platform/iconImage/WifiChannel.image"
+"" ""
+"" ""
+lineport "WifiChannel" "WifiChannel"

@@ -1,0 +1,8 @@
+Platform
+Io
+"NXTMotor"
+68 72
+"./platform/iconImage/NXTMotor.image"
+"" ""
+"" ""
+inport "input" 0 36 false

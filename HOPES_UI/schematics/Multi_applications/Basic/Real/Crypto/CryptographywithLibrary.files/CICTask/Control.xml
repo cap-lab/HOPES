@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="Idle" x="252" y="108" initial_state="true" hierarchical="false" />
+      <state name="Sending" x="380" y="28" initial_state="false" hierarchical="false" />
+      <state name="Receiving" x="380" y="176" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="UserInput" src_state="Idle" dst_state="Sending" curve0_x="264" curve0_y="76" curve1_x="340" curve1_y="24">
+        <condition_list>
+          <condition type="Input" inport_name="inUser" value="0" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="IncomingMsg" src_state="Idle" dst_state="Receiving" curve0_x="264" curve0_y="192" curve1_x="320" curve1_y="264">
+        <condition_list>
+          <condition type="Input" inport_name="inIncoming" value="0" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="Success" src_state="Sending" dst_state="Idle" curve0_x="380" curve0_y="80" curve1_x="324" curve1_y="112">
+        <condition_list>
+          <condition type="Task Status" taskName="Sender" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="Success" src_state="Receiving" dst_state="Idle" curve0_x="412" curve0_y="208" curve1_x="316" curve1_y="160">
+        <condition_list>
+          <condition type="Task Status" taskName="Receiver" status="Stop" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

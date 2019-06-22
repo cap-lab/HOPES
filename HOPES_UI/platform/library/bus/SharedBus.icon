@@ -1,0 +1,8 @@
+Platform
+Bus
+"SharedBus"
+101 20
+"./platform/iconImage/SharedBus.image"
+"" ""
+"" ""
+lineport "SharedBus" "SharedBus"

@@ -1,0 +1,299 @@
+{
+  "mCandidateTargets": [
+    {
+      "mPredefinedTarget": "Intel_I7",
+      "deviceModel": {
+        "platform": "LINUX",
+        "architecture": "X86_64",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "MulticoreHost",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "i7",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 4,
+          "mMaxCoreSize": 4,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "8000",
+          "mMemorySizeUnit": "MiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "Exynos 5422",
+      "deviceModel": {
+        "platform": "LINUX",
+        "architecture": "ARM",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "MulticoreHost",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "A7",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 4,
+          "mMaxCoreSize": 4,
+          "mClockSpeed": 1500,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 0.5
+        },
+        {
+          "mProcessorModelName": "A15",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 4,
+          "mMaxCoreSize": 4,
+          "mClockSpeed": 1500,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "2000",
+          "mMemorySizeUnit": "MiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "CUDA",
+      "deviceModel": {
+        "platform": "LINUX",
+        "architecture": "X86_64",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "CUDA",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "cuda_cpu",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        },
+        {
+          "mProcessorModelName": "cuda_gpu_sm20",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "64000",
+          "mMemorySizeUnit": "MiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "HSim",
+      "deviceModel": {
+        "platform": "LINUX",
+        "architecture": "ARM",
+        "runtime": "HSIM"
+      },
+      "mTarget": "HSim",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "arm926ej-s",
+          "mProcessorOS": "UC_OS",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        },
+        {
+          "mProcessorModelName": "arm926ej-s-dsp",
+          "mProcessorOS": "UC_OS",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "4000",
+          "mMemorySizeUnit": "MiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "XeonPhi",
+      "deviceModel": {
+        "platform": "LINUX",
+        "architecture": "X86_64",
+        "runtime": "SOPHY"
+      },
+      "mTarget": "XeonPhi",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "i7",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 4,
+          "mMaxCoreSize": 4,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        },
+        {
+          "mProcessorModelName": "xeonPhi",
+          "mProcessorOS": "LINUX",
+          "mCoreSize": 64,
+          "mMaxCoreSize": 64,
+          "mClockSpeed": 3400,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "4000",
+          "mMemorySizeUnit": "MiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "ArduinoGeneric",
+      "deviceModel": {
+        "platform": "ARDUINO",
+        "architecture": "AVR",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "ArduinoGeneric",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "atmega328p_16Mhz",
+          "mProcessorOS": "NO_OS",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 16,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "2",
+          "mMemorySizeUnit": "KiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "ArduinoProMini",
+      "deviceModel": {
+        "platform": "ARDUINO",
+        "architecture": "AVR",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "ArduinoProMini",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "atmega328p_8Mhz",
+          "mProcessorOS": "NO_OS",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 8,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "2",
+          "mMemorySizeUnit": "KiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    },
+    {
+      "mPredefinedTarget": "OpenCR",
+      "deviceModel": {
+        "platform": "ARDUINO",
+        "architecture": "SAMD",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "OpenCR",
+      "mProcessors": [
+        {
+          "mProcessorModelName": "ARM_cortex-m7",
+          "mProcessorOS": "NO_OS",
+          "mCoreSize": 1,
+          "mMaxCoreSize": 1,
+          "mClockSpeed": 216,
+          "mActivePowerConsumption": 80000,
+          "mSleepPowerConsumption": 80000,
+          "mRelativeCost": 1.0
+        }
+      ],
+      "mMemories": [
+        {
+          "mMemoryType": "SHARED_MEMORY",
+          "mMemorySize": "320",
+          "mMemorySizeUnit": "KiB"
+        }
+      ],
+      "mConnections": [],
+      "environmentVariableListMap": {
+        "BOARD_TAG": "OpenCR"
+      }
+    },
+    {
+      "mPredefinedTarget": "New Device",
+      "deviceModel": {
+        "platform": "LINUX",
+        "architecture": "X86_64",
+        "runtime": "NATIVE"
+      },
+      "mTarget": "NewDevice",
+      "mProcessors": [],
+      "mMemories": [],
+      "mConnections": [],
+      "environmentVariableListMap": {}
+    }
+  ]
+}

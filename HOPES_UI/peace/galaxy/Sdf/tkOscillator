@@ -1,0 +1,19 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "identifier" string "Frequency"
+Parameter "init_slider_position" float "0.5"
+Star "./icon/TkSlider.icon" I0 24 20 0
+StarParameter 5 "procId" INT "-1" "low" FLOAT "0.0" "high" FLOAT "PI/10" "value" FLOAT "init_slider_position*PI/10" "identifier" STRING "{identifier}"
+Star "./icon/Integrator.icon" I2 104 44 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1.0" "top" FLOAT "2*PI" "bottom" FLOAT "0.0" "saturate" INT "NO" "state" FLOAT "0.0"
+Star "./icon/Sin.icon" I6 180 44 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ConstInt.icon" I9 28 84 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Star "./library/Peace/Port/outport.ilink" I11 260 60 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I13 "" Star I0 "output" Star I2 "data" 1 80 52 104 68 
+Line I14 "" Star I9 "output" Star I2 "reset" 1 76 100 104 84 
+Line I15 "" Star I2 "output" Star I6 "input" 1 160 76 180 76 
+Line I16 "" Star I6 "output" Star I11 "input" 1 236 76 260 76 

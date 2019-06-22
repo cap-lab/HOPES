@@ -1,0 +1,20 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "lengthOfSineBurst" float "50"
+Parameter "center" float "50"
+Parameter "frequency" float "PI/5"
+Star "./icon/Ramp.icon" I0 20 32 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "frequency" "value" FLOAT "- center/frequency"
+Star "./icon/Cos.icon" I2 136 32 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Rect.icon" I5 136 84 0
+StarParameter 4 "procId" INT "-1" "height" FLOAT "1.0" "width" INT "lengthOfSineBurst" "period" INT "0"
+Star "./icon/Mpy2.icon" I7 304 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I11 392 48 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I13 "" Star I5 "output" Star I7 "input#2" 1 192 116 331 92 
+Line I14 "" Star I7 "input#1" Star I2 "output" 1 304 64 192 64 
+Line I15 "" Star I2 "input" Star I0 "output" 1 136 64 72 64 
+Line I16 "" Star I11 "input" Star I7 "output" 1 392 64 360 64 

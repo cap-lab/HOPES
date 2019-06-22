@@ -1,0 +1,98 @@
+/************************************
+ *
+ * File : output.cic
+ * Date : Mar 31, 2010 3:54 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+#include <math.h>
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input_pow;
+STATIC int port_input_exp;
+STATIC int port_input_log;
+STATIC int port_input_sin;
+STATIC int port_input_cos;
+STATIC int port_input_tan;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input_pow = PORT_INITIALIZE(TASK_ID, "input_pow");
+    port_input_exp = PORT_INITIALIZE(TASK_ID, "input_exp");
+    port_input_log = PORT_INITIALIZE(TASK_ID, "input_log");
+    port_input_sin = PORT_INITIALIZE(TASK_ID, "input_sin");
+    port_input_cos = PORT_INITIALIZE(TASK_ID, "input_cos");
+    port_input_tan = PORT_INITIALIZE(TASK_ID, "input_tan");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static double num = 0.0;
+static int i=0;
+TASK_GO
+{
+    // TODO: task main code
+    double result_pow = 0.0;
+    double result_log = 0.0;
+    double result_exp = 0.0;
+    double result_sin = 0.0;
+    double result_cos = 0.0;
+    double result_tan = 0.0;
+    int port = 0;
+
+    port = AC_CHECK(port_input_pow);
+    AC_RECEIVE(port_input_pow, (unsigned char*)&result_pow, sizeof(double), port);
+    AC_RECEIVE(port_input_log, (unsigned char*)&result_log, sizeof(double), port);
+    AC_RECEIVE(port_input_exp, (unsigned char*)&result_exp, sizeof(double), port);
+    AC_RECEIVE(port_input_sin, (unsigned char*)&result_sin, sizeof(double), port);
+    AC_RECEIVE(port_input_cos, (unsigned char*)&result_cos, sizeof(double), port);
+    AC_RECEIVE(port_input_tan, (unsigned char*)&result_tan, sizeof(double), port);
+    
+    printf("*. i : %d, num %lf\n", i, num);
+    printf(" math_pow : %lf,  math_log : %lf,  math_exp : %lf ", pow(i+1, 2), log(i+1), exp(i+1));
+    printf(" math_sin : %lf,  math_cos : %lf,  math_tan : %lf\n", sin(num), cos(num), tan(num));
+    printf(" my_pow   : %lf,  my_log   : %lf,  my_exp   : %lf ", result_pow, result_log, result_exp);
+    printf(" my_sin   : %lf,  my_cos   : %lf,  my_tan   : %lf\n\n", result_sin, result_cos, result_tan);
+    num = num + 10.0;
+    i++;
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

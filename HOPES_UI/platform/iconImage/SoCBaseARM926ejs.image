@@ -1,0 +1,12 @@
+"./platform/iconImage/SoCBaseARM926ejs.image"
+68 84
+Rectangle 4 12 56 60 14085119 true
+Rectangle 4 12 56 60 0 false
+Text 4 -5 11 0 "SoCBaseARM926ejs"
+InArrowLine 0 24 2 0 0
+InArrowLine 0 36 2 0 0
+InArrowLine 0 48 2 0 0
+InArrowLine 0 60 2 0 0
+OutArrowLine 24 74 0 1 16762880
+OutArrowLine 40 74 0 1 16762880
+Image "./platform/icon/block_cpu.gif" 16 26 32 32

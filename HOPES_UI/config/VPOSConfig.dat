@@ -1,0 +1,173 @@
+#------------------------------------------------------------------
+# SDK : GNU ADS
+#------------------------------------------------------------------
+ 
+# SDK Selection
+
+ARMADS = "n"
+GNU = "y"
+ 
+#------------------------------------------------------------------
+# Target CPU Configuration
+#------------------------------------------------------------------
+_SEL_CPU = "(CUSTOM)"
+ARM926EJS = "y"
+ARM7SNU = "n"
+# Memory Management Unit Options
+# ARM926ejs Processor supports two MMU operation mode, 
+# one is section mapped access mode, another is page-mapped access
+# mode. In VPOS (SNU-edition) only section mapped access mode is
+# implemented. 
+# You must be noticed that data cache needs MMU. Enabling dcache
+# while disabling MMU gives no performance benefits or worse
+# than disabling dcache.
+
+MMU = "n"
+
+# Enables MMU
+
+VMA = "n"
+
+# Uses virtual Memory 
+# In VPOS (SNU edition)  VMA must be 'n'
+ 
+#------------------------------------------------------------------
+# VPOS Configuation
+#------------------------------------------------------------------
+ 
+# Kernel Configuration
+INDIRECT_BOOT = "n"
+VPOSLIB = "y"
+DISABLE_INTERRUPT = "n"
+DEFAULT_STK_SIZE = "0x800"
+ 
+#General Purpose Parser
+PARSER = "y"          # Parser must be enabled for vpsh
+PARSER_MAX_STR = "64"
+ 
+#VPSH 
+VPSH = "y"
+ 
+# Console Selection
+DEBUG_CONSOLE = "n"
+UART_CONSOLE = "y"
+ 
+#------------------------------------------------------------------
+# Hardware Specific Configuration
+#------------------------------------------------------------------
+ 
+# System Operating Frequency 
+PERI_FREQ = "20000000"
+CPU_FREQ  = "80000000"
+
+# System Address Map Configuration
+SDRAM_BASE = "0x08000000"
+SDRAM_SIZE = "0x04000000"
+#SRAM_BASE  = "0xc3000000"
+SRAM_BASE  = "0xc0400000"
+SRAM_SIZE  = "0x00000400"
+FLASH_BASE = "0x24000000"
+PERI_RESET = "0xc0800000"
+DEBUG_CONSOLE_BASE = "0xc0fffffc"
+ 
+# Interrupt controller configuration
+_SEL_INTCTRL = "(CUSTOM)"
+INTCTRL_BASE = "0xc0000000"
+MAX_IRQ_NUM = "16"
+MAX_FIQ_NUM = "4"
+ 
+# Timer Configuration
+_SEL_TIMER = "(CUSTOM)"
+TIMER_BASE = "0xc0001000"
+TIMER = "n"
+P2TIMER = "y"
+TICK_COUNT = "100"
+TIMER_IRQ = "8"
+ 
+#UART0 Configuration
+_SEL_UART = "(CUSTOM)"
+UART_BASE = "0xc0002000"
+P2UART = "y"
+UART_POLL = "y"
+UART_IRQ = "4"
+#UART_BAUDRATE =  "460800"
+UART_BAUDRATE = "115200"
+#UART_BAUDRATE = "38400"
+#UART_BAUDRATE = "2400"
+ 
+#EBI (External Bus Interface) Configuration
+_SEL_EBI = "(CUSTOM)"
+EBI = "n"
+EBI_CTRL_BASE = "0xC0600000"
+EBI_CH0_CTRL = "0x1020000"
+EBI_CH0_TIMING = "0x10011"
+EBI_CH1_CTRL = "0x1020000"
+EBI_CH1_TIMING = "0xA00AA"
+EBI_CH2_CTRL = "0xB3020000"
+ 
+# ARM Integrator Configuration
+INTEGRATOR_AP = "n"
+AP_CTRL_BASE = "0x10000000"
+AP_SYS_BASE = "0x11000000"
+AP_PERI_BASE = "0x14000000"
+ 
+# TFT-LCD Configuration
+_SEL_TFTLCDC = "(CUSTOM)"
+_SEL_TFTLCD = "(CUSTOM)"
+TFTLCD = "y"
+TFTLCD_BASE = "0xc0200000
+TFTLCD_REV1 = "n"
+TFTLCD_LTS350 = "y"
+TFTLCD_WIDTH = "352"
+TFTLCD_HEIGHT = "240"
+TFTLCD_SCREEN_WIDTH = "352"
+TFTLCD_SCREEN_HEIGHT = "240"
+TFTLCD_TIMING_VPORCH = "2"
+TFTLCD_TIMING_VBPORCH = "33"
+TFTLCD_TIMING_VFPORCH = "10"
+TFTLCD_TIMING_HPORCH = "96"
+TFTLCD_TIMING_HBPORCH = "48"
+TFTLCD_TIMING_HFPORCH = "16"
+TFTLCD_TIMING_CLKDIV = "8"
+TFTLCD_FRAME0 = "0x18300000"
+TFTLCD_FRAME1 = "0x18380000"
+ 
+# DMA Configuration
+_SEL_SMDMA = "(CUSTOM)"
+SMDMA0 = "y"
+SMDMA0_BASE = "0xc0100000"
+ 
+#JPEG Configuration
+_SEL_DCT = "(CUSTOM)"
+JPEG_OPTIMIZE = "y"
+DCT_BASE     = "0xc0300000"
+DCTBANK_BASE = "0xc0400000"
+#DCT_BASE     = "0xc4000000"
+#DCTBANK_BASE = "0xc3000000"
+ 
+#Built-In Logic Analyzer
+TRACER = "n"
+TRACE_ANALYZER = "y"
+TRACER_BASE = "0xc5000000"
+ 
+#Embedded Profiler
+PROFILER = "n"
+PROFILE_TIMER = "n"
+PROFILE_COUNTER = "y"
+PROFILE_COUNTER_DEPTH = "3"
+PROFILE_COUNTER_BASE = "0xc0003000"
+PROFILE_INNER_OVERHEAD = "58"
+PROFILE_OUTER_OVERHEAD = "146"
+ 
+#Semi-hosting Interface
+SEMIHOSTING = "n"
+SEMIHOST_BASE = "0xc6000000"
+ 
+#Linux boot-loader
+LINUX_BOOT_LOADER = "n"
+LINUX_BOOTIMAGE_ADDR = "0x24000000"
+LINUX_BOOTSTART_ADDR = "0x00108000"
+LINUX_RAMDISK_ZIMAGE_ADDR = "0x24400000"
+LINUX_RAMDISK_ZIMAGE_SIZE = "3050504"
+LINUX_RAMDISK_START_ADDR = "0x900000"
+LINUX_RAMDISK_SIZE = "8192000"

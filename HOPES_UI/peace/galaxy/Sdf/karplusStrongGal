@@ -1,0 +1,25 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "delayLength" float "50"
+Star "./icon/IIDGaussian.icon" I0 8 24 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "1.0" "mean" FLOAT "0.0" "seed" INT "1"
+Star "./icon/Rect.icon" I2 8 120 0
+StarParameter 4 "procId" INT "-1" "height" FLOAT "1.0" "width" INT "delayLength" "period" INT "0"
+Star "./icon/Mpy2.icon" I4 128 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add2.icon" I8 240 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/FIR.icon" I12 328 120 2
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "0.5 0.5" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "1"
+Star "./icon/Fork2.icon" I15 368 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I19 448 32 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I21 "" Star I0 "output" Star I4 "input#1" 1 64 56 128 56 
+Line I22 "" Star I2 "output" Star I4 "input#2" 2 64 152 152 152 155 84 
+Line I23 "" Star I4 "output" Star I8 "input#1" 1 184 56 240 56 
+Line I24 "" Star I8 "input#2" Star I12 "signalOut" 1 267 84 326 136 
+Line I25 "delayLength" Star I8 "output" Star I15 "input" 1 296 56 368 56 
+Line I26 "" Star I19 "input" Star I15 "output#1" 1 448 48 421 48 
+Line I27 "" Star I15 "output#2" Star I12 "signalIn" 2 421 64 432 64 382 136 

@@ -1,0 +1,37 @@
+weirdx.display.width=800
+weirdx.display.height=600
+weirdx.displaynum=0
+
+#weirdx.windowmode=InBrowser
+weirdx.windowmode=MultiWindow
+
+# 16bpp, 8bpp colors
+#weirdx.display.visual=StaticGray8
+#weirdx.display.visual=PseudoColor8
+weirdx.display.visual=TrueColor16
+
+# xhost +
+weirdx.display.acl=+
+
+# three button mouse emulation
+weirdx.display.threebutton=yes
+
+#weirdx.display.keymap=gb
+
+#weirdx.display.charset=JISX
+
+# myaddress must be specified if you need xrexec and XDMCP functionalities.
+#weirdx.myaddress=xxxxxxxxxx
+
+# xdmcp
+# At present, any authorization mechanism has not been
+# implemented. So please use this functionality with your own risk.
+#weirdx.xdmcp.mode=query
+#weirdx.xdmcp.mode=boradcast
+#weirdx.xdmcp.address=yyyyyyy
+
+# rexec
+weirdx.xrexec=no
+#weirdx.xrexec=yes
+
+weirdx.extension=DummySHAPE

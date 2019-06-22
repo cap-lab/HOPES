@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="red" x="180" y="344" initial_state="true" hierarchical="false" />
+      <state name="green" x="368" y="348" initial_state="false" hierarchical="false" />
+      <state name="red_pending" x="300" y="248" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_GreenToRed" src_state="green" dst_state="red" curve0_x="348" curve0_y="416" curve1_x="276" curve1_y="424">
+        <condition_list>
+          <condition type="TimeOut" timeVal="60" timeUnit="S" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_RedToRedPending" src_state="red" dst_state="red_pending" curve0_x="208" curve0_y="328" curve1_x="272" curve1_y="284">
+        <condition_list>
+          <condition type="Input" inport_name="pedestrian_in" value="1" comparator="0" />
+        </condition_list>
+        <action_list />
+      </transition>
+      <transition name="transition_RedPendingToGreen" src_state="red_pending" dst_state="green" curve0_x="384" curve0_y="280" curve1_x="428" curve1_y="324">
+        <condition_list>
+          <condition type="TimeOut" timeVal="10" timeUnit="S" />
+        </condition_list>
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<platform>
+  <name>XeonPhi</name>
+  <target>XeonPhi</target>
+  <version>1</version>
+  <description>
+    <![CDATA[]]>
+  </description>
+  <schematic>
+    <![CDATA[Domain "Archi"
+Target "platform"
+TargetParameter "PredefinedTarget" STRING "Default ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
+Run 10
+Platform Core "./platform/library/core/XeonPhi.icon" I0 316 148 0
+StarParameter 7 "processorId" INT "0" "model" STRING "xeonphi" "category" STRING "PROCESSOR" "OS" STRING "Sophi ##Sophi, Linux" "scheduler" STRING  "RR ##EDF,RM,RR" "pool_size" INT "64" "AllowDataParallel" STRING "TRUE ##TRUE,FALSE"
+Section I0 0 
+Region I0 0
+Platform Core "./platform/library/core/Intel_I7_core.icon" I2 164 148 0
+StarParameter 7 "processorId" INT "0" "model" STRING "intel_i7" "category" STRING "PROCESSOR" "OS" STRING "uC-OS ##NoOS,uC-OS,Linux,Windows" "scheduler" STRING  "RR ##EDF,RM,RR" "pool_size" INT "4" "AllowDataParallel" STRING "TRUE ##TRUE,FALSE"
+Section I2 0 
+Region I2 0
+Platform Memory "./platform/library/memory/HostMemory.icon" I4 236 256 0
+StarParameter 3 "model" STRING "sharedMem" "category" STRING "MEMORY" "size" STRING  "0x10000000"
+Line I6 "0" Star I2 "master" Star I4 "Slave" 1 196 210 268 320 
+Line I7 "0" Star I0 "master" Star I4 "Slave" 1 348 210 268 320 
+]]>
+  </schematic>
+</platform>
+

@@ -1,0 +1,7 @@
+"./platform/iconImage/CUDA_CPU.image"
+68 72
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "CUDA_CPU"
+OutArrowLine 32 62 0 1 16762880
+Image "./platform/icon/block_cpu2.gif" 16 22 32 32

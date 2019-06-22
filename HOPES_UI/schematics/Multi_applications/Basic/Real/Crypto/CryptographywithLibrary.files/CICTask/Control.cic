@@ -1,0 +1,167 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Sep 16, 2014 10:12 AM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_IDLE 0
+#define ID_STATE_SENDING 1
+#define ID_STATE_RECEIVING 2
+#define ID_TRANSITION_USERINPUT 0
+#define ID_TRANSITION_TRANSITION_1 1
+#define ID_TRANSITION_SEND_SUCCESS 2
+#define ID_TRANSITION_RECEIVE_SUCCESS 3
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+static volatile unsigned int* log_value = (unsigned int*)0x10799990;
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_inUser;
+STATIC int port_inIncoming;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state;
+// ##VARIABLE_SECTION::END
+
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_inUser = PORT_INITIALIZE(TASK_ID, "inUser");
+    port_inIncoming = PORT_INITIALIZE(TASK_ID, "inIncoming");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state = ID_STATE_IDLE;
+// ##INIT_SECTION::END
+
+	SYS_REQ(STOP_TASK, "Sender");
+	SYS_REQ(STOP_TASK, "Receiver");
+
+    // TODO: task initialize code
+
+}
+
+
+
+//-----------------------------------
+// go code
+//-----------------------------------
+static int count, count_2;
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add trigerring code here.
+
+	switch( current_state )
+	{
+		case ID_STATE_IDLE:
+		{
+			int inIncoming_buf = 0, inUser_buf = 0, ret_inUser = 0, ret_inIncoming = 0;
+			if(count_2 >= 20) {			       			     
+				 SYS_REQ(KILL);
+				 //return;
+			}
+			if(count%2 == 0){
+				ret_inIncoming =    MQ_AVAILABLE(port_inIncoming);
+				if(ret_inIncoming > 0)	MQ_RECEIVE(port_inIncoming, (unsigned char*)&inIncoming_buf, sizeof(int));
+				else{
+					ret_inUser =        MQ_AVAILABLE(port_inUser);
+					if(ret_inUser > 0)	MQ_RECEIVE(port_inUser, (unsigned char*)&inUser_buf, sizeof(int));
+				}
+			}
+			else if(count%2 == 1){
+				ret_inUser =        MQ_AVAILABLE(port_inUser);
+				if(ret_inUser > 0)	MQ_RECEIVE(port_inUser, (unsigned char*)&inUser_buf, sizeof(int));
+				else{
+					ret_inIncoming =    MQ_AVAILABLE(port_inIncoming);
+					if(ret_inIncoming > 0)	MQ_RECEIVE(port_inIncoming, (unsigned char*)&inIncoming_buf, sizeof(int));
+				}
+			}
+			if(inUser_buf > 0)
+			{			    
+				SYS_REQ(RUN_TASK, "Sender");
+				current_state = ID_STATE_SENDING;
+                count_2++;
+                //if(count_2 == 10)	memcpy((char*)log_value, (void*)0x7, sizeof(unsigned int));
+			}
+			else if(inIncoming_buf > 0)
+			{			  
+				SYS_REQ(RUN_TASK, "Receiver"); 
+				current_state = ID_STATE_RECEIVING;
+                count_2++;
+                //if(count_2 == 10)	memcpy((char*)log_value, (void*)0x7, sizeof(unsigned int));
+
+			}
+			count++;
+		}
+		break;
+		case ID_STATE_SENDING:
+		{
+ 
+			int Sender_status = SYS_REQ(CHECK_TASK_STATE, "Sender");
+			if(Sender_status == STATE_STOP)
+			{
+				current_state = ID_STATE_IDLE;
+			}
+			else
+			{
+				usleep(10000);
+			}
+		}
+		break;
+		case ID_STATE_RECEIVING:
+		{
+			int Receiver_status = SYS_REQ(CHECK_TASK_STATE, "Receiver");
+			if(Receiver_status == STATE_STOP)
+			{
+				current_state = ID_STATE_IDLE;
+			}
+			else
+			{
+				usleep(10000);
+			}
+		}
+		break;
+	}
+// ##GO_SECTION::END
+
+
+    // TODO: task main code
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END
+

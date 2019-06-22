@@ -1,0 +1,56 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING "-DCC -D_READ_OPTIMIZE"
+TargetParameter "linkOptions" STRING "-lm "
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Parameter "period" int "1200000"
+Parameter "width" int "176"
+Parameter "height" int "144"
+Galaxy "./icon/FRDecForDec.icon" I0 276 48 0
+StarParameter 2 "width" int "width" "height" int "height"
+Star "./icon/BlackHole.icon" I13 120 248 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ConstInt.icon" I15 168 224 0
+StarParameter 3 "procId" INT "-1" "level" FLOAT "0" "WIDTH" INT "8"
+Star "./icon/H263DisplayFrame.icon" I17 432 48 0
+StarParameter 4 "procId" INT "-1" "enable" INT "1" "width" INT "176" "height" INT "144"
+Star "./library/Peace/Port/inport.ilink" I21 40 64 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/H263FRFrameDecodeStream.icon" I23 136 48 0
+StarParameter 8 "procId" INT "-1" "use_gobsync" INT "1" "tdr" INT "3" "width" INT "176" "height" INT "144" "trace" INT "0" "inputFile" STRING "stream.263" "blk_cnt" INT "6"
+Line I34 "" Star I15 "output" Star I0 "type" 1 255 240 276 128 
+Line I35 "" Star I0 "Y" Star I17 "Y" 1 332 72 432 72 
+Line I36 "" Star I0 "U" Star I17 "U" 1 332 80 432 80 
+Line I37 "" Star I0 "V" Star I17 "V" 1 332 88 432 88 
+Line I38 "" Star I21 "output" Star I23 "varin" 1 72 80 136 80 
+Line I39 "" Star I23 "YBlock" Star I0 "YQ" 1 192 72 276 72 
+Line I40 "" Star I23 "UBlock" Star I0 "UQ" 1 192 80 276 80 
+Line I41 "" Star I23 "VBlock" Star I0 "VQ" 1 192 88 276 88 
+Line I42 "" Star I23 "dx" Star I0 "dx" 1 192 96 276 112 
+Line I43 "" Star I23 "dy" Star I0 "dy" 1 192 104 276 120 
+Line I44 "" Star I23 "mode" Star I0 "mode" 1 192 112 276 104 
+Line I45 "" Star I23 "CBP" Star I0 "CBP" 1 192 120 276 136 
+Line I46 "" Star I23 "QP" Star I0 "Q" 1 192 128 276 96 
+Line I47 "" Star I23 "type" Star I13 "input" 3 192 136 212 136 104 192 120 252 
+CommText 176 256 10 -16777216 "It is OK since 'mode' replaces 'type'"
+CommText 208 288 20 -16777216 "H.263 Decoder in FRDF"

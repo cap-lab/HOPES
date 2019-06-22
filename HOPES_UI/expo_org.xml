@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<properties>
+	
+		<!-- seed to initialize the random number generator -->
+			<!-- if 0, then no debug print out will appear (debugPrint = 0) -->
+			<DEBUG_PRINT value="0"/>
+	<!-- polling interval for checking the input files in msec -->
+			<POLLING_INTERVAL value="10"/>
+		
+		<SEED value="331232"/>
+		<SPEC_FILE_LIST>
+			<SPEC_FILE value="benchmarks/simplest.xml"/>
+			<SPEC_FILE value="benchmarks/simplest.xml"/>
+			<SPEC_FILE value="benchmarks/simplest.xml"/>
+			<SPEC_FILE value="benchmarks/simplest.xml"/>
+			<SPEC_FILE value="benchmarks/simplest.xml"/>
+			<SPEC_FILE value="benchmarks/simplest.xml"/>
+		</SPEC_FILE_LIST>
+			<!-- name of file containing the population -->
+			<ACTUAL_POPULATION_FILE_NAME value="PISA_pop"/>
+				<!-- path and base name for EMO communication -->
+			<COMM_FILE_PATH value="./"/>
+		<!-- number of objectives -->
+			<DIMENSION value="2"/>
+		<!-- size of (initial) population (also named alpha in cfg file)-->
+			<POPULATION_SIZE value="50"/>
+		<!-- size of mating pool -->
+			<MU value="50"/>
+		<!-- size of children (offspring) population -->
+			<LAMBDA value="50"/>
+		<!-- maximum number of generations -->
+			<MAX_GENERATIONS value="10000"/>
+		<!-- probability that a mutation of a gene is performed -->
+			<PROB_MUTATION value="0.9"/>
+			
+			
+		<!-- probability that a crossover of two genes is performed at all -->
+			<PROB_CROSSOVER value="0.3"/> 
+
+</properties>

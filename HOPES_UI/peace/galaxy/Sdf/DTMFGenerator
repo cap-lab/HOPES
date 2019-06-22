@@ -1,0 +1,30 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "LowFrequency" int "697"
+Parameter "HighFrequency" int "1209"
+Parameter "SamplingRate" int "8000"
+Parameter "ToneAmplitude" int "1.0"
+Galaxy "./icon/singen.icon" I0 56 84 0
+StarParameter 3 "sample_rate" float "SamplingRate" "frequency" float "LowFrequency" "phase_in_radians" float "0.0"
+Galaxy "./icon/singen.icon" I2 60 144 0
+StarParameter 3 "sample_rate" float "SamplingRate" "frequency" float "HighFrequency" "phase_in_radians" float "0.0"
+Star "./icon/Add2.icon" I4 128 100 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I8 244 100 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Rect.icon" I12 176 128 0
+StarParameter 4 "procId" INT "-1" "height" FLOAT "0.5" "width" INT "SamplingRate/20" "period" INT "SamplingRate/10"
+Star "./icon/outport.icon" I14 332 100 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I16 "" Star I0 "output" Star I4 "input#1" 1 112 116 128 116 
+Line I17 "" Star I4 "output" Star I8 "input#1" 1 184 116 244 116 
+Line I18 "" Star I12 "output" Star I8 "input#2" 1 232 160 271 144 
+Line I19 "" Star I8 "output" Star I14 "input" 1 300 116 332 116 
+Line I20 "" Star I2 "output" Star I4 "input#2" 1 116 176 155 144 
+CommText 100 0 20 -16777216 "Generate a Fixed Touchtone"
+CommText 72 36 16 -16777216 "Create a dual-tone modulated-frequency signal"
+CommText 12 104 18 -16777216 "low f"
+CommText 8 164 18 -16777216 "high f"
+CommText 144 192 18 -16777216 "pulse generation"
+CommText 296 136 16 -16777216 "Default parameters\ngenerate a "

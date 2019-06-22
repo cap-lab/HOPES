@@ -1,0 +1,987 @@
+/************************************
+ *
+ * File : Dete.cic
+ * Date : Aug 19, 2015 4:02 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <opencv/cv.h>
+#include <string>
+#include <cstdlib>
+#include "format.h"
+#include "TLDUtil.h"
+
+// ##DEFINE_SECTION::START
+
+// ##DEFINE_SECTION::END
+
+
+class Clustering
+{
+public:
+    int *windows;
+    int numWindows;
+    //Configurable members
+    float cutoff;
+
+    Clustering()
+    {
+        cutoff = .5;
+        windows = NULL;
+        numWindows = 0;
+    }
+    
+    ~Clustering(){};
+    
+    void release()
+    {
+        windows = NULL;
+        numWindows = 0;
+    }
+
+    void calcDistances(float *distances)
+    {
+        float *distances_tmp = distances;
+    
+        std::vector<int> confidentIndices = *detectionResult->confidentIndices;
+    
+        size_t indices_size = confidentIndices.size();
+    
+        for(size_t i = 0; i < confidentIndices.size(); i++)
+        {
+            int firstIndex = confidentIndices.at(0);
+            confidentIndices.erase(confidentIndices.begin());
+            tldOverlapOne(windows, numWindows, firstIndex, &confidentIndices, distances_tmp);
+            distances_tmp += indices_size - i - 1;
+        }
+    
+        for(size_t i = 0; i < indices_size * (indices_size - 1) / 2; i++)
+        {
+            distances[i] = 1 - distances[i];
+        }
+    }
+
+    void calcMeanRect(std::vector<int> * indices)
+    {
+        float x, y, w, h;
+        x = y = w = h = 0;
+
+        int numIndices = indices->size();
+
+        for(int i = 0; i < numIndices; i++)
+        {
+            int *bb = &windows[TLD_WINDOW_SIZE * indices->at(i)];
+            x += bb[0];
+            y += bb[1];
+            w += bb[2];
+            h += bb[3];
+        }
+    
+        x /= numIndices;
+        y /= numIndices;
+        w /= numIndices;
+        h /= numIndices;
+    
+        cv::Rect *rect = new cv::Rect();
+        detectionResult->detectorBB = rect;
+        rect->x = floor(x + 0.5);
+        rect->y = floor(y + 0.5);
+        rect->width = floor(w + 0.5);
+        rect->height = floor(h + 0.5);
+    }
+    
+    void clusterConfidentIndices()
+    {
+        int numConfidentIndices = detectionResult->confidentIndices->size();
+        //printf("numConfidentIndices:%d\n", numConfidentIndices);
+        float *distances = new float[numConfidentIndices * (numConfidentIndices - 1) / 2];
+
+        calcDistances(distances);
+
+        int *clusterIndices = new int[numConfidentIndices];
+        cluster(distances, clusterIndices);
+   
+        if(detectionResult->numClusters == 1)
+        {
+            calcMeanRect(detectionResult->confidentIndices);
+            //TODO: Take the maximum confidence as the result confidence.
+        }
+    }
+    
+    void cluster(float *distances, int *clusterIndices)
+    {
+       int numConfidentIndices = detectionResult->confidentIndices->size();
+
+        if(numConfidentIndices == 1)
+        {
+            clusterIndices[0] = 0;
+            detectionResult->numClusters = 1;
+            return;
+        }
+    
+        int numDistances = numConfidentIndices * (numConfidentIndices - 1) / 2;
+    
+        //Now: Cluster distances
+        int *distUsed = new int[numDistances];
+    
+        for(int i = 0; i < numDistances; i++)
+        {
+            distUsed[i] = 0;
+        }
+    
+        for(int i = 0; i < numConfidentIndices; i++)
+        {
+            clusterIndices[i] = -1;
+        }
+    
+        int newClusterIndex = 0;
+    
+        int numClusters = 0;
+    
+        while(true)
+        {
+    
+            //Search for the shortest distance
+            float shortestDist = -1;
+            int shortestDistIndex = -1;
+            int i1;
+            int i2;
+            int distIndex = 0;
+    
+            for(int i = 0; i < numConfidentIndices; i++)   //Row index
+            {
+                for(int j = i + 1; j < numConfidentIndices; j++) //Start from i+1
+                {
+    
+                    if(!distUsed[distIndex] && (shortestDistIndex == -1 || distances[distIndex] < shortestDist))
+                    {
+                        shortestDist = distances[distIndex];
+                        shortestDistIndex = distIndex;
+                        i1 = i;
+                        i2 = j;
+                    }
+    
+                    distIndex++;
+                }
+            }
+    
+            if(shortestDistIndex == -1)
+            {
+                break; // We are done
+            }
+    
+            distUsed[shortestDistIndex] = 1;
+    
+            //Now: Compare the cluster indices
+            //If both have no cluster and distance is low, put them both to a new cluster
+            if(clusterIndices[i1] == -1 && clusterIndices[i2] == -1)
+            {
+                //If distance is short, put them to the same cluster
+                if(shortestDist < cutoff)
+                {
+                    clusterIndices[i1] = clusterIndices[i2] = newClusterIndex;
+                    newClusterIndex++;
+                    numClusters++;
+                }
+                else     //If distance is long, put them to different clusters
+                {
+                    clusterIndices[i1] = newClusterIndex;
+                    newClusterIndex++;
+                    numClusters++;
+                    clusterIndices[i2] = newClusterIndex;
+                    newClusterIndex++;
+                    numClusters++;
+                }
+    
+                //Second point is  in cluster already
+            }
+            else if(clusterIndices[i1] == -1 && clusterIndices[i2] != -1)
+            {
+                if(shortestDist < cutoff)
+                {
+                    clusterIndices[i1] = clusterIndices[i2];
+                }
+                else     //If distance is long, put them to different clusters
+                {
+                    clusterIndices[i1] = newClusterIndex;
+                    newClusterIndex++;
+                    numClusters++;
+                }
+            }
+            else if(clusterIndices[i1] != -1 && clusterIndices[i2] == -1)
+            {
+                if(shortestDist < cutoff)
+                {
+                    clusterIndices[i2] = clusterIndices[i1];
+                }
+                else     //If distance is long, put them to different clusters
+                {
+                    clusterIndices[i2] = newClusterIndex;
+                    newClusterIndex++;
+                    numClusters++;
+                }
+            }
+            else     //Both indices are in clusters already
+            {
+                if(clusterIndices[i1] != clusterIndices[i2] && shortestDist < cutoff)
+                {
+                    //Merge clusters
+    
+                    int oldClusterIndex = clusterIndices[i2];
+    
+                    for(int i = 0; i < numConfidentIndices; i++)
+                    {
+                        if(clusterIndices[i] == oldClusterIndex)
+                        {
+                            clusterIndices[i] = clusterIndices[i1];
+                        }
+                    }
+    
+                    numClusters--;
+                }
+            }
+        }
+    
+        detectionResult->numClusters = numClusters;
+    }
+};
+
+
+class VarianceFilter
+{
+public:
+    IntegralImage<int>* integralImg;
+    IntegralImage<long long>* integralImg_squared;
+
+    int *windowOffsets;
+
+    float minVar;
+    VarianceFilter()
+    {
+        minVar = 0;
+        integralImg = NULL;
+        integralImg_squared = NULL;
+    }
+    
+    void release()
+    {
+        if(integralImg != NULL) delete integralImg;
+
+        integralImg = NULL;
+
+        if(integralImg_squared != NULL) delete integralImg_squared;
+
+        integralImg_squared = NULL;
+    }
+    void nextIteration(const cv::Mat &img)
+    {
+        release();
+
+        integralImg = new IntegralImage<int>(img);
+#ifdef CAP_DEBUG
+#endif
+        integralImg->calcIntImg(img);
+    
+        integralImg_squared = new IntegralImage<long long>(img);
+        integralImg_squared->calcIntImg(img, true);
+    }
+    
+    bool filter(int i)
+    {
+        float bboxvar = calcVariance(windowOffsets + TLD_WINDOW_OFFSET_SIZE * i);
+
+        detectionResult->variances[i] = bboxvar;
+
+        if(bboxvar < minVar)
+        {
+            return false;
+        }
+
+        return true;
+    }
+    
+    float calcVariance(int *off)
+    {
+        int *ii1 = integralImg->data;
+        long long *ii2 = integralImg_squared->data;
+
+        float mX  = (ii1[off[3]] - ii1[off[2]] - ii1[off[1]] + ii1[off[0]]) / (float) off[5]; //Sum of Area divided by area
+        float mX2 = (ii2[off[3]] - ii2[off[2]] - ii2[off[1]] + ii2[off[0]]) / (float) off[5];
+        return mX2 - mX * mX;
+    }
+    ~VarianceFilter(){release();}
+
+};
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+
+DetectionResult *detectionResult;
+int numWindows;
+int *windows;
+int *windowOffsets;
+int imgWidthStep;
+int imgWidth = CAP_WIDTH;
+int imgHeight = CAP_HEIGHT;
+
+cv::Size *scales;
+int numScales;
+
+int numFeatures;
+int numTrees;
+int maxScale;
+int minScale;
+int minSize;
+
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+STATIC    float shift;
+
+    //Needed for init
+STATIC    int objWidth;								
+STATIC    int objHeight;								
+    
+
+STATIC    VarianceFilter *varianceFilter;
+STATIC    Clustering *clustering;
+
+STATIC    CapMat inputMat;
+STATIC    cv::Mat capImg;
+
+STATIC    DetectorResult detectorResult;
+STATIC	  int is_first;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+
+void initWindowOffsets()
+{
+    windowOffsets = new int[TLD_WINDOW_OFFSET_SIZE * numWindows];
+    int *off = windowOffsets;
+
+    int windowSize = TLD_WINDOW_SIZE;
+
+    for(int i = 0; i < numWindows; i++)
+    {
+
+        int *window = windows + windowSize * i;
+        *off++ = sub2idx(window[0] - 1, window[1] - 1, imgWidthStep); // x1-1,y1-1
+        *off++ = sub2idx(window[0] - 1, window[1] + window[3] - 1, imgWidthStep); // x1-1,y2
+        *off++ = sub2idx(window[0] + window[2] - 1, window[1] - 1, imgWidthStep); // x2,y1-1
+        *off++ = sub2idx(window[0] + window[2] - 1, window[1] + window[3] - 1, imgWidthStep); // x2,y2
+        *off++ = window[4] * 2 * numFeatures * numTrees; // pointer to features for this scale
+        *off++ = window[2] * window[3]; //Area of bounding box
+    }
+}
+
+void initWindowsAndScales()
+{
+    int scanAreaX = 1; // It is important to start with 1/1, because the integral images aren't defined at pos(-1,-1) due to speed reasons
+    int scanAreaY = 1;
+    int scanAreaW = imgWidth - 1;
+    int scanAreaH = imgHeight - 1;
+
+    int windowIndex = 0;
+
+    scales = new cv::Size[maxScale - minScale + 1];
+
+    numWindows = 0;
+
+    int scaleIndex = 0;
+
+    for(int i = minScale; i <= maxScale; i++)
+    {
+        float scale = pow(1.2, i);
+        int w = (int)objWidth * scale;
+        int h = (int)objHeight * scale;
+        int ssw, ssh;
+
+        ssw = std::max<float>(1, w * shift);
+        ssh = std::max<float>(1, h * shift);
+
+        if(w < minSize || h < minSize || w > scanAreaW || h > scanAreaH) continue;
+
+        scales[scaleIndex].width = w;
+        scales[scaleIndex].height = h;
+
+        scaleIndex++;
+
+        numWindows += floor((float)(scanAreaW - w + ssw) / ssw) * floor((float)(scanAreaH - h + ssh) / ssh);
+    }
+
+    numScales = scaleIndex;
+
+    windows = new int[TLD_WINDOW_SIZE * numWindows];
+
+    for(scaleIndex = 0; scaleIndex < numScales; scaleIndex++)
+    {
+        int w = scales[scaleIndex].width;
+        int h = scales[scaleIndex].height;
+
+        int ssw, ssh;
+
+
+        ssw = std::max<float>(1, w * shift);
+        ssh = std::max<float>(1, h * shift);
+
+        for(int y = scanAreaY; y + h <= scanAreaY + scanAreaH; y += ssh)
+        {
+            for(int x = scanAreaX; x + w <= scanAreaX + scanAreaW; x += ssw)
+            {
+                int *bb = &windows[TLD_WINDOW_SIZE * windowIndex];
+                tldCopyBoundaryToArray<int>(x, y, w, h, bb);
+                bb[4] = scaleIndex;
+
+                windowIndex++;
+            }
+        }
+
+    }
+}
+
+void propagateMembers()
+{
+    detectionResult->init(numWindows, numTrees);
+    varianceFilter->windowOffsets = windowOffsets;
+    clustering->windows = windows;
+    clustering->numWindows = numWindows;
+}
+
+void cleanPreviousData()
+{
+     detectionResult->reset();
+}
+
+void init()
+{
+    if(objWidth == -1 || objHeight == -1)
+    {
+        //printf("Error: Window dimensions not set\n"); //TODO: Convert this to exception
+    }
+
+    initWindowsAndScales();
+    initWindowOffsets();
+
+    propagateMembers();
+}
+
+void learn_first_frame()
+{
+	FILE *fp = fopen("learningData/vInfo.txt","r");
+	int x, y, w, h;
+	char str[50];
+	fscanf(fp, "%s %d %d %d %d ", str, &x, &y, &w, &h);
+	fclose(fp);
+	cv::Rect * currBB = new cv::Rect(x,y,w,h);
+	cv::Mat currImg = capImg;
+	int j;
+	detectionResult->reset();
+	detectionResult->containsValidData = true;
+	varianceFilter->nextIteration(currImg);
+	LIBCALL(EC, nextIteration, currImg);
+	for(j=0;j<numWindows;j++)
+	{
+		if(!varianceFilter->filter(j))
+		{
+			detectionResult->posteriors[j] = 0;
+			continue;
+		}
+		
+		if(!LIBCALL(EC,filter,j)){
+			continue;
+		}
+		if(!LIBCALL(NC,filter,currImg,j))
+		{
+			continue;
+		}
+	}
+
+	NormalizedPatch patch;        
+	tldExtractNormalizedPatchRect(currImg, currBB, patch.values);
+	patch.positive = 1;
+
+	float initVar = tldCalcVariance(patch.values, TLD_PATCH_SIZE * TLD_PATCH_SIZE);
+	varianceFilter->minVar = initVar / 2;
+
+
+	float *overlap = new float[numWindows];
+	tldOverlapRect(windows, numWindows, currBB, overlap);
+
+	//Add all bounding boxes with high overlap
+
+	std::vector< std::pair<int, float> > positiveIndices;
+	std::vector<int> negativeIndices;    
+
+	for(int i = 0; i < numWindows; i++)
+	{
+
+		if(overlap[i] > 0.6)
+		{
+			positiveIndices.push_back(std::pair<int, float>(i, overlap[i]));
+		}
+
+		if(overlap[i] < 0.2)
+		{
+			float variance = detectionResult->variances[i];
+
+			if(variance > varianceFilter->minVar)   //TODO: This check is unnecessary if minVar would be set before calling detect.
+			{
+				negativeIndices.push_back(i);
+			}
+		}
+	}
+
+	std::sort(positiveIndices.begin(), positiveIndices.end(), tldSortByOverlapDesc);
+
+	std::vector<NormalizedPatch> patches;
+
+	patches.push_back(patch); //Add first patch to patch list
+
+	int numIterations = std::min<size_t>(positiveIndices.size(), 10); //Take at most 10 bounding boxes (sorted by overlap)
+
+	for(int i = 0; i < numIterations; i++)
+	{
+		int idx = positiveIndices.at(i).first;
+		//Learn this bounding box
+		//TODO: Somewhere here image warping might be possible
+		LIBCALL(EC,learn, &windows[TLD_WINDOW_SIZE * idx], true, &detectionResult->featureVectors[numTrees * idx]);
+	}
+
+	srand(1); //TODO: This is not guaranteed to affect random_shuffle
+
+	random_shuffle(negativeIndices.begin(), negativeIndices.end());
+
+	//Choose 100 random patches for negative examples
+	for(size_t i = 0; i < std::min<size_t>(100, negativeIndices.size()); i++)
+	{
+		int idx = negativeIndices.at(i);
+
+		NormalizedPatch patch;
+		tldExtractNormalizedPatchBB(currImg, &windows[TLD_WINDOW_SIZE * idx], patch.values);
+		patch.positive = 0;
+		patches.push_back(patch);
+	}
+
+	LIBCALL(NC,learn,patches);
+	
+	delete[] overlap;
+
+}
+
+
+void init_learning()
+{
+	/*input file name: info.txt - format ->
+	num of images
+	image1_file_name x y w h 
+	image2_file_name x y w h ...
+	*/
+	int i, j;
+	int result, imgNo, x, y, w, h;
+	cv::Rect* currBB;
+	cv::Mat currImg;
+	char filename[50];
+	std::string fn;
+	FILE *fp = fopen("learningData/info.txt","r");
+
+#ifdef CAP_DEBUG
+	printf("Init_learning_Start\n");
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC,&start);
+#endif
+
+	if(fp == NULL)
+	{
+		printf("no learning file\n");
+		return;
+	}
+	result = fscanf(fp, "%d ", &imgNo);
+	i = 0 ;	
+	result = fscanf(fp, "%s %d %d %d %d ", filename, &x, &y, &w, &h);
+	fn = filename;
+	//fn = "learningData/" + fn;
+	currImg = cv::imread(fn,CV_LOAD_IMAGE_GRAYSCALE);
+	//cv::Mat grey(imgHeight, imgWidth, CV_8UC1);
+	//cv::cvtColor(currImg, grey, CV_BGR2GRAY);
+	currBB = new cv::Rect(x,y,w,h);
+	detectionResult->reset();
+	detectionResult->containsValidData = true;
+	varianceFilter->nextIteration(currImg);
+	LIBCALL(EC, nextIteration, currImg);
+	for(j=0;j<numWindows;j++)
+	{
+		if(!varianceFilter->filter(j))
+		{
+			detectionResult->posteriors[j] = 0;
+			continue;
+		}
+		
+		if(!LIBCALL(EC,filter,j)){
+			continue;
+		}
+		if(!LIBCALL(NC,filter,currImg,j))
+		{
+			continue;
+		}
+	}
+
+	NormalizedPatch patch;        
+	tldExtractNormalizedPatchRect(currImg, currBB, patch.values);
+	patch.positive = 1;
+
+	float initVar = tldCalcVariance(patch.values, TLD_PATCH_SIZE * TLD_PATCH_SIZE);
+	varianceFilter->minVar = initVar / 2;
+
+
+	float *overlap = new float[numWindows];
+	tldOverlapRect(windows, numWindows, currBB, overlap);
+
+	//Add all bounding boxes with high overlap
+
+	std::vector< std::pair<int, float> > positiveIndices;
+	std::vector<int> negativeIndices;    
+	
+	for(int i = 0; i < numWindows; i++)
+	{
+
+		if(overlap[i] > 0.6)
+		{
+			positiveIndices.push_back(std::pair<int, float>(i, overlap[i]));
+		}
+
+		if(overlap[i] < 0.2)
+		{
+			float variance = detectionResult->variances[i];
+
+			if(variance > varianceFilter->minVar)   //TODO: This check is unnecessary if minVar would be set before calling detect.
+			{
+				negativeIndices.push_back(i);
+			}
+		}
+	}
+
+	std::sort(positiveIndices.begin(), positiveIndices.end(), tldSortByOverlapDesc);
+
+	std::vector<NormalizedPatch> patches;
+
+	patches.push_back(patch); //Add first patch to patch list
+
+	int numIterations = std::min<size_t>(positiveIndices.size(), 10); //Take at most 10 bounding boxes (sorted by overlap)
+
+	for(int i = 0; i < numIterations; i++)
+	{
+		int idx = positiveIndices.at(i).first;
+		//Learn this bounding box
+		//TODO: Somewhere here image warping might be possible
+		LIBCALL(EC,learn, &windows[TLD_WINDOW_SIZE * idx], true, &detectionResult->featureVectors[numTrees * idx]);
+	}
+
+	srand(1); //TODO: This is not guaranteed to affect random_shuffle
+
+	random_shuffle(negativeIndices.begin(), negativeIndices.end());
+
+	//Choose 100 random patches for negative examples
+	for(size_t i = 0; i < std::min<size_t>(100, negativeIndices.size()); i++)
+	{
+		int idx = negativeIndices.at(i);
+
+		NormalizedPatch patch;
+		tldExtractNormalizedPatchBB(currImg, &windows[TLD_WINDOW_SIZE * idx], patch.values);
+		patch.positive = 0;
+		patches.push_back(patch);
+	}
+
+	LIBCALL(NC,learn,patches);
+	
+	delete[] overlap;
+	
+	for(i=1;i<imgNo;i++)
+	{
+		result = fscanf(fp, "%s %d %d %d %d ", filename, &x, &y, &w, &h);
+		fn = filename;
+		//fn = "learningData/" + fn;
+		currImg = cv::imread(fn,CV_LOAD_IMAGE_GRAYSCALE);
+		//cv::Mat grey(imgHeight, imgWidth, CV_8UC1);
+		//cv::cvtColor(currImg, grey, CV_BGR2GRAY);
+		currBB = new cv::Rect(x,y,w,h);
+		detectionResult->reset();
+		varianceFilter->nextIteration(currImg);
+		LIBCALL(EC, nextIteration, currImg);
+		int a=0;int b=0;int c=0;
+		for(j=0;j<numWindows;j++)
+		{
+			if(!varianceFilter->filter(j))
+			{
+				a++;
+				detectionResult->posteriors[j] = 0;
+				continue;
+			}
+			
+			if(!LIBCALL(EC,filter,j)){
+				b++;
+				continue;
+			}
+			if(!LIBCALL(NC,filter,currImg,j))
+			{
+				c++;
+				continue;
+			}
+		}
+		detectionResult->containsValidData = true;
+
+#ifdef CAP_DEBUG_R
+		printf("learning %s .... %d(all) - %d(vf) - %d(ec) - %d(nc) = %d \n", filename, numWindows, a, b, c, numWindows - a - b- c);
+#endif
+
+		NormalizedPatch patch;
+		
+		tldExtractNormalizedPatchRect(currImg, currBB, patch.values);
+	
+		float *overlap = new float[numWindows];
+		tldOverlapRect(windows, numWindows, currBB, overlap);
+ 
+		//Add all bounding boxes with high overlap
+	
+		std::vector<std::pair<int, float> > positiveIndices;
+		std::vector<int> negativeIndices;
+		std::vector<int> negativeIndicesForNN;
+	
+		//First: Find overlapping positive and negative patches
+	
+		for(int i = 0; i < numWindows; i++)
+		{
+	
+			if(overlap[i] > 0.6)
+			{
+				positiveIndices.push_back(std::pair<int, float>(i, overlap[i]));
+			}
+	
+			if(overlap[i] < 0.2)
+			{
+				if(detectionResult->posteriors[i] > 0.1)   //TODO: Shouldn't this read as 0.5?
+				{
+					negativeIndices.push_back(i);
+				}
+        
+				if(detectionResult->posteriors[i] > 0.5)
+				{
+					negativeIndicesForNN.push_back(i);
+				}
+	
+			}
+		}
+	
+		sort(positiveIndices.begin(), positiveIndices.end(), tldSortByOverlapDesc);
+	
+		std::vector<NormalizedPatch> patches;
+	
+		patch.positive = 1;
+		patches.push_back(patch);
+		//TODO: Flip
+	
+	
+		int numIterations = std::min<size_t>(positiveIndices.size(), 10); //Take at most 10 bounding boxes (sorted by overlap)
+	
+		for(size_t i = 0; i < negativeIndices.size(); i++)
+		{
+			int idx = negativeIndices.at(i);
+			//TODO: Somewhere here image warping might be possible
+			LIBCALL(EC, learn, &windows[TLD_WINDOW_SIZE * idx], false, &detectionResult->featureVectors[numTrees * idx]);
+		}
+	
+		//TODO: Randomization might be a good idea
+		for(int i = 0; i < numIterations; i++)
+		{
+			int idx = positiveIndices.at(i).first;
+                //TODO: Somewhere here image warping might be possible
+                LIBCALL(EC, learn, &windows[TLD_WINDOW_SIZE * idx], true, &detectionResult->featureVectors[numTrees * idx]);
+		}
+	
+		for(size_t i = 0; i < negativeIndicesForNN.size(); i++)
+		{
+			int idx = negativeIndicesForNN.at(i);
+	
+			NormalizedPatch patch;
+			tldExtractNormalizedPatchBB(currImg, &windows[TLD_WINDOW_SIZE * idx], patch.values);
+			patch.positive = 0;
+			patches.push_back(patch);
+		}
+	
+		LIBCALL(NC, learn, patches);
+	
+		//cout << "NN has now " << detectorCascade->nnClassifier->truePositives->size() << " positives and " << detectorCascade->nnClassifier->falsePositives->size() << " negatives.\n";
+	
+		delete[] overlap;
+	}
+        
+#ifdef CAP_DEBUG
+	clock_gettime(CLOCK_MONOTONIC,&end);
+	uint64_t diff = end.tv_nsec - start.tv_nsec;
+    printf("Init_learning END - time spent : %d s + %llu ns\n", (int)(end.tv_sec - start.tv_sec)  ,(long long unsigned int) diff);
+#endif
+
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+	char str[50];
+	int x, y, w, h, tmp;
+#ifdef CAP_GET_LOG
+	FILE *fp = fopen("learningData/vInfo.txt","r");
+	fscanf(fp, "%s %d %d %d %d", str, &x, &y, &w, &h);
+        printf("%s %d %d %d %d\n", str, x, y, w, h);
+	fclose(fp);
+#else
+	FILE *fp = fopen("learningData/info.txt","r");
+	fscanf(fp, "%d %s %d %d %d %d", &tmp, str, &x, &y, &w, &h);
+	fclose(fp);
+#endif
+    objWidth = w; //MUST be set before calling init
+    objHeight = h; //MUST be set before calling init
+	imgWidthStep = CAP_WIDTH;
+
+    shift = 0.1;
+    minScale = -10;
+    maxScale = 10;
+    minSize = 25;
+
+    numTrees = 10;
+    numFeatures = 10;
+
+	is_first = 1 ; 
+    //foregroundDetector = new ForegroundDetector();
+    varianceFilter = new VarianceFilter();
+    clustering = new Clustering();
+
+    detectionResult = new DetectionResult();
+    // TODO: task initialize code
+    init();
+    LIBCALL(EC,init); 
+    // CAP_TODO: it needs initial learning code 
+#ifndef CAP_GET_LOG
+	init_learning();
+#endif
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    int i, j, k, l, result;
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char *)&inputMat, sizeof(CapMat));
+#ifdef CAP_DEBUG
+	printf("DetectorCascade_Start\n");
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC,&start);
+#endif
+	capImg = cv::Mat(imgHeight, imgWidth, CV_8UC1, inputMat.data); 
+    detectionResult->reset();
+    varianceFilter->nextIteration(capImg);
+	LIBCALL(EC, nextIteration, capImg);
+    j = 0; k = 0; l=0;// for debugging
+    for(i = 0 ; i< numWindows; i++)
+    {
+        result = varianceFilter->filter(i);
+        if(!result)
+        {
+            detectionResult->posteriors[i] = 0;
+			j++;
+            continue;
+        }
+        
+        result = LIBCALL(EC, filter, i);
+        if(!result){
+			k++;
+			continue;
+		}
+        
+        result = LIBCALL(NC, filter, capImg, i);
+        if(!result)
+		{
+			l++;
+			continue;
+		}
+        
+        detectionResult->confidentIndices->push_back(i);
+    }
+#ifdef CAP_DEBUG_R
+	printf("Detector@@!!\nAll: %d - %d(VF) - %d(EC) - %d(NC) = %d(confidentIndices) \n\n",numWindows, j, k, l, numWindows - j - k - l);
+#endif
+
+    //printf("num_of_window: %d\n", numWindows);
+    clustering->clusterConfidentIndices();    
+
+    detectionResult->containsValidData = true;
+
+#ifdef CAP_GET_LOG
+	if(is_first)
+	{
+		learn_first_frame();
+		is_first = 0;
+	}
+#endif
+
+	
+    if(detectionResult->detectorBB!=NULL){
+		detectorResult.BB.value = *detectionResult->detectorBB;
+		detectorResult.BB.valid = true;
+	}
+	else
+	{
+		detectorResult.BB.value = cv::Rect();
+		detectorResult.BB.valid = false;
+	}
+    detectorResult.numClusters = detectionResult->numClusters;
+
+
+#ifdef CAP_DEBUG
+	clock_gettime(CLOCK_MONOTONIC,&end);
+	uint64_t diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+    printf("DetectorCascade function END - time spent : %llu\n", (long long unsigned int) diff / 1000);
+#endif
+    MQ_SEND(port_out, (unsigned char*)&detectorResult, sizeof(DetectorResult));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    clustering->release();
+    numWindows = 0;
+    numScales = 0;
+    delete[] scales;
+    windows = NULL;
+    delete[] windowOffsets;
+    windowOffsets = NULL;
+    objWidth = -1;
+    objHeight = -1;
+    
+    detectionResult->release();
+}
+
+TASK_CODE_END

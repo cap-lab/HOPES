@@ -1,0 +1,92 @@
+/************************************
+ *
+ * File : Camera.cic
+ * Date : Mar 18, 2019 5:16 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <iostream>
+#include <raspicam/raspicam_cv.h>
+//#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#define CAP_HEIGHT 320
+#define CAP_WIDTH 240
+#define CAP_CHANNEL 3
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image;
+STATIC int port_image_tld;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+using namespace std;
+static raspicam::RaspiCam_Cv Camera;
+static cv::Mat image;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image = PORT_INITIALIZE(TASK_ID, "image");
+    port_image_tld = PORT_INITIALIZE(TASK_ID, "image_tld");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+ 
+    Camera.set( CV_CAP_PROP_FORMAT, CV_8UC3);
+    //Camera.set( CV_CAP_PROP_FRAME_WIDTH, 640 );
+    //Camera.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
+    Camera.set( CV_CAP_PROP_FRAME_WIDTH, CAP_HEIGHT);
+    Camera.set( CV_CAP_PROP_FRAME_HEIGHT, CAP_WIDTH);
+    
+     if (!Camera.open()) {
+        cerr<<"Error opening the camera"<<endl;
+     }
+
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    
+    Camera.grab();
+    Camera.retrieve(image);
+
+    //cvSTATIC tColor(image, image, cv::COLOR_BGR2RGB);
+    BUF_SEND(port_image, (unsigned char *)image.data, CAP_HEIGHT * CAP_WIDTH * CAP_CHANNEL);
+    BUF_SEND(port_image_tld, (unsigned char *)image.data, CAP_HEIGHT * CAP_WIDTH * CAP_CHANNEL);    
+    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

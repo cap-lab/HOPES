@@ -1,0 +1,24 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Star "./icon/inport.icon" I0 20 64 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/CxToRect.icon" I2 64 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Quant.icon" I6 132 40 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "-2.0 0.0 2.0" "levels" FLOATARRAY "0 4 8 12"
+Star "./icon/Quant.icon" I9 132 88 0
+StarParameter 3 "procId" INT "-1" "thresholds" FLOATARRAY "-2.0 0.0 2.0" "levels" FLOATARRAY "0 1 2 3"
+Star "./icon/AddInt2.icon" I12 200 56 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/IntToBits.icon" I16 248 40 0
+StarParameter 2 "procId" INT "-1" "nBits" INT "4"
+Star "./icon/outport.icon" I19 312 56 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I21 "" Star I0 "output" Star I2 "input" 1 52 80 64 80 
+Line I22 "" Star I2 "real" Star I6 "input" 1 120 72 132 72 
+Line I23 "" Star I2 "imag" Star I9 "input" 1 120 88 132 120 
+Line I24 "" Star I6 "output" Star I12 "input#1" 1 188 72 200 72 
+Line I25 "" Star I12 "output" Star I16 "input" 1 236 72 248 72 
+Line I26 "" Star I16 "output" Star I19 "input" 1 304 72 312 72 
+Line I27 "" Star I9 "output" Star I12 "input#2" 1 188 120 218 91 

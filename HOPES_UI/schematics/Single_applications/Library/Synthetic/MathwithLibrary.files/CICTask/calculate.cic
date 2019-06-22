@@ -1,0 +1,103 @@
+/************************************
+ *
+ * File : calculate.cic
+ * Date : Mar 31, 2010 3:53 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output_pow;
+STATIC int port_output_exp;
+STATIC int port_output_log;
+STATIC int port_output_sin;
+STATIC int port_output_cos;
+STATIC int port_output_tan;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output_pow = PORT_INITIALIZE(TASK_ID, "output_pow");
+    port_output_exp = PORT_INITIALIZE(TASK_ID, "output_exp");
+    port_output_log = PORT_INITIALIZE(TASK_ID, "output_log");
+    port_output_sin = PORT_INITIALIZE(TASK_ID, "output_sin");
+    port_output_cos = PORT_INITIALIZE(TASK_ID, "output_cos");
+    port_output_tan = PORT_INITIALIZE(TASK_ID, "output_tan");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static int i=0;
+TASK_GO
+{
+    // TODO: task main code
+    double num = 0.0;
+    double result_pow = 0.0;
+    double result_log = 0.0;
+    double result_exp = 0.0;
+    double result_sin = 0.0;
+    double result_cos = 0.0;
+    double result_tan = 0.0;
+    int port = 0;
+
+
+    port = AC_CHECK(port_input);
+    AC_RECEIVE(port_input, (unsigned char*)&num, sizeof(double), port);
+
+    result_pow = LIBCALL(math_1, my_pow, i+1, 2.0);
+    result_log = LIBCALL(math_1, my_log, i+1);
+    result_exp = LIBCALL(math_1, my_exp, i+1);
+    result_sin = LIBCALL(math_1, my_sin, num);
+    result_cos = LIBCALL(math_1, my_cos, num);
+    result_tan = LIBCALL(math_1, my_tan, num);
+
+    AC_SEND(port_output_pow, (unsigned char*)&result_pow, sizeof(double), 0);
+    AC_SEND(port_output_log, (unsigned char*)&result_log, sizeof(double), 0);
+    AC_SEND(port_output_exp, (unsigned char*)&result_exp, sizeof(double), 0);
+    AC_SEND(port_output_sin, (unsigned char*)&result_sin, sizeof(double), 0);
+    AC_SEND(port_output_cos, (unsigned char*)&result_cos, sizeof(double), 0);
+    AC_SEND(port_output_tan, (unsigned char*)&result_tan, sizeof(double), 0);
+    i++;
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

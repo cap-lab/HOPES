@@ -1,0 +1,9 @@
+"./platform/iconImage/RobonovaController.image"
+68 72
+Rectangle 4 12 56 48 16777215 true
+Rectangle 4 12 56 48 0 false
+Text 4 -5 11 0 "RobonovaController"
+OutArrowLine 32 62 0 1 16762880
+Image "./platform/icon/icon_cpu.gif" 16 22 32 32
+InArrowLine 62 36 2 0 13369344
+InArrowLine 0 36 2 0 13369344

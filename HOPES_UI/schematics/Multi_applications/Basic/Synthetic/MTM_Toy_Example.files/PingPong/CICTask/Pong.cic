@@ -1,0 +1,233 @@
+/************************************
+ *
+ * File : Pong.cic
+ * Date : Apr 18, 2013 1:26 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+#define BORDER_WIDTH 2
+
+STATIC Display *theDisplay;
+STATIC Window theWindow;
+STATIC GC theGC;
+
+STATIC int theScreen;
+STATIC int theDepth;
+STATIC unsigned long theBlackPixel;
+STATIC unsigned long theWhitePixel;
+
+
+STATIC unsigned long UsrColorPixel(char* name){
+    Colormap cmap;
+    XColor c0, c1;
+
+    cmap = DefaultColormap(theDisplay, 0);
+    XAllocNamedColor(theDisplay, cmap, name, &c0, &c1);
+    return (c0.pixel);
+}
+
+STATIC void fillCircle(Window theWindow,GC theGC,int x,int y,int width,int height, int angle_1, int angle_2, char* name){
+    XSync(theDisplay, False);
+    XSetForeground(theDisplay, theGC, theWhitePixel);
+    XDrawArc(theDisplay,theWindow,theGC,x,y,width,height, angle_1, angle_2);
+    XSetForeground(theDisplay, theGC, UsrColorPixel("blue"));
+    XFillArc(theDisplay,theWindow,theGC,x,y,width,height, angle_1, angle_2);
+    XSetForeground(theDisplay, theGC, theWhitePixel);
+    XDrawArc(theDisplay,theWindow,theGC,x,y,width,height, angle_1, angle_2);
+    XSetForeground(theDisplay, theGC, theWhitePixel);
+    XDrawString(theDisplay, theWindow, theGC, x+18, y+33, name, strlen(name));  
+    XSync(theDisplay, False);
+}
+
+STATIC void unFillCircle(Window theWindow,GC theGC,int x,int y,int width,int height, int angle_1, int angle_2, char* name){
+    XSync(theDisplay, False);
+    XSetForeground(theDisplay,theGC,theBlackPixel);
+    XFillArc(theDisplay,theWindow,theGC,x,y,width,height, angle_1, angle_2);
+    XSetForeground(theDisplay,theGC,theWhitePixel);
+    XDrawArc(theDisplay,theWindow,theGC,x,y,width,height, angle_1, angle_2);
+    XDrawString(theDisplay, theWindow, theGC, x+18, y+33, name, strlen(name));  
+    XSync(theDisplay, False);
+}
+
+STATIC void InitPingPongDisplay(Window theWindow,GC theGC){
+    XSync(theDisplay, False);
+    XDrawString(theDisplay, theWindow, theGC, 120, 40, "PingPong", strlen("PingPong"));
+    XDrawArc(theDisplay, theWindow, theGC, 75-(60/2), 150-(60/2), 60, 60, 0, 360*64);
+    XDrawArc(theDisplay, theWindow, theGC, 225-(60/2), 150-(60/2), 60, 60, 0, 360*64);
+    XDrawString(theDisplay, theWindow, theGC, 45+18, 120+33, "Ping", strlen("Ping"));  
+    XDrawString(theDisplay, theWindow, theGC, 195+18, 120+33, "Pong", strlen("Pong"));  
+    XSync(theDisplay, False);
+}
+
+
+
+STATIC int createGC(Window theNewWindow,GC *theNewGC){
+    XGCValues theGCValues;
+
+    *theNewGC = XCreateGC(theDisplay,theNewWindow,(unsigned long) 0,&theGCValues);
+    if(*theNewGC == 0)
+        return 0;
+    else{
+        XSetForeground(theDisplay,*theNewGC,theWhitePixel);
+        XSetBackground(theDisplay,*theNewGC,theBlackPixel);
+        return 1;
+    }
+}
+
+STATIC Window OpenWindow(int x, int y, int width, int height, int flag,GC *theNewGC){
+    XSetWindowAttributes theWindowAttributes;
+    unsigned long theWindowMask;
+    XSizeHints theSizeHints;
+    XWMHints theWMHints;
+    Window theNewWindow;
+
+    /*Setting the attributes*/
+    theWindowAttributes.border_pixel
+        = WhitePixel(theDisplay,theScreen);
+    theWindowAttributes.background_pixel
+        = BlackPixel(theDisplay,theScreen);
+    theWindowAttributes.override_redirect = False;
+
+    theWindowMask = CWBackPixel|CWBorderPixel|CWOverrideRedirect;
+
+    theNewWindow = XCreateWindow( theDisplay,
+            RootWindow(theDisplay,theScreen),
+            x,y,width,height,
+            BORDER_WIDTH,theDepth,
+            InputOutput,
+            CopyFromParent,
+            theWindowMask,
+            &theWindowAttributes);
+
+    theWMHints.initial_state = NormalState;
+    theWMHints.flags = StateHint;
+
+    XSetWMHints(theDisplay,theNewWindow,&theWMHints);
+
+    theSizeHints.flags = PPosition | PSize;
+    theSizeHints.x = x;
+    theSizeHints.y = y;
+    theSizeHints.width = width;
+    theSizeHints.height = height;
+
+    XSetNormalHints(theDisplay,theNewWindow,&theSizeHints);
+
+    if( createGC(theNewWindow,theNewGC) == 0){
+        XDestroyWindow(theDisplay,theNewWindow);
+        return( (Window) 0);
+    }
+
+    XMapWindow(theDisplay,theNewWindow);
+    XFlush(theDisplay);
+
+    return theNewWindow;
+}
+
+
+STATIC void init_display() {
+    theDisplay=XOpenDisplay((char *)0);
+    if(theDisplay == NULL){
+        printf("Can not open display\n");
+        exit(-1);
+    }
+
+    theScreen = DefaultScreen(theDisplay);
+    theDepth = DefaultDepth(theDisplay,theScreen);
+    theBlackPixel = BlackPixel(theDisplay,theScreen);
+    theWhitePixel = WhitePixel(theDisplay,theScreen);
+
+    theWindow= OpenWindow(400, 100, 300, 300, 0, &theGC);
+    if(theWindow == 0){
+        printf("Can not open window\n");
+        exit(-1);
+    }
+
+    XSetStandardProperties (theDisplay, theWindow, "PingPong", "PingPong", None, NULL, 0, NULL);
+    InitPingPongDisplay(theWindow, theGC);
+};
+
+
+STATIC void close_display() {
+    /* it is good programming practice to return system resources to the 
+       system...
+     */
+    XFlush(theDisplay);
+    XFreeGC(theDisplay, theGC);
+    XDestroyWindow(theDisplay, theWindow);
+    XCloseDisplay(theDisplay); 
+}
+
+
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    init_display();
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int buf;
+    MQ_RECEIVE(port_input, (unsigned char*)&buf, sizeof(int));
+    int speed = SYS_REQ(GET_PARAM_INT, "PingPong", "Speed");
+    printf("Pong (speed %d sec)\n", speed);
+    unFillCircle(theWindow, theGC, 75-(60/2), 150-(60/2), 60, 60, 0, 360*64, "Ping");
+    fillCircle(theWindow, theGC, 225-(60/2), 150-(60/2), 60, 60, 0, 360*64, "Pong");
+
+    SLEEP(speed);
+
+    MQ_SEND(port_output, (unsigned char*)&buf, sizeof(int));
+    fillCircle(theWindow, theGC, 75-(60/2), 150-(60/2), 60, 60, 0, 360*64, "Ping");
+    unFillCircle(theWindow, theGC, 225-(60/2), 150-(60/2), 60, 60, 0, 360*64, "Pong");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    close_display();
+}
+
+TASK_CODE_END

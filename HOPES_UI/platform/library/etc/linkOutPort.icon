@@ -1,0 +1,9 @@
+Platform
+Port
+"linkOutPort"
+24 8
+"./platform/iconImage/linkOutPort.image"
+"" ""
+"" ""
+numports "output" 1
+outport "output" 0 4 false

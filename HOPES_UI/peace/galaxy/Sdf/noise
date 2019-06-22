@@ -1,0 +1,16 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "var" float ""
+Star "./icon/IIDGaussian.icon" I0 40 116 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "var" "mean" FLOAT "0.0" "seed" INT "1"
+Star "./icon/RectToCx.icon" I2 108 148 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/outport.ilink" I6 188 164 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/IIDGaussian.icon" I8 40 168 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "var" "mean" FLOAT "0.0" "seed" INT "1"
+Line I10 "" Star I2 "output" Star I6 "input" 1 164 180 188 180 
+Line I11 "" Star I0 "output" Star I2 "real" 1 96 148 108 172 
+Line I12 "" Star I2 "imag" Star I8 "output" 1 108 188 96 200 
+CommText 44 72 20 -16777216 "Complex Gaussian Noise"

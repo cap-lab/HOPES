@@ -1,0 +1,629 @@
+/************************************
+ *
+ * File : PredV.cic
+ * Date : Sep 9, 2012 3:54 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "h264decoder.h"
+#include "h264dec_struct.h"
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_inMB_V;
+STATIC int port_inPrevFrame;
+STATIC int port_outFrame_V;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+#define DC_PRED_8       0
+#define HOR_PRED_8      1
+#define VERT_PRED_8     2
+#define PLANE_8         3
+
+struct Block4x4 {
+    int data[4][4];
+};
+
+STATIC MacroBlockPacket_UV mbV;
+STATIC FramePacket_UV frameV;
+STATIC int count;
+STATIC int outBlock[4][4];
+STATIC int midBuf[4][4];
+
+STATIC int block_phase;
+STATIC int mb_phase;
+STATIC int block_phase_1;
+STATIC int mb_phase_1;
+
+STATIC int predData[2][9];
+STATIC struct Block4x4 predBlock_0;
+STATIC struct Block4x4 predBlock_1;
+STATIC struct Block4x4 predBlock;
+STATIC int prev_frame_phase;
+
+STATIC int js[4] = { 128, 128, 128, 128 };
+
+STATIC HalfFrame prev_frame;
+STATIC int numBlocks = ((IMG_WIDTH/2)*(IMG_HEIGHT/2)) / (4*4);
+
+STATIC unsigned char mrefC[6][IMG_HEIGHT/2][IMG_WIDTH/2];
+STATIC int currPosC = 0;
+
+STATIC unsigned char CFrame[IMG_HEIGHT/2][IMG_WIDTH/2];
+STATIC unsigned char output[IMG_HEIGHT/2][IMG_WIDTH/2];
+
+
+STATIC void itransform(int input[4][4], int output[4][4])
+{
+  register int i,j,i1,j1;
+//  int m5[4];
+  int m6[4];
+
+  // horizontal
+  for (j=0;j<4;j++)
+  {
+/*    for (i=0;i<4;i++)
+    {
+      m5[i]=input[i][j];
+    }
+    m6[0]=(m5[0]+m5[2]);
+    m6[1]=(m5[0]-m5[2]);
+    m6[2]=(m5[1]>>1)-m5[3];
+    m6[3]=m5[1]+(m5[3]>>1);
+*/
+    
+    m6[0]=(input[0][j]+input[2][j]);
+    m6[1]=(input[0][j]-input[2][j]);
+    m6[2]=(input[1][j]>>1)-input[3][j];
+    m6[3]=input[1][j]+(input[3][j]>>1);
+    for (i=0;i<2;i++)
+    {
+      i1=3-i;
+      output[i][j]=m6[i]+m6[i1];
+      output[i1][j]=m6[i]-m6[i1];
+    }
+  }
+  // vertical
+  for (i=0;i<4;i++)
+  {
+/*    for (j=0;j<4;j++)
+      m5[j]=output[i][j];
+
+    m6[0]=(m5[0]+m5[2]);
+    m6[1]=(m5[0]-m5[2]);
+    m6[2]=(m5[1]>>1)-m5[3];
+    m6[3]=m5[1]+(m5[3]>>1);
+*/
+    
+    m6[0]=(output[i][0]+output[i][2]);
+    m6[1]=(output[i][0]-output[i][2]);
+    m6[2]=(output[i][1]>>1)-output[i][3];
+    m6[3]=output[i][1]+(output[i][3]>>1);
+   
+    for (j=0;j<2;j++)
+    {
+      j1=3-j;
+      output[i][j]  = m6[j] + m6[j1];
+      output[i][j1] = m6[j] - m6[j1];
+    }
+  }
+
+}
+
+
+STATIC void Cintrapred( int predmode, int predData[2][9], int PredBlock[4][4], int js[4], int mb_phase, int block_phase)
+{
+
+    int x, y;
+    int i, j;
+    int ioff, joff;
+    int ii, jj;
+
+    int pred;
+    int ih, iv, ib, ic, iaa;
+
+    i = block_phase%2;
+    j = block_phase/2;
+    ioff = i*4;
+    joff = j*4;
+    x = mb_phase % (IMG_WIDTH/16);
+    y = mb_phase / (IMG_WIDTH/16);
+
+    if(block_phase == 0 && predmode == DC_PRED_8) {
+        int js0, js1, js2, js3;
+
+        js0 = js1 = js2 = js3 = 0;
+        for(ii=0;ii<4;ii++)
+        {
+            if(y) {
+                //js0=js0+UFrame[y-1][x+ii];
+                //js1=js1+UFrame[y-1][x+ii+4];
+                js0=js0+predData[0][1+ii];
+                js1=js1+predData[0][5+ii];
+            }
+            if(x) {
+                js2=js2+predData[1][1+ii];
+                js3=js3+predData[1][5+ii];
+            }
+        }
+        if(y && x) {
+            js[0]=(js0+js2+4)/8;
+            js[1]=(js1+2)/4;
+            js[2]=(js3+2)/4;
+            js[3]=(js1+js3+4)/8;
+        }
+        if(y && !x) {
+            js[0]=(js0+2)/4;
+            js[1]=(js1+2)/4;
+            js[2]=(js0+2)/4;
+            js[3]=(js1+2)/4;
+        }
+        if(x && !y) {
+            js[0]=(js2+2)/4;
+            js[1]=(js2+2)/4;
+            js[2]=(js3+2)/4;
+            js[3]=(js3+2)/4;
+        }
+        if(!y && !x) {
+            js[0]=128;
+            js[1]=128;
+            js[2]=128;
+            js[3]=128;
+        }
+    }
+
+    switch (predmode) {
+        case DC_PRED_8:
+            for (ii=0; ii<4; ii++)
+            for (jj=0; jj<4; jj++)
+                PredBlock[ii][jj] = js[block_phase];
+            break;
+        case HOR_PRED_8:
+            if (!x)
+                error("unexpected HOR_PRED_8 chroma intra prediction mode",-1);
+            for (jj=0; jj<4; jj++) {
+                pred = predData[1][1+jj+joff];
+                for (ii=0; ii<4; ii++)
+                    PredBlock[ii][jj] = pred;
+            }
+            break;
+        case VERT_PRED_8:
+            if (!y)
+                error("unexpected VERT_PRED_8 chroma intra prediction mode",-1);
+            for (ii=0; ii<4; ii++) {
+                pred = predData[0][1+ii+ioff];
+                for (jj=0; jj<4; jj++)
+                    PredBlock[ii][jj] = pred;
+            }
+            break;
+                                                                                        case PLANE_8:
+            if (!x || !y)
+                error("unexpected PLANE_8 chroma intra prediction mode",-1);
+            ih=iv=0;
+            for (ii=1;ii<5;ii++) {
+                ih += ii*(predData[0][4+ii] - predData[0][4-ii]);
+                iv += ii*(predData[1][4+ii] - predData[1][4-ii]);
+            }
+            ib=(17*ih+16)>>5;
+            ic=(17*iv+16)>>5;
+            iaa=16*(predData[0][8]+predData[1][8]);
+            for (ii=0; ii<4; ii++)
+            for (jj=0; jj<4; jj++)
+                PredBlock[ii][jj] = max(0,min(255,(iaa+(ii+ioff-3)*ib +(jj+joff-3)*ic + 16)/32));
+            break;
+        default:
+            error("illegal chroma intra prediction mode", 600);
+            break;
+    }
+}
+
+
+STATIC void insertHalfFrame(unsigned char inC[IMG_HEIGHT/2][IMG_WIDTH/2],
+    unsigned char mrefC[6][IMG_HEIGHT/2][IMG_WIDTH/2],
+    int *currPosC)
+{
+        int i, j;
+        for(i = 0; i < IMG_HEIGHT/2; i++)
+                for(j = 0; j < IMG_WIDTH/2; j++)
+                        mrefC[*currPosC][i][j] = inC[i][j];
+
+        if(*currPosC >= 5) *currPosC = 0;
+        else (*currPosC) += 1;
+}
+
+STATIC void get_prev_CBlock(int refframe[4], int x_pos[4], int y_pos[4], int block[4][4], unsigned char mrefC[6][IMG_HEIGHT/2][IMG_WIDTH/2], int currPosC)
+{
+        const int max_cr_x = IMG_WIDTH/2 - 1;
+        const int max_cr_y = IMG_HEIGHT/2 - 1;
+
+        int x0, x1, y0, y1;
+    int ref_frame;
+    int x_org, y_org;
+    int r_weight, l_weight, d_weight, u_weight;
+        
+        x_pos[1] -= 16;
+        x_pos[3] -= 16;
+        y_pos[2] -= 16;
+        y_pos[3] -= 16;
+    
+    /***********************************************************************************/
+//[0]//////////////////////////////////////////////////////////////////////////////////////// 
+            ref_frame = (5 + currPosC - refframe[0]) % 6;
+            x_org = x_pos[0] >> 3;
+            y_org = y_pos[0] >> 3;
+            r_weight = x_pos[0] & 7;    // right weight
+            l_weight = 8 - r_weight; // left  weight
+            d_weight = y_pos[0] & 7;    // down  weight
+            u_weight = 8 - d_weight; // up    weight
+//j=0**************************************************************
+            y0 = max(0, min(y_org  , max_cr_y));
+            y1 = max(0, min(y_org+1, max_cr_y));
+//i=0			
+            x0 = max(0, min(x_org  , max_cr_x));
+            x1 = max(0, min(x_org+1, max_cr_x));			
+            block[0][0] = ( 
+                    l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=1
+            x0 = max(0, min(x_org+1, max_cr_x));
+            x1 = max(0, min(x_org+2, max_cr_x));			
+            block[1][0] = ( 
+                    l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//J=1**************************************************************
+            
+            y0 = max(0, min(y_org+1, max_cr_y));
+            y1 = max(0, min(y_org+2, max_cr_y));
+//i=0			
+            x0 = max(0, min(x_org  , max_cr_x));
+            x1 = max(0, min(x_org+1, max_cr_x));
+            block[0][1] = ( 
+                    l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=1			
+            x0 = max(0, min(x_org+1, max_cr_x));
+            x1 = max(0, min(x_org+2, max_cr_x));			
+            block[1][1] = ( 
+                    l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//[1]////////////////////////////////////////////////////////////////////////////////////////
+                ref_frame = (5 + currPosC - refframe[1]) % 6;
+            x_org = x_pos[1] >> 3;
+            y_org = y_pos[1] >> 3;
+            r_weight = x_pos[1] & 7;    // right weight
+            l_weight = 8 - r_weight; // left  weight
+            d_weight = y_pos[1] & 7;    // down  weight
+            u_weight = 8 - d_weight; // up    weight
+//j=0************************************************************
+            y0 = max(0, min(y_org    , max_cr_y));
+            y1 = max(0, min(y_org+1  , max_cr_y));
+//i=2			
+            x0 = max(0, min(x_org+2  , max_cr_x));
+            x1 = max(0, min(x_org+3  , max_cr_x));
+            block[2][0] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=3 
+            x0 = max(0, min(x_org+3  , max_cr_x));
+            x1 = max(0, min(x_org+4  , max_cr_x));
+            block[3][0] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//j=1**************************************************************			
+
+            y0 = max(0, min(y_org+1  , max_cr_y));
+            y1 = max(0, min(y_org+2  , max_cr_y));
+//i=2			
+            x0 = max(0, min(x_org+2  , max_cr_x));
+            x1 = max(0, min(x_org+3  , max_cr_x));
+            block[2][1] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=3			
+            x0 = max(0, min(x_org+3  , max_cr_x));
+            x1 = max(0, min(x_org+4  , max_cr_x));
+            block[3][1] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//[2]//////////////////////////////////////////////////////////////////////////////////////////
+            ref_frame = (5 + currPosC - refframe[2]) % 6;
+            x_org = x_pos[2] >> 3;
+            y_org = y_pos[2] >> 3;
+            r_weight = x_pos[2] & 7;    // right weight
+            l_weight = 8 - r_weight; // left  weight
+            d_weight = y_pos[2] & 7;    // down  weight
+            u_weight = 8 - d_weight; // up    weight
+//j=2***************************************************************
+            y0 = max(0, min(y_org+2  , max_cr_y));
+            y1 = max(0, min(y_org+3  , max_cr_y));
+//i=0 
+            x0 = max(0, min(x_org    , max_cr_x));
+            x1 = max(0, min(x_org+1  , max_cr_x));
+            block[0][2] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=1
+            x0 = max(0, min(x_org+1  , max_cr_x));
+            x1 = max(0, min(x_org+2  , max_cr_x));
+            block[1][2] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//j=3****************************************************************
+            y0 = max(0, min(y_org+3  , max_cr_y));
+            y1 = max(0, min(y_org+4  , max_cr_y));
+//i=0
+            x0 = max(0, min(x_org    , max_cr_x));
+            x1 = max(0, min(x_org+1  , max_cr_x));
+            block[0][3] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=1 	
+            x0 = max(0, min(x_org+1  , max_cr_x));
+            x1 = max(0, min(x_org+2  , max_cr_x));
+            block[1][3] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//[3]////////////////////////////////////////////////////////////////////////////////////////////	
+            ref_frame = (5 + currPosC - refframe[3]) % 6;
+            x_org = x_pos[3] >> 3;
+            y_org = y_pos[3] >> 3;
+            r_weight = x_pos[3] & 7;    // right weight
+            l_weight = 8 - r_weight; // left  weight
+            d_weight = y_pos[3] & 7;    // down  weight
+            u_weight = 8 - d_weight; // up    weight
+//j=2**************************************************************
+            y0 = max(0, min(y_org+2  , max_cr_y));
+            y1 = max(0, min(y_org+3  , max_cr_y));
+//i=2 						
+            x0 = max(0, min(x_org+2  , max_cr_x));
+            x1 = max(0, min(x_org+3  , max_cr_x));
+            block[2][2] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=3 	
+            x0 = max(0, min(x_org+3  , max_cr_x));
+            x1 = max(0, min(x_org+4  , max_cr_x));
+            block[3][2] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//j=3**************************************************************
+//i=2 	
+            y0 = max(0, min(y_org+3  , max_cr_y));
+            y1 = max(0, min(y_org+4  , max_cr_y));
+            
+            x0 = max(0, min(x_org+2  , max_cr_x));
+            x1 = max(0, min(x_org+3  , max_cr_x));
+            block[2][3] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+//i=3	
+            x0 = max(0, min(x_org+3  , max_cr_x));
+            x1 = max(0, min(x_org+4  , max_cr_x));
+            block[3][3] = (
+                l_weight*u_weight* mrefC[ref_frame][y0][x0] +
+                r_weight*u_weight* mrefC[ref_frame][y0][x1] +
+                l_weight*d_weight* mrefC[ref_frame][y1][x0] +
+                r_weight*d_weight* mrefC[ref_frame][y1][x1] + 32)/64;
+/*****************************************************************************************************/
+
+
+}
+
+
+
+STATIC void makeCFrame(int input[4][4], int intrapred[2][9],
+	unsigned char CFrame[IMG_HEIGHT/2][IMG_WIDTH/2],
+	unsigned char output[IMG_HEIGHT/2][IMG_WIDTH/2],
+	int *mb_phase, int *block_phase)
+{
+	int i,j, mb_x, mb_y, x, y;
+	int ii, jj;
+
+	i = (*block_phase)%2;
+	j = (*block_phase)/2;
+	mb_x = (*mb_phase) % (IMG_WIDTH/16);
+	mb_y = (*mb_phase) / (IMG_WIDTH/16);
+
+	x = mb_x*8 + i*4;
+	y = mb_y*8 + j*4;
+
+	for(ii = 0; ii < 4; ii++)
+		for(jj = 0; jj < 4; jj++)
+			CFrame[y +jj][x+ii] = input[ii][jj];
+
+
+	/// next phase
+	if((*block_phase) >= 3) {
+		if((*mb_phase) >= (IMG_WIDTH/16)*(IMG_HEIGHT/16)-1) {
+			(*mb_phase) = 0;
+			for(jj = 0; jj < IMG_HEIGHT/2; jj++)
+				for(ii = 0; ii < IMG_WIDTH/2; ii++)
+					output[jj][ii] = CFrame[jj][ii];
+		}
+		else
+			(*mb_phase)++;
+
+		// compute next intra16 prediction data
+		mb_x = (*mb_phase) % (IMG_WIDTH/16);
+		mb_y = (*mb_phase) / (IMG_WIDTH/16);
+
+		x = mb_x*8;
+		y = mb_y*8;
+
+		for(ii = 0; ii < 2; ii++)
+		for(jj = 0; jj < 9; jj++)
+			intrapred[ii][jj] = 128;
+
+		for(ii=0;ii<8;ii++)
+		{
+			if(y) intrapred[0][ii+1] = CFrame[y-1][x+ii];
+			if(x) intrapred[1][ii+1] = CFrame[y+ii][x-1];
+		}
+		if(y && x) {
+			intrapred[0][0] = intrapred[1][0] = CFrame[y-1][x-1];
+		}
+
+		(*block_phase) = 0;
+	} else {
+		(*block_phase)++;
+	}
+
+}
+
+
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_inMB_V = PORT_INITIALIZE(TASK_ID, "inMB_V");
+    port_inPrevFrame = PORT_INITIALIZE(TASK_ID, "inPrevFrame");
+    port_outFrame_V = PORT_INITIALIZE(TASK_ID, "outFrame_V");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+TASK_GO
+{
+    int i=0; 
+
+  	char* mode_name = SYS_REQ(GET_CURRENT_MODE_NAME);
+  	if(strcmp(mode_name, "I_Frame")==0){
+    	MQ_RECEIVE(port_inPrevFrame, (unsigned char*)&prev_frame, sizeof(HalfFrame));
+		insertHalfFrame(prev_frame.data, mrefC, &currPosC);
+	}
+    else{
+        // TODO: task main code
+        MQ_RECEIVE(port_inMB_V, (unsigned char*)&frameV, sizeof(FramePacket_UV));
+        MQ_RECEIVE(port_inPrevFrame, (unsigned char*)&prev_frame, sizeof(HalfFrame));
+    
+        for(i=0; i<396; i++){
+            memcpy(&mbV, &frameV.blocks[i], sizeof(MacroBlockPacket_UV));
+            itransform(mbV.block, outBlock);
+            
+            {
+                Cintrapred(mbV.mode, predData, predBlock_0.data, js, mb_phase, block_phase);
+                /// next phase
+                if(block_phase >= 3) {
+                    if(mb_phase >= ((IMG_WIDTH)/16)*((IMG_HEIGHT)/16)-1)
+                        mb_phase = 0;
+                   else
+                        mb_phase++;
+            
+                    block_phase = 0;
+                } else {
+                    block_phase++;
+                }
+            }
+            {
+                int i;
+                int refframe[4];
+                int mv_x[4];
+                int mv_y[4];
+        
+                // CHECK ME!
+                if(prev_frame_phase == 0) insertHalfFrame(prev_frame.data, mrefC, &currPosC);
+        
+                // CHECK ME!
+                for(i = 0; i < 4; i++) {
+                    refframe[i] = mbV.mv[i].refframe;
+                    mv_x[i] = mbV.mv[i].x;
+                    mv_y[i] = mbV.mv[i].y;
+                }
+        
+                get_prev_CBlock(refframe, mv_x, mv_y, predBlock_1.data, mrefC, currPosC);
+        
+                prev_frame_phase = (prev_frame_phase+1)%396;
+            }
+        
+            int n = mbV.ret[3]%2;
+            switch(n){
+                case 0:
+                predBlock = predBlock_0;
+                break;
+                case 1:
+                predBlock = predBlock_1;
+                break;
+                default:
+                printf("InterPredV: Something wrong!\n");
+                exit(-1);
+            }
+        
+            int ii, jj;
+            for(ii = 0; ii < 4; ii++)
+                for(jj = 0; jj < 4; jj++)
+                    midBuf[ii][jj] = mmax(0, mmin(255, (outBlock[ii][jj] + (predBlock.data[ii][jj] << 6) + (1 << 5) ) >> 6));
+                    
+            makeCFrame(midBuf, predData, CFrame, output, &mb_phase_1, &block_phase_1);
+        }
+    
+        MQ_SEND(port_outFrame_V, (unsigned char*)&output, sizeof(char)*IMG_WIDTH*IMG_HEIGHT/4);
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

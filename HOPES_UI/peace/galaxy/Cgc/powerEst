@@ -1,0 +1,29 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "timeConstant_in_samples" int "100"
+Star "./icon/Inport.icon" I0 8 72 0
+StarParameter 4 "name" string "in" "direction" string "in" "multi?" boolean "false" "type" string "float"
+Star "./icon/Fork2.icon" I2 56 72 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I6 128 64 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Integrator.icon" I10 196 56 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1 - 1/timeConstant_in_samples" "top" FLOAT "0.0" "bottom" FLOAT "0.0" "saturate" INT "NO" "state" FLOAT "0.0"
+Star "./icon/Gain.icon" I14 260 72 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1/timeConstant_in_samples"
+Star "./icon/DB.icon" I17 328 56 0
+StarParameter 3 "procId" INT "-1" "min" FLOAT "-100" "inputIsPower" INT "TRUE"
+Star "./icon/Outport.icon" I20 404 72 0
+StarParameter 4 "name" string "out" "direction" string "out" "multi?" boolean "false" "type" string "float"
+Star "./icon/ConstInt.icon" I22 124 124 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Line I24 "" Star I0 "output" Star I2 "input" 1 40 88 56 88 
+Line I25 "" Star I2 "output#1" Star I6 "input#1" 1 109 80 128 80 
+Line I26 "" Star I2 "output#2" Star I6 "input#2" 1 109 96 155 108 
+Line I27 "" Star I6 "output" Star I10 "data" 1 184 80 196 80 
+Line I28 "" Star I10 "output" Star I14 "input" 1 252 88 260 88 
+Line I29 "" Star I14 "output" Star I17 "input" 1 316 88 328 88 
+Line I30 "" Star I17 "output" Star I20 "input" 1 384 88 404 88 
+Line I31 "" Star I22 "output" Star I10 "reset" 1 172 140 196 96 
+CommText 108 20 20 -16777216 "Estimate the power (in dB)"

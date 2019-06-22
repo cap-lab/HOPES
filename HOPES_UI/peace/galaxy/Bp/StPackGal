@@ -1,0 +1,36 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/Inport.icon" I0 180 136 0
+StarParameter 4 "name" string "input1" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Outport.icon" I2 396 132 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Inport.icon" I4 180 176 0
+StarParameter 4 "name" string "input2" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/STPacketize.icon" I6 280 136 0
+StarParameter 1 "procId" INT "-1"
+Line I10 "" Star I0 "output" Star I6 "dataA" 1 212 152 280 160 
+Line I11 "" Star I4 "output" Star I6 "dataB" 1 212 192 280 176 
+Line I12 "" Star I6 "output" Star I2 "input" 1 336 168 396 148 

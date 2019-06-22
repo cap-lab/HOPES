@@ -1,0 +1,94 @@
+/************************************
+ *
+ * File : Pa.cic
+ * Date : Sep 16, 2014 10:13 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <string.h>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+typedef struct PacketType{
+    unsigned char name[255];
+    unsigned char msg[255];
+}Packet;
+
+STATIC Packet packet;
+STATIC unsigned char buf[1024];
+STATIC char* token = "///";
+const unsigned int tokenLength = 3;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+    memcpy(packet.name, "jhw7884", sizeof("jhw7884"));
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    unsigned char* ptr;
+    int len = 0;
+
+    len = MQ_RECEIVE(port_in, (unsigned char*)packet.msg, sizeof(unsigned char) * 255);
+    if(len == 0) return;
+  
+    ptr = buf; 
+    memcpy(ptr, packet.name, strlen((const char*)packet.name));
+    ptr += strlen((const char*)packet.name); 
+    memcpy(ptr, token, tokenLength);
+    ptr += tokenLength; 
+    memcpy(ptr, packet.msg, strlen((const char*)packet.msg));
+    ptr += strlen((const char*)packet.msg); 
+    memcpy(ptr, token, tokenLength);
+    ptr[tokenLength] = "\0"; 
+
+    //printf("%s] %s\n", packet.name, packet.msg);
+
+    MQ_SEND(port_out, (unsigned char*)buf, sizeof(unsigned char) * 1024);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

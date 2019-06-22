@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<platform>
+  <name>Cell</name>
+  <target>Cell</target>
+  <version>1</version>
+  <description>
+    <![CDATA[CELL Platform
+PPE is a PowerPC Architecture, and SPE is a kind of DSP, and CELL has 8 SPE. These communicate with ring bus]]>
+  </description>
+  <schematic>
+    <![CDATA[Domain "Archi"
+Target "platform"
+TargetParameter "PredefinedTarget" STRING "Default ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
+Run 10
+Platform Core "./platform/library/core/CellPPE.icon" I0 44 36 0
+StarParameter 5 "processorId" INT "0" "model" STRING "PPE" "category" STRING "PROCESSOR" "OS" STRING "Linux ##Linux" "scheduler" STRING  "RR ##EDF,RM,RR"
+Section I0 0 
+Region I0 0
+Platform Core "./platform/library/core/CellSPE_pool.icon" I2 140 36 0
+StarParameter 7 "processorId" INT "0" "model" STRING "SPE" "category" STRING "PROCESSOR" "OS" STRING "NONE" "scheduler" STRING  "RR ##EDF,RM,RR" "pool_size" INT "1" "AllowDataParallel" STRING "TRUE ##TRUE,FALSE"
+Section I2 0 
+Region I2 0
+Platform Bus "./platform/library/bus/CellRingBus.icon" I4 36 152 0 181
+BusPort I5 I4 "CellRingBus_I5" "CellRingBus" 76 170 false 0
+BusPort I6 I4 "CellRingBus_I6" "CellRingBus" 172 170 false 0
+Line I8 "0" Star I0 "master" Star I4 "CellRingBus_I5" 1 76 98 76 170 
+Line I9 "0" Star I2 "master" Star I4 "CellRingBus_I6" 1 172 98 172 170 
+DefaultSlave I4 null
+]]>
+  </schematic>
+</platform>
+

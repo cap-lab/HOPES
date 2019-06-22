@@ -1,0 +1,5 @@
+"schematics/Single_applications/Multi_mode/Real/H264Decoder_sadf"
+"schematics/Single_applications/Multi_mode/Real/H264Decoder_hsadf"
+"schematics/Single_applications/Basic/Synthetic/DataParallelTest"
+"schematics/Single_applications/Basic/Real/x264_SDF"
+"schematics/Single_applications/Basic/Real/MP3Decoder"

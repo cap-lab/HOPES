@@ -1,0 +1,25 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "timeConstant_in_samples" float "100"
+Star "./icon/Integrator.icon" I0 240 104 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1 - 1/timeConstant_in_samples" "top" FLOAT "0.0" "bottom" FLOAT "0.0" "saturate" INT "YES" "state" FLOAT "0.0"
+Star "./icon/Mpy2.icon" I4 160 88 0
+StarParameter 3 "procId" INT "-1" "InputWidth" INT "8" "InputIWL" INT "7"
+Star "./icon/Gain.icon" I8 320 120 0
+StarParameter 6 "procId" INT "-1" "gain" FLOAT "1/timeConstant_in_samples" "WIDTH" INT "AUTO" "IWL" INT "AUTO" "GainWIDTH" INT "4" "GainIWL" INT "3"
+Star "./icon/Fork2.icon" I11 80 96 0
+StarParameter 3 "procId" INT "-1" "WIDTH" INT "AUTO" "IWL" INT "AUTO"
+Star "./icon/Const.icon" I15 64 180 0
+StarParameter 5 "procId" INT "-1" "level" FLOAT "0.0" "value" FLOAT "0.0" "WIDTH" INT "AUTO" "IWL" INT "AUTO"
+Star "./icon/outport.icon" I17 400 120 0
+StarParameter 4 "name" string "out" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I19 16 96 0
+StarParameter 4 "name" string "in" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I21 "" Star I11 "output#1" Star I4 "input#1" 1 133 104 160 104 
+Line I22 "" Star I4 "output" Star I0 "data" 1 216 104 240 128 
+Line I23 "" Star I0 "output" Star I8 "input" 1 296 136 320 136 
+Line I24 "" Star I8 "output" Star I17 "input" 1 376 136 400 136 
+Line I25 "" Star I19 "output" Star I11 "input" 1 48 112 80 112 
+Line I26 "" Star I11 "output#2" Star I4 "input#2" 1 133 120 187 132 
+Line I27 "" Star I15 "output" Star I0 "reset" 1 111 196 240 144 

@@ -1,0 +1,41 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "hilbertFilterTaps" complexArray "< $PEACE/src/domains/sdf/demo/analytic2.cx"
+Star "./icon/inport.icon" I0 40 88 0
+StarParameter 4 "name" string "in" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Gain.icon" I2 96 88 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "-2.0"
+Star "./icon/FIRCx.icon" I5 184 72 0
+StarParameter 5 "procId" INT "-1" "taps" COMPLEXARRAY "hilbertFilterTaps" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "1"
+Star "./icon/CxToRect.icon" I8 288 72 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Sub.icon" I12 480 60 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I16 568 60 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I18 40 152 0
+StarParameter 4 "name" string "shift" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork2.icon" I20 128 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Cos.icon" I24 280 128 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Sin.icon" I27 280 168 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I30 384 60 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I34 436 96 0
+StarParameter 1 "procId" INT "-1"
+Line I38 "" Star I2 "input" Star I0 "output" 1 96 104 72 104 
+Line I39 "" Star I2 "output" Star I5 "signalIn" 1 152 104 184 104 
+Line I40 "" Star I5 "signalOut" Star I8 "input" 1 240 104 288 104 
+Line I41 "" Star I12 "output" Star I16 "input" 1 536 76 568 76 
+Line I42 "" Star I8 "real" Star I30 "input#1" 1 344 96 384 76 
+Line I43 "" Star I30 "output" Star I12 "pos" 1 440 76 480 76 
+Line I44 "" Star I8 "imag" Star I34 "input#1" 1 344 112 436 112 
+Line I45 "" Star I34 "output" Star I12 "neg" 2 492 112 508 112 507 104 
+Line I46 "" Star I24 "output" Star I30 "input#2" 2 336 160 412 160 411 104 
+Line I47 "" Star I27 "output" Star I34 "input#2" 2 336 200 464 200 463 140 
+Line I48 "" Star I18 "output" Star I20 "input" 1 72 168 128 168 
+Line I49 "" Star I20 "output#1" Star I24 "input" 1 181 160 280 160 
+Line I50 "" Star I20 "output#2" Star I27 "input" 1 181 176 280 200 

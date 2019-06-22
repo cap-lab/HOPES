@@ -1,0 +1,32 @@
+Domain "DE"
+Target "default-DE"
+TargetParameter "timeScale" FLOAT "1.0"
+TargetParameter "syncMode" INT "YES"
+TargetParameter "calendar queue scheduler?" INT "YES"
+Run 10
+Parameter "timeScale" float "2.0"
+Star "./icon/inport.icon" I0 0 52 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork2.icon" I2 48 52 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Router2.icon" I6 120 28 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Merge2.icon" I10 400 24 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/Delay.icon" I14 304 68 0
+StarParameter 2 "nodename" STRING "" "delay" FLOAT "1.0"
+Star "./icon/RanGen.icon" I17 240 52 0
+StarParameter 4 "nodename" STRING "" "distribution" STRING "exponential" "meanORupper" FLOAT "80.0" "varianceORlower" FLOAT "0.0"
+Star "./icon/Sampler.icon" I20 512 32 0
+StarParameter 1 "nodename" STRING ""
+Star "./icon/outport.icon" I24 640 48 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I26 "" Star I6 "output#2" Star I17 "input" 1 229 84 240 84 
+Line I27 "" Star I17 "output" Star I14 "input" 1 296 84 304 84 
+Line I28 "" Star I10 "input#2" Star I14 "output" 1 400 48 364 84 
+Line I29 "" Star I6 "output#1" Star I10 "input#1" 1 231 32 401 32 
+Line I30 "" Star I2 "output#1" Star I6 "input" 1 101 60 120 60 
+Line I31 "" Star I10 "output" Star I20 "input" 1 459 40 512 64 
+Line I32 "" Star I2 "output#2" Star I20 "clock" 2 101 76 156 140 568 98 
+Line I33 "" Star I20 "output" Star I24 "input" 1 624 64 640 64 
+Line I34 "" Star I0 "output" Star I2 "input" 1 32 68 48 68 

@@ -1,0 +1,20 @@
+Domain "SDF"
+Target "default-SDF"
+TargetParameter "logFile" STRING ""
+TargetParameter "loopScheduler" STRING "DEF #choices: DEF, CLUST,ACYLOOP"
+TargetParameter "schedulePeriod" FLOAT "0.0"
+Run 10
+Star "./icon/Ramp.icon" I0 8 24 0
+StarParameter 2 "step" FLOAT "1.0" "value" FLOAT "0.0"
+Star "./icon/Ramp.icon" I2 8 88 0
+StarParameter 2 "step" FLOAT "1.0" "value" FLOAT "0.0"
+Star "./icon/Fork.icon" I4 152 40 0
+Star "./icon/outport.icon" I7 304 40 0
+StarParameter 4 "name" string "output1" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I9 304 104 0
+StarParameter 4 "name" string "output2" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork.icon" I11 152 104 0
+Line I14 "2" Star I2 "output" Star I11 "input" 1 104 120 152 119 
+Line I15 "{-1.5 1.5}" Star I0 "output" Star I4 "input" 1 104 56 152 55 
+Line I16 "" Star I11 "output" Star I9 "input" 1 208 119 304 120 
+Line I17 "" Star I4 "output" Star I7 "input" 1 208 55 304 56 

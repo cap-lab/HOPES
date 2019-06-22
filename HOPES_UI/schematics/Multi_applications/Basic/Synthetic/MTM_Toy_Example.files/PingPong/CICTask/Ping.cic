@@ -1,0 +1,70 @@
+/************************************
+ *
+ * File : P.cic
+ * Date : Apr 18, 2013 1:26 PM
+ *
+*************************************/
+#include <windows.h>
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int buf;
+    MQ_RECEIVE(port_input, (unsigned char*)&buf, sizeof(int));
+    int speed = SYS_REQ(GET_PARAM_INT, "PingPong", "Speed");
+    printf("Ping (speed %d sec)\n", speed);
+
+    SLEEP(speed);
+    MQ_SEND(port_output, (unsigned char*)&buf, sizeof(int));   
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

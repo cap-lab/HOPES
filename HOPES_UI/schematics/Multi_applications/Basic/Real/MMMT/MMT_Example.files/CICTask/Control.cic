@@ -1,0 +1,287 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Oct 8, 2012 1:37 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_MENU 0
+#define ID_STATE_VIDEOPLAY 1
+#define ID_STATE_VIDEOPHONE 2
+#define ID_STATE_MUSICPLAY 3
+#define ID_TRANSITION_TRANSITION_UITOVP 0
+#define ID_TRANSITION_TRANSITION_VPTOUI 1
+#define ID_TRANSITION_TRANSITION_UITOMP 2
+#define ID_TRANSITION_TRANSITION_MPTOUI 3
+#define ID_TRANSITION_TRANSITION_VPHTOMP 4
+#define ID_TRANSITION_TRANSITION_MPTOVPH 5
+#define ID_TRANSITION_TRANSITION_VPHTOVP 6
+#define ID_TRANSITION_TRANSITION_VPTOVPH 7
+#define ID_TRANSITION_TRANSITION_UITOVPH 8
+#define ID_TRANSITION_TRANSITION_VPHTOUI 9
+// ##DEFINE_SECTION::END
+
+#define ASCII_Q 113
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_UserInput;
+STATIC int port_in_Interrupt;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state_0;
+static int previous_state_0;
+// ##VARIABLE_SECTION::END
+
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_in_UserInput = PORT_INITIALIZE(TASK_ID, "in_UserInput");
+    port_in_Interrupt = PORT_INITIALIZE(TASK_ID, "in_Interrupt");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state_0 = ID_STATE_MENU;
+// ##INIT_SECTION::END
+
+
+    // TODO: task initialize code
+    SYS_REQ(STOP_TASK, "H264Dec_VIDEO");
+    SYS_REQ(STOP_TASK, "H264Dec_PHONE");
+    SYS_REQ(STOP_TASK, "MP3Dec");
+    SYS_REQ(STOP_TASK, "x264Enc");
+    SYS_REQ(STOP_TASK, "G723Dec");
+    SYS_REQ(STOP_TASK, "G723Enc");
+    SYS_REQ(STOP_TASK, "Interrupt");
+    SYS_REQ(STOP_TASK, "UserInput");
+}
+
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add trigerring code here.
+
+	switch( current_state_0 )
+	{
+	case ID_STATE_MENU:
+		{
+		    printf("------------------------- STATE: MENU -------------------------\n");
+			int in_UserInput_buf = 0;
+		    
+		    SYS_REQ(RUN_TASK, "UserInput");
+		    
+			while(TRUE){
+			    int ret_in_UserInput = MQ_AVAILABLE(port_in_UserInput);
+			    if(ret_in_UserInput > 0){
+			        MQ_RECEIVE(port_in_UserInput, (unsigned char*)&in_UserInput_buf, sizeof(int));
+			    }
+			    			
+                if(in_UserInput_buf == 1)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_VIDEOPLAY;
+                    break;
+                }
+                else if(in_UserInput_buf == 3)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_MUSICPLAY;
+                    break;
+                }
+                else if(in_UserInput_buf == 2)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_VIDEOPHONE;
+                    break;
+                }
+                else if(in_UserInput_buf == 4)
+                {
+                    // State transition
+                    SYS_REQ(KILL);
+                }
+                usleep(10000);
+			}
+		    previous_state_0 =  ID_STATE_MENU;
+		}
+		break;
+	case ID_STATE_VIDEOPLAY:
+		{
+		    printf("------------------------- STATE: VIDEO -------------------------\n");
+		    if(previous_state_0 == ID_STATE_MENU) 
+		    {
+		        SYS_REQ(STOP_TASK, "UserInput");
+		        SYS_REQ(SET_THROUGHPUT, "H264Dec_VIDEO", "3000", "1/usec");//47000
+		        //SYS_REQ(SET_THROUGHPUT, "H264Dec_VIDEO", "47000", "1/usec");//47000//
+		        SYS_REQ(SET_THROUGHPUT, "MP3Dec", "300000", "1/usec");
+                SYS_REQ(RUN_TASK, "H264Dec_VIDEO");
+                SYS_REQ(RUN_TASK, "MP3Dec");
+                SYS_REQ(RUN_TASK, "Interrupt");
+            }
+            else if(previous_state_0 == ID_STATE_VIDEOPHONE){
+                SYS_REQ(RESUME_TASK, "H264Dec_VIDEO");
+                SYS_REQ(RESUME_TASK, "MP3Dec");
+                SYS_REQ(RUN_TASK, "Interrupt");
+            }
+            
+            int in_Interrupt_buf = 0;
+		    while(TRUE){
+			    int ret_in_Interrupt = MQ_AVAILABLE(port_in_Interrupt);
+			    if(ret_in_Interrupt > 0){
+			        MQ_RECEIVE(port_in_Interrupt, (unsigned char*)&in_Interrupt_buf, sizeof(int));
+			    }
+			    
+			    if(in_Interrupt_buf == ASCII_Q)
+			    {
+			        SYS_REQ(SUSPEND_TASK, "H264Dec_VIDEO");
+                    SYS_REQ(SUSPEND_TASK, "MP3Dec");
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    
+                    // State transition
+                    current_state_0 = ID_STATE_VIDEOPHONE;
+                    break;
+		    	}
+			    
+			    int MP3Dec_status = SYS_REQ(CHECK_TASK_STATE, "MP3Dec");
+			    int H264Dec_VIDEO_status = SYS_REQ(CHECK_TASK_STATE, "H264Dec_VIDEO");
+			    if(H264Dec_VIDEO_status == TASK_STATUS_STOP && MP3Dec_status == TASK_STATUS_STOP)
+			    {
+                    // State transition
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    current_state_0 = ID_STATE_MENU;
+                    break;
+		    	}
+			    usleep(10000);
+			}
+			previous_state_0 =  ID_STATE_VIDEOPLAY;
+		}
+		break;
+	case ID_STATE_VIDEOPHONE:
+		{
+		    printf("------------------------- STATE: PHONE -------------------------\n");
+		    {
+		        SYS_REQ(SET_THROUGHPUT, "H264Dec_PHONE", "2500", "1/usec");//70000
+		       
+		       
+		        SYS_REQ(SET_THROUGHPUT, "x264Enc", "110000", "1/usec");
+		        SYS_REQ(RUN_TASK, "H264Dec_PHONE");
+                SYS_REQ(RUN_TASK, "x264Enc");
+                SYS_REQ(RUN_TASK, "G723Enc");
+                SYS_REQ(RUN_TASK, "G723Dec");
+		    }
+		    
+		    while(TRUE){
+                int G723Enc_status = SYS_REQ(CHECK_TASK_STATE, "G723Enc");
+                int G723Dec_status = SYS_REQ(CHECK_TASK_STATE, "G723Dec");
+                int x264Enc_status = SYS_REQ(CHECK_TASK_STATE, "x264Enc");
+                int H264Dec_PHONE_status = SYS_REQ(CHECK_TASK_STATE, "H264Dec_PHONE");
+                if(H264Dec_PHONE_status == TASK_STATUS_STOP && x264Enc_status == TASK_STATUS_STOP && G723Enc_status == TASK_STATUS_STOP && G723Dec_status == TASK_STATUS_STOP && previous_state_0 == ID_STATE_MUSICPLAY)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_MUSICPLAY;
+                    break;
+                }
+                else if(H264Dec_PHONE_status == TASK_STATUS_STOP && x264Enc_status == TASK_STATUS_STOP && G723Enc_status == TASK_STATUS_STOP && G723Dec_status == TASK_STATUS_STOP && previous_state_0 == ID_STATE_VIDEOPLAY)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_VIDEOPLAY;
+                    break;
+                }
+                else if(H264Dec_PHONE_status == TASK_STATUS_STOP && x264Enc_status == TASK_STATUS_STOP && G723Enc_status == TASK_STATUS_STOP && G723Dec_status == TASK_STATUS_STOP && previous_state_0 ==  ID_STATE_MENU)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_MENU;
+                    break;
+                }
+                usleep(10000);
+			}
+			previous_state_0 =  ID_STATE_VIDEOPHONE;
+		}
+		break;
+	case ID_STATE_MUSICPLAY:
+		{
+		    printf("------------------------- STATE: MUSIC -------------------------\n");
+		    if(previous_state_0 == ID_STATE_MENU) 
+		    {
+		        SYS_REQ(STOP_TASK, "UserInput");
+		        SYS_REQ(SET_THROUGHPUT, "MP3Dec", "200000", "1/usec");
+                SYS_REQ(RUN_TASK, "MP3Dec");
+                SYS_REQ(RUN_TASK, "Interrupt");
+            }
+            else if(previous_state_0 == ID_STATE_VIDEOPHONE){
+                SYS_REQ(RESUME_TASK, "MP3Dec");
+                SYS_REQ(RUN_TASK, "Interrupt");
+            }
+            
+			int in_Interrupt_buf = 0;
+			
+			while(TRUE){
+                int ret_in_Interrupt = MQ_AVAILABLE(port_in_Interrupt);
+                if(ret_in_Interrupt > 0)	MQ_RECEIVE(port_in_Interrupt, (unsigned char*)&in_Interrupt_buf, sizeof(int));
+                if(in_Interrupt_buf == ASCII_Q)
+                {
+                    SYS_REQ(SUSPEND_TASK, "MP3Dec");
+                    SYS_REQ(STOP_TASK, "Interrupt");
+                    
+                    // State transition
+                    current_state_0 = ID_STATE_VIDEOPHONE;
+                    break;
+                }
+                
+                int MP3Dec_status = SYS_REQ(CHECK_TASK_STATE, "MP3Dec");
+                if(MP3Dec_status == TASK_STATUS_STOP)
+                {
+                    // State transition
+                    current_state_0 = ID_STATE_MENU;
+                    break;
+                }
+                usleep(10000);
+			}
+			previous_state_0 =  ID_STATE_MUSICPLAY;
+		}
+		break;
+	}
+// ##GO_SECTION::END
+
+
+    // TODO: task main code
+
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+    // This is automatically generated code. do not edit this part.
+    // ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

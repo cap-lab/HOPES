@@ -1,0 +1,17 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "type" string "if"
+Parameter "conName" int "condition"
+Parameter "conValue" int "1"
+Star "./library/Peace/Port/inport.ilink" I0 48 64 0
+StarParameter 4 "name" string "input1" "direction" string "in" "multi?" boolean "false" "type" string "float"
+Star "./library/Peace/Port/outport.ilink" I2 188 64 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Add2.icon" I4 116 64 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/inport.ilink" I8 48 100 0
+StarParameter 4 "name" string "input2" "direction" string "in" "multi?" boolean "false" "type" string "float"
+Line I10 "" Star I0 "output" Star I4 "input#1" 1 80 80 116 80 
+Line I11 "" Star I8 "output" Star I4 "input#2" 1 80 116 143 108 
+Line I12 "" Star I4 "output" Star I2 "input" 1 172 80 188 80 

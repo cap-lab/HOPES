@@ -1,0 +1,91 @@
+Domain "CGC"
+Target "TclTk_Target"
+TargetParameter "logFile" STRING ""
+TargetParameter "loopScheduler" STRING "DEF #choices: DEF, CLUST,ACYLOOP"
+TargetParameter "schedulePeriod" FLOAT "0.0"
+Run 10
+Star "./icon/inport.icon" I0 28 92 0
+StarParameter 4 "name" string "amax" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 580 56 0
+StarParameter 4 "name" string "strong" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork.icon" I4 80 92 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Test.icon" I7 244 32 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "GE" "crossingsOnly" INT "FALSE"
+Star "./icon/Test.icon" I11 244 76 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "EQ" "crossingsOnly" INT "FALSE"
+Star "./icon/Test.icon" I15 244 124 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "EQ" "crossingsOnly" INT "FALSE"
+Star "./icon/Test.icon" I19 244 168 0
+StarParameter 3 "procId" INT "-1" "condition" STRING "EQ" "crossingsOnly" INT "FALSE"
+Star "./icon/inport.icon" I23 200 40 0
+StarParameter 4 "name" string "a1" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I25 200 84 0
+StarParameter 4 "name" string "a2" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I27 200 132 0
+StarParameter 4 "name" string "a3" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/inport.icon" I29 200 176 0
+StarParameter 4 "name" string "a4" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork.icon" I31 84 300 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/inport.icon" I34 28 300 0
+StarParameter 4 "name" string "index" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Const.icon" I36 204 252 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0.0"
+Star "./icon/AddInt2.icon" I38 252 224 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Const.icon" I42 204 300 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "-1"
+Star "./icon/AddInt2.icon" I44 252 276 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Const.icon" I48 204 352 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "-2"
+Star "./icon/AddInt2.icon" I50 252 320 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Const.icon" I54 204 400 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "-3"
+Star "./icon/AddInt2.icon" I56 252 376 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Nand2.icon" I60 376 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Nand2.icon" I64 376 84 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Nand2.icon" I68 376 132 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Nand2.icon" I72 376 176 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/And.icon" I76 504 40 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Nop.icon" I79 452 52 0
+Line I82 "" Star I4 "output" Star I11 "lower" 1 133 108 244 116 
+Line I83 "" Star I25 "output" Star I11 "upper" 1 232 100 244 100 
+Line I84 "" Star I23 "output" Star I7 "upper" 1 232 56 244 56 
+Line I85 "" Star I4 "output" Star I7 "lower" 1 133 108 244 72 
+Line I86 "" Star I27 "output" Star I15 "upper" 1 232 148 244 148 
+Line I87 "" Star I4 "output" Star I15 "lower" 1 133 108 244 164 
+Line I88 "" Star I29 "output" Star I19 "upper" 1 232 192 244 192 
+Line I89 "" Star I4 "output" Star I19 "lower" 1 133 108 244 208 
+Line I90 "" Star I34 "output" Star I31 "input" 1 60 316 84 316 
+Line I91 "" Star I36 "output" Star I38 "input#2" 1 251 268 270 259 
+Line I92 "" Star I31 "output" Star I38 "input#1" 1 137 316 252 240 
+Line I93 "" Star I42 "output" Star I44 "input#2" 1 251 316 270 311 
+Line I94 "" Star I48 "output" Star I50 "input#2" 1 251 368 270 355 
+Line I95 "" Star I54 "output" Star I56 "input#2" 1 251 416 270 411 
+Line I96 "" Star I31 "output" Star I44 "input#1" 1 137 316 252 292 
+Line I97 "" Star I31 "output" Star I50 "input#1" 1 137 316 252 336 
+Line I98 "" Star I31 "output" Star I56 "input#1" 1 137 316 252 392 
+Line I99 "" Star I79 "output" Star I76 "input" 1 481 72 504 72 
+Line I100 "" Star I76 "output" Star I2 "input" 1 560 72 580 72 
+Line I101 "" Star I0 "output" Star I4 "input" 1 60 108 80 108 
+Line I102 "" Star I7 "output" Star I60 "input#1" 1 300 64 376 64 
+Line I103 "" Star I11 "output" Star I64 "input#1" 1 300 108 376 108 
+Line I104 "" Star I15 "output" Star I68 "input#1" 1 300 156 376 156 
+Line I105 "" Star I19 "output" Star I72 "input#1" 1 300 200 376 200 
+Line I106 "" Star I38 "output" Star I60 "input#2" 1 288 240 376 80 
+Line I107 "" Star I50 "output" Star I68 "input#2" 2 288 336 336 336 376 172 
+Line I108 "" Star I44 "output" Star I64 "input#2" 2 288 292 312 292 376 124 
+Line I109 "" Star I56 "output" Star I72 "input#2" 2 288 392 372 392 376 216 
+Line I110 "" Star I60 "output" Star I79 "input" 1 432 72 453 72 
+Line I111 "" Star I64 "output" Star I79 "input" 2 432 116 452 116 453 72 
+Line I112 "" Star I68 "output" Star I79 "input" 2 432 164 452 164 453 72 
+Line I113 "" Star I72 "output" Star I79 "input" 2 432 208 452 208 453 72 

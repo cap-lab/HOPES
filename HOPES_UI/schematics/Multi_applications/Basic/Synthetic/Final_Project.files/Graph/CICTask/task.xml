@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="Final_Project">
+  <setting_list>
+    <setting cycle="10" unit="us" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="ProcessNetwork" />
+  </setting_list>
+  <task_list>
+    <task name="Counter" type="Computational">
+      <config>
+        <location x="144" y="156" width="80" height="40" />
+        <parameter name="CICFile" value="Counter.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" name="out" type="fifo" sample_size="4" sample_rate="Multiple">
+          <rate id="0" mode="SIN" rate="1" />
+          <rate id="1" mode="COS" rate="10" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Calculator" type="Computational">
+      <config>
+        <location x="348" y="156" width="80" height="40" />
+        <parameter name="CICFile" value="Calculator.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" name="in" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" name="out" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list>
+        <libraryPort id="0" name="math" type="math" />
+      </libraryPort_list>
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Display_Graph" type="Computational">
+      <config>
+        <location x="532" y="156" width="80" height="40" />
+        <parameter name="CICFile" value="Display_Graph.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="-lX11" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" name="in" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+  </task_list>
+  <library_list>
+    <library name="Math">
+      <config>
+        <location x="352" y="252" width="40" height="40" />
+        <parameter name="LibraryType" value="math" />
+        <parameter name="LibraryFile" value="math.cicl" />
+        <parameter name="LibraryHeader" value="math.cicl.h" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="Language" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="IsDependency" value="No" />
+      </config>
+      <inPort_list>
+        <inPort id="0" name="Math" type="fifo" />
+      </inPort_list>
+      <outPort_list />
+      <function_list>
+        <function name="my_cos" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_pow" type="double">
+          <argument name="num_1" type="double" />
+          <argument name="num_2" type="double" />
+        </function>
+        <function name="my_sin" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_log" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_tan" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_exp" type="double">
+          <argument name="num" type="double" />
+        </function>
+      </function_list>
+      <extraSetting_list />
+    </library>
+  </library_list>
+  <channel_list>
+    <channel src_task="Counter" src_port="out" dst_task="Calculator" dst_port="in" size="10" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="224" y="176" />
+        <edge id="1" x="348" y="176" />
+      </edge_list>
+    </channel>
+    <channel src_task="Calculator" src_port="out" dst_task="Display_Graph" dst_port="in" size="1" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="428" y="176" />
+        <edge id="1" x="532" y="176" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list>
+    <taskLibraryConnection src_task="Calculator" src_port="math" dst_library="Math" dst_port="Math">
+      <edge_list>
+        <edge id="0" x="368" y="196" />
+        <edge id="1" x="372" y="252" />
+      </edge_list>
+    </taskLibraryConnection>
+  </taskLibraryConnection_list>
+  <libraryLibraryConnection_list />
+  <taskGroupList name="taskGroups" />
+</cic_manual>
+

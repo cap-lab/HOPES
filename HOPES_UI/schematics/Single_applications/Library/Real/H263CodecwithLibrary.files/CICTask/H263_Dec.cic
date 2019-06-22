@@ -1,0 +1,2297 @@
+/************************************
+ *
+ * File : H263_Dec.cic
+ * Date : Apr 1, 2010 4:14 PM
+ *
+*************************************/
+
+/* Define macro for prototyping functions on ANSI & non-ANSI compilers */
+#ifndef ARGS
+#if defined(__STDC__) || defined(__cplusplus)
+#define ARGS(args) args
+#else
+#define ARGS(args) ()
+#endif
+#endif
+
+
+/* Define constants TRUE and FALSE for portability */
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+/* Define a complex data type if one has not been defined */
+#if !defined(COMPLEX_DATA)
+#define COMPLEX_DATA 1
+typedef struct complex_data { double real; double imag; } complex;
+#endif
+
+#define CGC_MOD(a,b) ((a)>=(b) ? (a-b):(a))
+//#include "task.h"
+//#include "struct_data.h"
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+/* original global declaration */
+#define sign(a)        ((a) < 0 ? -1 : 1)
+#define Int(a)          ((a) < 0 ? (int)(a-0.5) : (int)(a))
+#define mnint(a)        ((a) < 0 ? (int)(a - 0.5) : (int)(a + 0.5))
+#define mfloor(a)       ((a) < 0 ? (int)(a - 0.5) : (int)(a))
+#define mmax(a, b)        ((a) > (b) ? (a) : (b))
+#define mmin(a, b)        ((a) < (b) ? (a) : (b))
+#define limit(x) \
+{ \
+    if (x > 255) x = 255; \
+    if (x <   0)   x = 0; \
+}
+#define MODE_INTER                      0
+#define MODE_INTER_Q                    1
+#define MODE_INTER4V                    2
+#define MODE_INTRA                      3
+#define MODE_INTRA_Q                    4
+                struct ShortBlock {
+                        short data[64];
+                };
+		STATIC int     zigzag[8][8] = {
+				{0, 1, 5, 6,14,15,27,28},
+				{2, 4, 7,13,16,26,29,42},
+				{3, 8,12,17,25,30,41,43},
+				{9,11,18,24,31,40,44,53},
+				{10,19,23,32,39,45,52,54},
+				{20,22,33,38,46,51,55,60},
+				{21,34,37,47,50,56,59,61},
+				{35,36,48,49,57,58,62,63},
+			};
+#define MODE_INTER                      0
+#define MODE_INTER_Q                    1
+#define MODE_INTER4V                    2
+#define MODE_INTRA                      3
+#define MODE_INTRA_Q                    4
+/**********************************************************/
+/* inverse two dimensional DCT, Chen-Wang algorithm       */
+/* (cf. IEEE ASSP-32, pp. 803-816, Aug. 1984)             */
+/* 32-bit integer arithmetic (8 bit coefficients)         */
+/* 11 mults, 29 adds per DCT                              */
+/*                                      sE, 18.8.91       */
+/**********************************************************/
+/* coefficients extended to 12 bit for IEEE1180-1990      */
+/* compliance                           sE,  2.1.94       */
+/**********************************************************/
+
+/* this code assumes >> to be a two's-complement arithmetic */
+/* right shift: (-2)>>1 == -1 , (-3)>>1 == -2               */
+
+//#define W1 2841 /* 2048*sqrt(2)*cos(1*pi/16) */
+//#define W2 2676 /* 2048*sqrt(2)*cos(2*pi/16) */
+//#define W3 2408 /* 2048*sqrt(2)*cos(3*pi/16) */
+//#define W5 1609 /* 2048*sqrt(2)*cos(5*pi/16) */
+//#define W6 1108 /* 2048*sqrt(2)*cos(6*pi/16) */
+//#define W7 565  /* 2048*sqrt(2)*cos(7*pi/16) */
+
+/* global declarations */
+//STATIC void init_idct (void);
+
+/* private data */
+//STATIC short iclip[1024]; /* clipping table */
+//STATIC short *iclp;
+
+/* private prototypes */
+//STATIC void idctrow (short *blk);
+//STATIC void idctcol (short *blk);
+
+/* row (horizontal) IDCT
+ *
+ *           7                       pi         1
+ * dst[k] = sum c[l] * src[l] * cos( -- * ( k + - ) * l )
+ *          l=0                      8          2
+ *
+ * where: c[0]    = 128
+ *        c[1..7] = 128*sqrt(2)
+ */
+		struct Frame {
+			char data[176*144];
+		};
+		struct HalfFrame {
+			char data[176*144/4];
+		};
+#include <stdio.h>
+#include <stdlib.h>
+#ifndef __CIC__
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+/* define NON_ANSI_COMPILER for compilers without function prototyping */
+/* #define NON_ANSI_COMPILER */
+
+#ifdef NON_ANSI_COMPILER
+#define _ANSI_ARGS_(x) ()
+#else
+#define _ANSI_ARGS_(x) x
+#endif
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+/* Some macros */
+#define mmax(a, b)        ((a) > (b) ? (a) : (b))
+#define mmin(a, b)        ((a) < (b) ? (a) : (b))
+#define mnint(a)        ((a) < 0 ? (int)(a - 0.5) : (int)(a + 0.5))
+#define sign(a)         ((a) < 0 ? -1 : 1)
+#define PSC        1
+#define PSC_LENGTH        17
+#define SE_CODE                         31
+
+#define ESCAPE                          7167
+
+#define PCT_INTER                       1
+#define PCT_INTRA                       0
+#define ON                              1
+#define OFF                             0
+int quiet_264;
+STATIC char errortext[256];
+STATIC void error(char *text);
+int pict_type_265,newgob_266;
+int mv_outside_frame_267,syntax_arith_coding_268,adv_pred_mode_269,pb_frame_270;
+int long_vectors_271;
+int fault_272;
+int verbose_273;
+int temp_ref_274, prev_temp_ref_275, quant_276, source_format_277;
+#ifdef USE_TIME
+int framerate;
+#ifndef WIN32
+struct timeval tftarget;
+#endif
+#endif
+
+int trd_278, trb_279, bquant_280;
+
+/* output */
+// int outtype;
+#define T_YUV      0
+#define T_SIF      1
+#define T_TGA      2
+#define T_PPM      3
+#define T_X11      4
+#define T_YUV_CONC 5
+#define T_WIN      6
+
+struct ld_281 {
+  /* bit input */
+  int infile;
+  unsigned char rdbfr[10000];
+  unsigned char *rdptr;
+  unsigned char inbfr[16];
+  int incnt;
+  int bitcnt;
+  /* block data */
+  short block[12][64];
+} base_282,*ld_281;
+/* new global declaration */
+  int comp_283;
+  int MBA_284, MBAmax_285;
+  int bx_286, by_287;
+
+  int COD_288=0,MCBPC_289, CBPY_290, DQUANT_291;
+  int pmv0_292, pmv1_293, xpos_294, ypos_295, gob_296;
+  int k_297;
+  int gfid_298, gobheader_read_299;
+  int offset_300,bsize_301,last_done_302=0;
+  int DQ_tab_303[4] = {-1,-2,1,2};
+  short *bp_304;
+  int x_305,y_306;
+  STATIC int first=1;
+  STATIC int framenum=0;
+  int dx_index_307=0, dy_index_308=0;
+  int dx_array_309[11], dy_array_310[11];
+int input_239;
+int output_191[4];
+int input_240;
+int DeQP_241;
+int mode_242;
+struct ShortBlock output_192;
+struct ShortBlock output_193;
+int mode_243;
+int enable_244;
+struct ShortBlock output_196[396];
+int output_245;
+int input_246;
+int DeQP_247;
+int mode_248;
+struct ShortBlock output_197;
+struct ShortBlock output_198;
+int mode_249;
+struct ShortBlock output_201[99];
+int output_250;
+int input_251;
+int DeQP_252;
+int mode_253;
+struct ShortBlock output_202;
+struct ShortBlock output_203;
+int mode_254;
+struct ShortBlock output_206[99];
+int output_255;
+int input_256;
+int output_210[4];
+int prevY_257;
+int prevU_258;
+int prevV_259;
+struct Frame outputY_215[2];
+int outputY_260;
+struct HalfFrame outputU_216[2];
+int outputU_261;
+struct HalfFrame outputV_217[2];
+int outputV_262;
+int input_263;
+int CBPY_224[4];
+int CBPU_225;
+int CBPV_226;
+int output_227;
+struct ShortBlock YBlock_228[396];
+struct ShortBlock UBlock_229[99];
+struct ShortBlock VBlock_230[99];
+int dx_231[99];
+int dy_232[99];
+int mode_233[99];
+int CBP_234[99];
+int QP_235[99];
+int type_236;
+int fid_311;
+int  output_237;
+int fid_312;
+int  output_238;
+int fid_314;
+int input_313;
+int fid_316;
+int input_315;
+int fid_318;
+int input_317;
+
+
+/* task_info declaration */
+//task_info *H263Dec2I3_task_info;
+
+		STATIC void doDeQuantizer(short* rcoeff, short* qcoeff, int QP, int theMode){
+  int i;
+
+  if (QP) {
+    for (i = 0; i < 64; i++) {
+      if (qcoeff[i]) {
+        if ((QP % 2) == 1)
+          rcoeff[i] = QP * (2*abs(qcoeff[i]) + 1);
+        else
+          rcoeff[i] = QP * (2*abs(qcoeff[i]) + 1) - 1;
+        rcoeff[i] = sign(qcoeff[i]) * rcoeff[i];
+      }
+      else
+        rcoeff[i] = 0;
+    }
+    if (theMode == MODE_INTRA || theMode == MODE_INTRA_Q) { /* Intra */
+      rcoeff[0] = qcoeff[0]*8;
+    }
+  }
+  else {
+    /* No quantizing at all */
+    for (i = 0; i < 64; i++) {
+      rcoeff[i] = qcoeff[i];
+    }
+  }
+  return;
+        }
+		STATIC void doInvZigzag(short* outImg, short* inImg)
+		{
+			int i,j;
+			for(i=0; i<8; i++)
+				for(j=0; j<8; j++)
+					outImg[i*8+j] = inImg[zigzag[i][j]];
+		}
+
+void reconBlockIntoImage(int x, int y, int dx, int dy, 
+unsigned char *prevImage, short int *data, 
+unsigned char *outImage, int width)
+{
+  int m,n;
+  int x_half = dx % 2;
+  int y_half = dy % 2;
+  unsigned char *outBlock;
+  unsigned char *prevBlock;
+  
+  outBlock = outImage+y*width+x;
+  prevBlock = prevImage+(y+dy/2)*width+x+dx/2;
+
+  if(!x_half && !y_half) {
+    for (n = 0; n < 8; n++) {
+      for (m = 0; m < 8; m++) {
+        int pixel = (int)prevBlock[width*n+m];
+        pixel += data[8*n+m];
+        pixel = mmin(255,mmax(0,pixel));
+        outBlock[width*n+m] = (unsigned char)pixel;
+      }
+    }
+  } else if(x_half && !y_half) {
+    for (n = 0; n < 8; n++) {
+      for (m = 0; m < 8; m++) {
+        int pixel = ((int)prevBlock[width*n+m] + (int)prevBlock[width*n+m+x_half]+1)>>1;
+        pixel += data[8*n+m];
+        pixel = mmin(255,mmax(0,pixel));
+        outBlock[width*n+m] = (unsigned char)pixel;
+      }
+    }
+  } else if(!x_half && y_half) {
+    for (n = 0; n < 8; n++) {
+      for (m = 0; m < 8; m++) {
+        int pixel = ((int)prevBlock[width*n+m] + (int)prevBlock[width*(n+y_half)+m]+1)>>1;
+        pixel += data[8*n+m];
+        pixel = mmin(255,mmax(0,pixel));
+        outBlock[width*n+m] = (unsigned char)pixel;
+      }
+    }
+  } else {
+    for (n = 0; n < 8; n++) {
+      for (m = 0; m < 8; m++) {
+        int pixel = ((int)prevBlock[width*n+m] + (int)prevBlock[width*(n+y_half)+m] + (int)prevBlock[width*n+m+x_half] + (int)prevBlock[width*(n+y_half)+m+x_half]+2)>>2;
+        pixel += data[8*n+m];
+        pixel = mmin(255,mmax(0,pixel));
+        outBlock[width*n+m] = (unsigned char)pixel;
+      }
+    }
+  }
+}
+void copyBlockIntoImage(int x, int y, short int *data, unsigned char *outImage, int width)
+{
+  int m,n;
+  unsigned char *outBlock;
+
+  outBlock = outImage+y*width+x;
+
+  for (n = 0; n < 8; n++) {
+    for (m = 0; m < 8; m++) {
+      outBlock[width*n+m] = (unsigned char)mmin(255,mmax(0,data[8*n+m]));
+    }
+  }
+}
+typedef struct {
+  int val, len;
+} VLCtab;
+
+typedef struct {
+  char run, level, len;
+} DCTtab;
+
+
+STATIC VLCtab TMNMVtab0[] = {
+{3,4}, {61,4}, {2,3}, {2,3}, {62,3}, {62,3},
+{1,2}, {1,2}, {1,2}, {1,2}, {63,2}, {63,2}, {63,2}, {63,2}
+};
+
+STATIC VLCtab TMNMVtab1[] = {
+{12,10}, {52,10}, {11,10}, {53,10}, {10,9}, {10,9},
+{54,9}, {54,9}, {9,9}, {9,9}, {55,9}, {55,9},
+{8,9}, {8,9}, {56,9}, {56,9}, {7,7}, {7,7},
+{7,7}, {7,7}, {7,7}, {7,7}, {7,7}, {7,7},
+{57,7}, {57,7}, {57,7}, {57,7}, {57,7}, {57,7},
+{57,7}, {57,7}, {6,7}, {6,7}, {6,7}, {6,7},
+{6,7}, {6,7}, {6,7}, {6,7}, {58,7}, {58,7},
+{58,7}, {58,7}, {58,7}, {58,7}, {58,7}, {58,7},
+{5,7}, {5,7}, {5,7}, {5,7}, {5,7}, {5,7},
+{5,7}, {5,7}, {59,7}, {59,7}, {59,7}, {59,7},
+{59,7}, {59,7}, {59,7}, {59,7}, {4,6}, {4,6},
+{4,6}, {4,6}, {4,6}, {4,6}, {4,6}, {4,6},
+{4,6}, {4,6}, {4,6}, {4,6}, {4,6}, {4,6},
+{4,6}, {4,6}, {60,6}, {60,6},{60,6},{60,6},
+{60,6},{60,6},{60,6},{60,6},{60,6},{60,6},
+{60,6},{60,6},{60,6},{60,6},{60,6},{60,6}
+};
+
+STATIC VLCtab TMNMVtab2[] = {
+{32,12}, {31,12}, {33,12}, {30,11}, {30,11}, {34,11},
+{34,11}, {29,11}, {29,11}, {35,11}, {35,11}, {28,11},
+{28,11}, {36,11}, {36,11}, {27,11}, {27,11}, {37,11},
+{37,11}, {26,11}, {26,11}, {38,11}, {38,11}, {25,11},
+{25,11}, {39,11}, {39,11}, {24,10}, {24,10}, {24,10},
+{24,10}, {40,10}, {40,10}, {40,10}, {40,10}, {23,10},
+{23,10}, {23,10}, {23,10}, {41,10}, {41,10}, {41,10},
+{41,10}, {22,10}, {22,10}, {22,10}, {22,10}, {42,10},
+{42,10}, {42,10}, {42,10}, {21,10}, {21,10}, {21,10},
+{21,10}, {43,10}, {43,10}, {43,10}, {43,10}, {20,10},
+{20,10}, {20,10}, {20,10}, {44,10}, {44,10}, {44,10},
+{44,10}, {19,10}, {19,10}, {19,10}, {19,10}, {45,10},
+{45,10}, {45,10}, {45,10}, {18,10}, {18,10}, {18,10},
+{18,10}, {46,10}, {46,10}, {46,10}, {46,10}, {17,10},
+{17,10}, {17,10}, {17,10}, {47,10}, {47,10}, {47,10},
+{47,10}, {16,10}, {16,10}, {16,10}, {16,10}, {48,10},
+{48,10}, {48,10}, {48,10}, {15,10}, {15,10}, {15,10},
+{15,10}, {49,10}, {49,10}, {49,10}, {49,10}, {14,10},
+{14,10}, {14,10}, {14,10}, {50,10}, {50,10}, {50,10},
+{50,10}, {13,10}, {13,10}, {13,10}, {13,10}, {51,10},
+{51,10}, {51,10}, {51,10}
+};
+
+
+STATIC VLCtab MCBPCtab[] = {
+{-1,0},
+{255,9}, {52,9}, {36,9}, {20,9}, {49,9}, {35,8}, {35,8}, {19,8}, {19,8},
+{50,8}, {50,8}, {51,7}, {51,7}, {51,7}, {51,7}, {34,7}, {34,7}, {34,7},
+{34,7}, {18,7}, {18,7}, {18,7}, {18,7}, {33,7}, {33,7}, {33,7}, {33,7},
+{17,7}, {17,7}, {17,7}, {17,7}, {4,6}, {4,6}, {4,6}, {4,6}, {4,6},
+{4,6}, {4,6}, {4,6}, {48,6}, {48,6}, {48,6}, {48,6}, {48,6}, {48,6},
+{48,6}, {48,6}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5},
+{3,5}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5}, {3,5},
+{32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4},
+{32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4},
+{32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {32,4},
+{32,4}, {32,4}, {32,4}, {32,4}, {32,4}, {16,4}, {16,4}, {16,4}, {16,4},
+{16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4},
+{16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4},
+{16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4}, {16,4},
+{16,4}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3}, {2,3},
+{2,3}, {2,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3}, {1,3},
+{1,3}, {1,3}, {1,3},
+};
+
+
+
+STATIC VLCtab MCBPCtabintra[] = {
+{-1,0},
+{20,6}, {36,6}, {52,6}, {4,4}, {4,4}, {4,4},
+{4,4}, {19,3}, {19,3}, {19,3}, {19,3}, {19,3},
+{19,3}, {19,3}, {19,3}, {35,3}, {35,3}, {35,3},
+{35,3}, {35,3}, {35,3}, {35,3}, {35,3}, {51,3},
+{51,3}, {51,3}, {51,3}, {51,3}, {51,3}, {51,3},
+{51,3},
+};
+
+
+
+STATIC VLCtab CBPYtab[48] =
+{ {-1,0}, {-1,0}, {9,6}, {6,6}, {7,5}, {7,5}, {11,5}, {11,5},
+  {13,5}, {13,5}, {14,5}, {14,5}, {15,4}, {15,4}, {15,4}, {15,4},
+  {3,4}, {3,4}, {3,4}, {3,4}, {5,4},{5,4},{5,4},{5,4},
+  {1,4}, {1,4}, {1,4}, {1,4}, {10,4}, {10,4}, {10,4}, {10,4},
+  {2,4}, {2,4}, {2,4}, {2,4}, {12,4}, {12,4}, {12,4}, {12,4},
+  {4,4}, {4,4}, {4,4}, {4,4}, {8,4}, {8,4}, {8,4}, {8,4},
+};
+
+
+STATIC VLCtab DCT3Dtab0[] = {
+{4225,7}, {4209,7}, {4193,7}, {4177,7}, {193,7}, {177,7},
+{161,7}, {4,7}, {4161,6}, {4161,6}, {4145,6}, {4145,6},
+{4129,6}, {4129,6}, {4113,6}, {4113,6}, {145,6}, {145,6},
+{129,6}, {129,6}, {113,6}, {113,6}, {97,6}, {97,6},
+{18,6}, {18,6}, {3,6}, {3,6}, {81,5}, {81,5},
+{81,5}, {81,5}, {65,5}, {65,5}, {65,5}, {65,5},
+{49,5}, {49,5}, {49,5}, {49,5}, {4097,4}, {4097,4},
+{4097,4}, {4097,4}, {4097,4}, {4097,4}, {4097,4}, {4097,4},
+{1,2}, {1,2}, {1,2}, {1,2}, {1,2}, {1,2},
+{1,2}, {1,2}, {1,2}, {1,2}, {1,2}, {1,2},
+{1,2}, {1,2}, {1,2}, {1,2}, {1,2}, {1,2},
+{1,2}, {1,2}, {1,2}, {1,2}, {1,2}, {1,2},
+{1,2}, {1,2}, {1,2}, {1,2}, {1,2}, {1,2},
+{1,2}, {1,2}, {17,3}, {17,3}, {17,3}, {17,3},
+{17,3}, {17,3}, {17,3}, {17,3}, {17,3}, {17,3},
+{17,3}, {17,3}, {17,3}, {17,3}, {17,3}, {17,3},
+{33,4}, {33,4}, {33,4}, {33,4}, {33,4}, {33,4},
+{33,4}, {33,4}, {2,4}, {2,4},{2,4},{2,4},
+{2,4}, {2,4},{2,4},{2,4},
+};
+
+
+STATIC VLCtab DCT3Dtab1[] = {
+{9,10}, {8,10}, {4481,9}, {4481,9}, {4465,9}, {4465,9},
+{4449,9}, {4449,9}, {4433,9}, {4433,9}, {4417,9}, {4417,9},
+{4401,9}, {4401,9}, {4385,9}, {4385,9}, {4369,9}, {4369,9},
+{4098,9}, {4098,9}, {353,9}, {353,9}, {337,9}, {337,9},
+{321,9}, {321,9}, {305,9}, {305,9}, {289,9}, {289,9},
+{273,9}, {273,9}, {257,9}, {257,9}, {241,9}, {241,9},
+{66,9}, {66,9}, {50,9}, {50,9}, {7,9}, {7,9},
+{6,9}, {6,9}, {4353,8}, {4353,8}, {4353,8}, {4353,8},
+{4337,8}, {4337,8}, {4337,8}, {4337,8}, {4321,8}, {4321,8},
+{4321,8}, {4321,8}, {4305,8}, {4305,8}, {4305,8}, {4305,8},
+{4289,8}, {4289,8}, {4289,8}, {4289,8}, {4273,8}, {4273,8},
+{4273,8}, {4273,8}, {4257,8}, {4257,8}, {4257,8}, {4257,8},
+{4241,8}, {4241,8}, {4241,8}, {4241,8}, {225,8}, {225,8},
+{225,8}, {225,8}, {209,8}, {209,8}, {209,8}, {209,8},
+{34,8}, {34,8}, {34,8}, {34,8}, {19,8}, {19,8},
+{19,8}, {19,8}, {5,8}, {5,8}, {5,8}, {5,8},
+};
+
+STATIC VLCtab DCT3Dtab2[] = {
+{4114,11}, {4114,11}, {4099,11}, {4099,11}, {11,11}, {11,11},
+{10,11}, {10,11}, {4545,10}, {4545,10}, {4545,10}, {4545,10},
+{4529,10}, {4529,10}, {4529,10}, {4529,10}, {4513,10}, {4513,10},
+{4513,10}, {4513,10}, {4497,10}, {4497,10}, {4497,10}, {4497,10},
+{146,10}, {146,10}, {146,10}, {146,10}, {130,10}, {130,10},
+{130,10}, {130,10}, {114,10}, {114,10}, {114,10}, {114,10},
+{98,10}, {98,10}, {98,10}, {98,10}, {82,10}, {82,10},
+{82,10}, {82,10}, {51,10}, {51,10}, {51,10}, {51,10},
+{35,10}, {35,10}, {35,10}, {35,10}, {20,10}, {20,10},
+{20,10}, {20,10}, {12,11}, {12,11}, {21,11}, {21,11},
+{369,11}, {369,11}, {385,11}, {385,11}, {4561,11}, {4561,11},
+{4577,11}, {4577,11}, {4593,11}, {4593,11}, {4609,11}, {4609,11},
+{22,12}, {36,12}, {67,12}, {83,12}, {99,12}, {162,12},
+{401,12}, {417,12}, {4625,12}, {4641,12}, {4657,12}, {4673,12},
+{4689,12}, {4705,12}, {4721,12}, {4737,12}, {7167,7},
+{7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7},
+{7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7},
+{7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7},
+{7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7},
+{7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7}, {7167,7},
+{7167,7}, };
+
+/* to mask the n least significant bits of an integer */
+
+STATIC unsigned int msk[33] =
+{
+  0x00000000,0x00000001,0x00000003,0x00000007,
+  0x0000000f,0x0000001f,0x0000003f,0x0000007f,
+  0x000000ff,0x000001ff,0x000003ff,0x000007ff,
+  0x00000fff,0x00001fff,0x00003fff,0x00007fff,
+  0x0000ffff,0x0001ffff,0x0003ffff,0x0007ffff,
+  0x000fffff,0x001fffff,0x003fffff,0x007fffff,
+  0x00ffffff,0x01ffffff,0x03ffffff,0x07ffffff,
+  0x0fffffff,0x1fffffff,0x3fffffff,0x7fffffff,
+  0xffffffff
+};
+
+
+/* initialize buffer, call once before first getbits or showbits */
+#define _READ_OPTIMIZE
+STATIC void initbits()
+{
+  ld_281->incnt = 0;
+  ld_281->rdptr = ld_281->rdbfr + 2048;
+  ld_281->bitcnt = 0;
+#ifdef _READ_OPTIMIZE
+  ld_281->rdptr = ld_281->rdbfr;
+#endif
+}
+
+STATIC void fillbfr()
+{
+  int l;
+
+  ld_281->inbfr[0] = ld_281->inbfr[8];
+  ld_281->inbfr[1] = ld_281->inbfr[9];
+  ld_281->inbfr[2] = ld_281->inbfr[10];
+  ld_281->inbfr[3] = ld_281->inbfr[11];
+
+  if (ld_281->rdptr>=ld_281->rdbfr+2048)
+  {
+    l = MQ_RECEIVE(output_237,(char *)ld_281->rdbfr,2048);
+    ld_281->rdptr = ld_281->rdbfr;
+    if (l<2048)
+    {
+      if (l<0)
+        l = 0;
+
+      while (l<2048)   /* Add recognizable sequence end code */
+      {
+        ld_281->rdbfr[l++] = 0;
+        ld_281->rdbfr[l++] = 0;
+        ld_281->rdbfr[l++] = (1<<7) | (SE_CODE<<2);
+      }
+    }
+  }
+
+  for (l=0; l<8; l++)
+    ld_281->inbfr[l+4] = ld_281->rdptr[l];
+
+  ld_281->rdptr+= 8;
+  ld_281->incnt+= 64;
+}
+
+
+/* return next n bits (right adjusted) without advancing */
+
+
+#ifdef _READ_OPTIMIZE
+#define _SWAP(a) ((a[0] << 24) | (a[1] << 16) | (a[2] << 8) | a[3])
+
+STATIC unsigned int showbits (int n)
+{
+        unsigned char *v = ld_281->rdptr;
+        int rbit = 32 - ld_281->bitcnt;
+        unsigned int b;
+
+        b = _SWAP(v);
+        return ((b & msk[rbit]) >> (rbit-n));
+}
+
+#else 
+STATIC unsigned int showbits(int n)
+{
+  unsigned char *v;
+  unsigned int b;
+  int c;
+
+  if (ld_281->incnt<n)
+    fillbfr();
+
+  v = ld_281->inbfr + ((96 - ld_281->incnt)>>3);
+  b = (v[0]<<24) | (v[1]<<16) | (v[2]<<8) | v[3];
+  c = ((ld_281->incnt-1) & 7) + 25;
+  return (b>>(c-n)) & msk[n];
+}
+#endif 
+
+/* advance by n bits */
+
+#ifdef _READ_OPTIMIZE 
+STATIC void flushbits (int n)
+{
+        ld_281->bitcnt += n;
+        if (ld_281->bitcnt >= 8) {
+                ld_281->rdptr += ld_281->bitcnt / 8;
+                ld_281->bitcnt = ld_281->bitcnt % 8;
+        }
+}
+
+#else
+STATIC void flushbits(int n)
+{
+
+  ld_281->bitcnt+= n;
+  ld_281->incnt-= n;
+  if (ld_281->incnt < 0)
+    fillbfr();
+}
+#endif
+
+/* return next n bits (right adjusted) */
+
+STATIC unsigned int getbits(int n)
+{
+  unsigned int l;
+
+  l = showbits(n);
+  flushbits(n);
+
+  return l;
+}
+
+/* return next bit (could_281 be made faster than getbits(1)) */
+
+STATIC unsigned int getbits1()
+{
+  return getbits(1);
+}
+STATIC void error(char *text)
+{
+  fprintf(stderr,text);
+  exit(1);
+}
+
+/* trace output */
+STATIC void printbits(int code,int bits,int len)
+{
+  int i;
+  for (i=0; i<len; i++)
+    printf("%d",(code>>(bits-1-i))&1);
+}
+STATIC int getTMNMV()
+{
+  int code;
+
+  if (0)
+    printf("motion_code (");
+
+  if (getbits1())
+  {
+    if (0)
+      printf("1): 0\n");
+    return 0;
+  }
+
+  if ((code = showbits(12))>=512)
+  {
+    code = (code>>8) - 2;
+    flushbits(TMNMVtab0[code].len);
+
+    if (0)
+    {
+      printf("0");
+      printbits(code+2,4,TMNMVtab0[code].len);
+      printf("): %d\n", TMNMVtab0[code].val);
+    }
+
+    return TMNMVtab0[code].val;
+  }
+
+  if (code>=128)
+  {
+    code = (code>>2) -32;
+    flushbits(TMNMVtab1[code].len);
+
+    if (0)
+    {
+      printf("0");
+      printbits(code+32,10,TMNMVtab1[code].len);
+      printf("): %d\n",TMNMVtab1[code].val);
+    }
+
+    return TMNMVtab1[code].val;
+  }
+
+  if ((code-=5)<0)
+  {
+    if (!quiet_264)
+      fprintf(stderr,"Invalid motion_vector code\n");
+    fault_272=1;
+    return 0;
+  }
+
+  flushbits(TMNMVtab2[code].len);
+
+  if (0)
+  {
+    printf("0");
+    printbits(code+5,12,TMNMVtab2[code].len);
+    printf("): %d\n",TMNMVtab2[code].val);
+  }
+
+  return TMNMVtab2[code].val;
+}
+
+
+STATIC int getMCBPC()
+{
+  int code;
+
+  if (0)
+    printf("MCBPC (");
+
+  code = showbits(9);
+
+  if (code == 1) {
+    /* macroblock stuffing */
+    if (0)
+      printf("000000001): stuffing\n");
+    flushbits(9);
+    return 255;
+  }
+
+  if (code == 0) {
+    if (!quiet_264)
+      fprintf(stderr,"Invalid MCBPC code\n");
+    fault_272 = 1;
+    return 0;
+  }
+
+  if (code>=256)
+  {
+    flushbits(1);
+    if (0)
+      printf("1): %d\n",0);
+    return 0;
+  }
+
+  flushbits(MCBPCtab[code].len);
+
+  if (0)
+  {
+    printbits(code,9,MCBPCtab[code].len);
+    printf("): %d\n",MCBPCtab[code].val);
+  }
+
+  return MCBPCtab[code].val;
+}
+
+STATIC int getMODB()
+{
+  int code;
+  int MODB;
+
+  if (0)
+    printf("MODB (");
+
+  code = showbits(2);
+
+  if (code < 2) {
+    if (0)
+      printf("0): MODB = 0\n");
+    MODB = 0;
+    flushbits(1);
+  }
+  else if (code == 2) {
+    if (0)
+      printf("10): MODB = 1\n");
+    MODB = 1;
+    flushbits(2);
+  }
+  else { /* code == 3 */
+    if (0)
+      printf("11): MODB = 2\n");
+    MODB = 2;
+    flushbits(2);
+  }
+  return MODB;
+}
+
+
+STATIC int getMCBPCintra()
+{
+  int code;
+
+  if (0)
+    printf("MCBPCintra (");
+
+  code = showbits(9);
+
+  if (code == 1) {
+    /* macroblock stuffing */
+    if (0)
+      printf("000000001): stuffing\n");
+    flushbits(9);
+    return 255;
+  }
+
+  if (code < 8) {
+    if (!quiet_264)
+      fprintf(stderr,"Invalid MCBPCintra code\n");
+    fault_272 = 1;
+    return 0;
+  }
+
+  code >>= 3;
+
+  if (code>=32)
+  {
+    flushbits(1);
+    if (0)
+      printf("1): %d\n",3);
+    return 3;
+  }
+
+  flushbits(MCBPCtabintra[code].len);
+
+  if (0)
+  {
+    printbits(code,6,MCBPCtabintra[code].len);
+    printf("): %d\n",MCBPCtabintra[code].val);
+  }
+
+  return MCBPCtabintra[code].val;
+}
+
+STATIC int getCBPY()
+{
+  int code;
+
+  if (0)
+    printf("CBPY (");
+
+  code = showbits(6);
+  if (code < 2) {
+    if (!quiet_264)
+      fprintf(stderr,"Invalid CBPY code\n");
+    fault_272 = 1;
+    return -1;
+  }
+
+  if (code>=48)
+  {
+    flushbits(2);
+    if (0)
+      printf("11): %d\n",0);
+    return 0;
+  }
+
+  flushbits(CBPYtab[code].len);
+
+  if (0)
+  {
+    printbits(code,6,CBPYtab[code].len);
+    printf("): %d\n",CBPYtab[code].val);
+  }
+
+  return CBPYtab[code].val;
+}
+/* private prototypes */
+STATIC void getpicturehdr _ANSI_ARGS_((void));
+
+
+/* align to start of next startcode */
+
+STATIC void startcode()
+{
+  /* search for new picture start code */
+  while (showbits(PSC_LENGTH)!=1l)
+         flushbits(1);
+}
+
+/* decode picture header */
+
+STATIC void getpicturehdr()
+{
+  int pos, pei, tmp;
+
+  pos = ld_281->bitcnt;
+  prev_temp_ref_275 = temp_ref_274;
+  temp_ref_274 = getbits(8);
+  trd_278 = temp_ref_274 - prev_temp_ref_275;
+
+  if (trd_278 < 0)
+    trd_278 += 256;
+
+  tmp = getbits(1); /* always "1" */
+  if (!tmp)
+    if (!quiet_264)
+      printf("warning: spare in picture header should_281 be \"1\"\n");
+  tmp = getbits(1); /* always "0" */
+  if (tmp)
+    if (!quiet_264)
+      printf("warning: H.261 distinction bit should_281 be \"0\"\n");
+  tmp = getbits(1); /* split_screen_indicator */
+  if (tmp) {
+    if (!quiet_264)
+      printf("error: split-screen not supported in this version\n");
+    exit (-1);
+  }
+  tmp = getbits(1); /* document_camera_indicator */
+  if (tmp)
+    if (!quiet_264)
+      printf("warning: document camera indicator not supported in this version\n");
+
+  tmp = getbits(1); /* freeze_picture_release */
+  if (tmp)
+    if (!quiet_264)
+      printf("warning: frozen picture not supported in this version\n");
+
+  source_format_277 = getbits(3);
+  pict_type_265 = getbits(1);
+  mv_outside_frame_267 = getbits(1);
+  long_vectors_271 = (mv_outside_frame_267 ? 1 : 0);
+  syntax_arith_coding_268 = getbits(1);
+  adv_pred_mode_269 = getbits(1);
+  mv_outside_frame_267 = (adv_pred_mode_269 ? 1 : mv_outside_frame_267);
+  pb_frame_270 = getbits(1);
+  quant_276 = getbits(5);
+  tmp = getbits(1);
+  if (tmp) {
+    if (!quiet_264)
+      printf("error: CPM not supported in this version\n");
+    exit(-1);
+  }
+
+  if (pb_frame_270) {
+    trb_279 = getbits(3);
+    bquant_280 = getbits(2);
+  }
+  else {
+    trb_279 = 0;
+  }
+
+#ifdef USE_TIME
+  if (framerate > 0 && trd_278 > 0)
+    doframerate(0);
+#endif
+
+  pei = getbits(1);
+pspare:
+  if (pei) {
+     /* extra info for possible future backward compatible additions */
+    getbits(8);  /* not used */
+    pei = getbits(1);
+    if (pei) goto pspare; /* keep on reading pspare until pei=0 */
+  }
+
+
+  if (verbose_273>0) {
+    /*printf("picture header (byte %d)\n",(pos>>3)-4);*/
+    if (verbose_273>1) {
+      printf("  temp_ref=%d\n",temp_ref_274);
+      /*printf("  pict_type_265=%d\n",pict_type_265);
+      printf("  source_format=%d\n", source_format_277);
+      printf("  quant=%d\n",quant_276);
+      if (syntax_arith_coding_268)
+        printf("  SAC coding mode used \n");
+      if (mv_outside_frame_267)
+        printf("  unrestricted motion vector mode used\n");
+      if (adv_pred_mode_269)
+        printf("  advanced prediction mode used\n");*/
+      if (pb_frame_270) {
+        /*printf("  pb-frames mode used\n");*/
+        printf("  trb=%d\n",trb_279);
+        /*printf("  bquant=%d\n", bquant_280);*/
+      }
+    }
+  }
+}
+
+/*
+ * decode headers from one input stream
+ * until an End of Sequence or picture start code
+ * is found
+ */
+
+STATIC int getheader()
+{
+  unsigned int code, gob;
+
+  /* look for startcode */
+  startcode();
+  code = getbits(PSC_LENGTH);
+  gob = getbits(5);
+  if (gob == SE_CODE)
+    return 0;
+  if (gob == 0) {
+    getpicturehdr();
+  }
+  return gob + 1;
+}
+
+	/* Modified by Hyunok Oh : 2002/02/04 */
+/* private prototypes*/
+STATIC void clearblock _ANSI_ARGS_((int comp));
+STATIC int motion_decode _ANSI_ARGS_((int vec,int pmv));
+
+/* set block to zero */
+
+STATIC void clearblock(int comp)
+{
+  int *bp;
+  int i;
+
+  bp = (int *)ld_281->block[comp];
+
+  for (i=0; i<8; i++)
+  {
+    bp[0] = bp[1] = bp[2] = bp[3] = 0;
+    bp += 4;
+  }
+}
+
+STATIC int motion_decode(int vec,int pmv)
+{
+  if (vec > 31) vec -= 64;
+  vec += pmv;
+
+  if (vec > 31)
+    vec -= 64;
+  if (vec < -32)
+    vec += 64;
+
+  return vec;
+}
+/* Modified by Hyunok Oh 2002/02/04 */
+STATIC void getblock(int comp, int mode)
+{
+  int val, i, j, sign;
+  unsigned int code;
+  VLCtab *tab;
+  short *bp;
+  int run, last, level, QP;
+  short *qval;
+
+  bp = ld_281->block[comp];
+
+  /* decode AC coefficients */
+  if (mode==0) i=1;
+  else i=0;
+  while(1) {
+    code = showbits(12);
+    if (code>=512)
+      tab = &DCT3Dtab0[(code>>5)-16];
+    else if (code>=128)
+      tab = &DCT3Dtab1[(code>>2)-32];
+    else if (code>=8)
+      tab = &DCT3Dtab2[(code>>0)-8];
+    else {
+      if (!quiet_264)
+        fprintf(stderr,"invalid Huffman code in getblock()\n");
+      fault_272 = 1;
+      return;
+    }
+
+    flushbits(tab->len);
+
+    run = (tab->val >> 4) & 255;
+    level = tab->val & 15;
+    last = (tab->val >> 12) & 1;
+
+    if (0) {
+      printf(" (");
+      printbits(code,12,tab->len);
+    }
+
+   if (tab->val==ESCAPE) { /* escape */
+      if (0) {
+        putchar(' ');
+        printbits(showbits(1),1,1);
+      }
+      last = getbits1();
+      if (0) {
+        putchar(' ');
+        printbits(showbits(6),6,6);
+      }
+      i += run = getbits(6);
+      if (0) {
+        putchar(' ');
+        printbits(showbits(8),8,8);
+      }
+      level = getbits(8);
+
+      if ((sign = (level>=128)))
+        val = 256 - level;
+      else
+        val = level;
+    }
+    else {
+      i+= run;
+      val = level;
+      sign = getbits(1);
+      if (0)
+        printf("%d",sign);
+    }
+
+    if (i >= 64)
+    {
+      if (!quiet_264)
+        fprintf(stderr,"DCT coeff index (i) out of bounds\n");
+      fault_272 = 1;
+      return;
+    }
+
+    if (0)
+      printf("): %d/%d\n",run,sign ? -val : val);
+
+    /* H. Oh modified */
+    bp[i] = sign ? -val : val;
+
+    if (last) { /* That's it */
+      if (0)
+        printf("last\n");
+      return;
+    }
+
+    i++;
+  }
+ }
+STATIC void FindPMV(int dx1, int dy1, int dx2, int dy2, int dx3, int dy3,
+int x, int y, int *pmv0, int *pmv1)
+{
+  if(x==0) { /* case 1: left GOB border */
+     dx1 = dy1 = 0;
+  }
+  if(y==0) { /* case 2: upper GOB border */
+     dx2 = dx3 = dx1;
+     dy2 = dy3 = dy1;
+  }
+  if(x==176/16 - 1) { /* case 3: right GOB border */
+     dx3 = dy3 = 0;
+  }
+
+  *pmv0 = dx1+dx2+dx3 - mmax(dx1,mmax(dx2,dx3)) - mmin(dx1,mmin(dx2,dx3));
+  *pmv1 = dy1+dy2+dy3 - mmax(dy1,mmax(dy2,dy3)) - mmin(dy1,mmin(dy2,dy3));
+
+  return;
+}
+extern const char *H263Dec2I3_block_name[21];
+
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_stream_in;
+STATIC int port_size_in;
+STATIC int port_Y_out;
+STATIC int port_U_out;
+STATIC int port_V_out;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+
+   fid_318=-1;
+fid_316=-1;
+fid_314=-1;
+fid_312=-1;
+fid_311=-1;
+input_239 = 0;
+{int i; for(i=0;i<4;i++) output_191[i] = 0;}
+input_240 = 0;
+DeQP_241 = 0;
+mode_242 = 0;
+mode_243 = 0;
+enable_244 = 0;
+output_245 = 0;
+	//init_idct();
+input_246 = 0;
+DeQP_247 = 0;
+mode_248 = 0;
+mode_249 = 0;
+output_250 = 0;
+	//init_idct();
+input_251 = 0;
+DeQP_252 = 0;
+mode_253 = 0;
+mode_254 = 0;
+output_255 = 0;
+	//init_idct();
+input_256 = 0;
+{int i; for(i=0;i<4;i++) output_210[i] = 0;}
+prevY_257 = 1;
+prevU_258 = 1;
+prevV_259 = 1;
+outputY_260 = 0;
+outputU_261 = 0;
+outputV_262 = 0;
+input_263 = 0;
+{int i; for(i=0;i<4;i++) CBPY_224[i] = 0;}
+CBPU_225 = 0;
+CBPV_226 = 0;
+output_227 = 0;
+{int i; for(i=0;i<99;i++) dx_231[i] = 0;}
+{int i; for(i=0;i<99;i++) dy_232[i] = 0;}
+{int i; for(i=0;i<99;i++) mode_233[i] = 0;}
+{int i; for(i=0;i<99;i++) CBP_234[i] = 0;}
+{int i; for(i=0;i<99;i++) QP_235[i] = 0;}
+type_236 = 0;
+	/*  options(&argc,&argv); */
+
+	  /* pointer to name of output files */
+	 /*   outputname = argv[argc-1]; */
+         
+	  ld_281 = &base_282; 
+	  /* open MPEG input file(s) */
+/*
+	  if ((base.infile=open("stream.263",O_RDONLY|O_BINARY))<0) {
+	    sprintf(errortext,"Input file %s not found\n",argv[1]);
+	    error(errortext);
+	  }
+
+	  if (base.infile!=0)
+	      lseek(base.infile,0l,0);
+*/
+	  initbits();
+	  temp_ref_274 = 0;
+	  prev_temp_ref_275 -1;
+       
+// ##INIT_PORT_SECTION::START
+    port_stream_in = PORT_INITIALIZE(TASK_ID, "stream_in");
+    port_size_in = PORT_INITIALIZE(TASK_ID, "size_in");
+    port_Y_out = PORT_INITIALIZE(TASK_ID, "Y_out");
+    port_U_out = PORT_INITIALIZE(TASK_ID, "U_out");
+    port_V_out = PORT_INITIALIZE(TASK_ID, "V_out");
+// ##INIT_PORT_SECTION::END
+
+	output_237 = port_stream_in;
+	output_238 = port_size_in;
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+STATIC short_block_8x8 idct_block_1;
+STATIC short_block_8x8 idct_block_2;
+STATIC short_block_8x8 idct_block_3;
+
+
+TASK_GO
+{
+    	int temp;
+
+#ifdef MX_PROFILE
+/* Star 0 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 0) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.pt_CGCReceiveM0 (class CGCReceiveM) */
+	}
+
+#ifdef MX_PROFILE
+/* Star 1 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 1;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 1 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 1;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 1) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.pt_CGCReceiveM1 (class CGCReceiveM) */
+	}
+
+#ifdef MX_PROFILE
+/* Star 2 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 2;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 2 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 2;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 2) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.ConstIntI15 (class CGCConstInt) */
+	output_227 = 0.0;
+	}
+
+#ifdef MX_PROFILE
+/* Star 3 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 3;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 3 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 3;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 3) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.H263FrameDecodeRcvI19 (class CGCH263FrameDecodeRcv) */
+  int phase;
+#ifdef _READ_OPTIMIZE
+  //phase = MQ_AVAILABLE(output_237);
+  MQ_RECEIVE(output_238, (char *)&phase, 4);
+  MQ_RECEIVE(output_237,(char *)ld_281->rdbfr,phase);
+  ld_281->rdbfr[phase++] = 0;
+  ld_281->rdbfr[phase++] = 0;
+  ld_281->rdbfr[phase++] = (1 << 7) | (SE_CODE << 2);
+  initbits();
+#endif 
+  for(phase=0; phase<176*144/(16*16); phase++) {
+    int index = 176*144/(16*16)-1 -phase;  
+
+  if(phase==0) {
+    getheader();
+    if (first) {
+/*	initdecoder(); */
+        first = 0; 
+    }
+
+  /* number of macroblocks per picture */
+  MBAmax_285 = 176*144/(16*16);
+
+  MBA_284 = 0; /* macroblock address */
+  newgob_266 = 0;
+
+  fault_272 = 0;
+  gobheader_read_299 = 0;
+    } 
+
+  /* loop start : produce blocks */
+
+    if (0)
+      printf("frame %d, MB %d\n",framenum,phase);
+  resync_319:
+
+    /* This version of the decoder does not resync on every possible
+       error, and it does not do all possible error checks. It is not
+       difficult to make it much more error robust, but I do not think
+       it is necessary to include this in the freely available
+       version. */
+
+    if (fault_272) {
+      printf("Warning: A Fault Condition Has Occurred - Resyncing \n");
+      startcode();  /* sync on new startcode */
+      fault_272 = 0;
+    }
+
+    /* reset motion vectors */
+    dx_231[(98-(index))] = 0;
+    dy_232[(98-(index))] = 0;
+
+    if (!(showbits(22)>>6)) { /* startcode */
+
+      startcode();  
+      /* in case of byte aligned start code, ie. PSTUF, GSTUF or ESTUF
+         is used */
+      
+      if (showbits(22) == (32|SE_CODE)) { /* end of sequence */
+        if (!(phase < MBAmax_285)) {
+          printf("end of sequence!\n");
+          return;
+        }
+      }
+      else if ((showbits(22) == PSC<<5) ) { /* new picture */
+        if (!(phase < MBAmax_285)) {
+//          return;
+            break;
+
+        }
+      }
+      else {
+        if (!(phase%(176/16))) {
+
+          gob_296 = getheader() - 1;
+          if (gob_296 > 144) {
+            if (!quiet_264)
+              printf("GN out of range\n");
+            return;
+          }
+          
+          /* GFID is not allowed to change unless PTYPE in picture header 
+             changes */
+          gfid_298 = getbits(2);
+          /* NB: in error-prone environments the decoder can use this
+             value to determine whether a picture header where the PTYPE
+             has changed, has been lost */
+          
+          quant_276 = getbits(5);
+          if (0)
+            printf("GQUANT: %d\n", quant_276);
+          xpos_294 = 0;
+          ypos_295 = gob_296;
+    //    MBA = ypos_295 * 176;
+          
+          newgob_266 = 1;
+          gobheader_read_299 = 1;
+        }
+      }
+    }
+
+    if (!gobheader_read_299) {
+      xpos_294 = phase%(176/16);
+      ypos_295 = phase/(176/16);
+      if (xpos_294 == 0 && ypos_295 > 0)
+        newgob_266 = 0;
+    }
+    else 
+      gobheader_read_299 = 0;
+
+  read_cod_320:
+    if (pict_type_265 == PCT_INTER) 
+        COD_288 = showbits(1);
+    else
+        COD_288 = 0; /* Intra picture -> not skipped */
+  
+    if (!COD_288) {  /* COD == 0 --> not skipped */    
+
+        if (pict_type_265 == PCT_INTER)
+          flushbits(1); /* flush COD bit */
+        if (pict_type_265 == PCT_INTRA) 
+          MCBPC_289 = getMCBPCintra();
+        else
+          MCBPC_289 = getMCBPC();
+ 
+      if (fault_272) goto resync_319;
+      
+      if (MCBPC_289 == 255) { /* stuffing */
+        goto read_cod_320;   /* read next COD without advancing MB count */
+      }
+
+      else {             /* normal MB data */
+
+       mode_233[(98-(index))] = MCBPC_289 & 7;
+ 
+       CBPY_290 = getCBPY();
+ 
+        /* Decode Mode and CBP */
+        
+          if (mode_233[(98-(index))] == MODE_INTRA || mode_233[(98-(index))] == MODE_INTRA_Q)
+          {/* Intra */
+             CBPY_290 = CBPY_290^15;        /* needed in huffman coding only */
+          }
+           CBP_234[(98-(index))] = (CBPY_290 << 2) | (MCBPC_289 >> 4);
+      }
+
+      if (mode_233[(98-(index))] == MODE_INTER_Q || mode_233[(98-(index))] == MODE_INTRA_Q) {
+        /* Read DQUANT if necessary */
+
+          DQUANT_291 = getbits(2);
+          quant_276 += DQ_tab_303[DQUANT_291];
+          if (0) {
+            printf("DQUANT (");
+            printbits(DQUANT_291,2,2);
+            printf("): %d = %d\n",DQUANT_291,DQ_tab_303[DQUANT_291]);
+          }
+        if (quant_276 > 31 || quant_276 < 1) {
+          if (!quiet_264)
+            printf("Quantizer out of range: clipping\n");
+          quant_276 = mmax(1,mmin(31,quant_276));
+          /* could set fault-flag and resync here */
+        }
+      }
+
+      /* motion vectors */
+      if (mode_233[(98-(index))] == MODE_INTER || mode_233[(98-(index))] == MODE_INTER_Q) {
+
+          dx_231[(98-(index))] = getTMNMV();
+          dy_232[(98-(index))] = getTMNMV();
+          k_297 = 0;
+
+          FindPMV(dx_array_309[(dx_index_307-1+11)%11],dy_array_310[(dy_index_308-1+11)%11],dx_array_309[dx_index_307],dy_array_310[dy_index_308],dx_array_309[(dx_index_307-10+11)%11],dy_array_310[(dy_index_308-10+11)%11],xpos_294,ypos_295,&pmv0_292,&pmv1_293);
+
+          dx_231[(98-(index))] = motion_decode(dx_231[(98-(index))], pmv0_292);
+          dy_232[(98-(index))] = motion_decode(dy_232[(98-(index))], pmv1_293);
+
+          dx_array_309[dx_index_307] = dx_231[(98-(index))];
+          dy_array_310[dy_index_308] = dy_232[(98-(index))];
+
+          if (0) {
+            printf("mvx: %d\n", dx_231[(98-(index))]);
+            printf("mvy: %d\n", dy_232[(98-(index))]);
+          }
+          /* Check mv's to prevent seg.faults when error rate is high */
+       
+            bsize_301 = k_297 ? 8 : 16;
+            offset_300 = k_297 ? (((k_297-1)&1)<<3) : 0;
+            /* checking only integer component */
+            if ((xpos_294<<4) + (dx_231[(98-(index))]/2) + offset_300 < 0 || (xpos_294<<4) + (dx_231[(98-(index))]/2) + offset_300 > (176<<4) - bsize_301) {
+              if (!quiet_264)
+    		 printf("mvx out of range: searching for sync\n");
+              fault_272 = 1;
+            }
+            offset_300 = k_297 ? (((k_297-1)&2)<<2) : 0;
+            if ((ypos_295<<4) + (dy_232[(98-(index))]/2) + offset_300 < 0 ||(ypos_295<<4) + (dy_232[(98-(index))]/2) + offset_300 > (144<<4) - bsize_301) {
+              if (!quiet_264)   printf("mvy out of range: searching for sync\n");
+              fault_272 = 1;
+            }
+       }
+
+
+      if (fault_272) goto resync_319;
+
+    }
+    else { /* COD == 1 --> skipped MB */
+      if (1)
+        if (pict_type_265 == PCT_INTER)
+          flushbits(1);
+
+      mode_233[(98-(index))] = MODE_INTER;
+      
+      /* Reset CBP */
+      CBP_234[(98-(index))] = 0;
+
+      /* reset motion vectors */
+      dx_231[(98-(index))] = 0;
+      dy_232[(98-(index))] = 0;
+    }
+
+  reconstruct_mb_321:
+
+    /* pixel coordinates of top left corner of current macroblock */
+    /* one delayed because of OBMC */
+    if (xpos_294 > 0) {
+      bx_286 = 16*(xpos_294-1);
+      by_287 = 16*ypos_295;
+    }
+    else {
+      bx_286 = 176-16;
+      by_287 = 16*(ypos_295-1);
+    }
+
+    if (phase > 0) {
+
+      x_305 = bx_286/16+1;
+      y_306 = by_287/16+1;
+
+      /* motion compensation for P-frame */
+      if (mode_233[(98-(index))] == MODE_INTER || mode_233[(98-(index))] == MODE_INTER_Q)
+      {
+        // reconstruct(bx_286,by_287,1,0,0);
+	if (0)
+         printf(" (bx, by) = (%d,%d), (dx,dy) = (%d,%d) \n",bx_286,by_287,dx_231[(98-(index))],dy_232[(98-(index))]);
+      }
+
+     
+    } /* end : macro block decoding */
+
+    if (!COD_288) {
+
+
+      /* decode blocks */
+      for (comp_283=0; comp_283<6; comp_283++) {
+
+        clearblock(comp_283);
+        if (mode_233[(98-(index))] == MODE_INTRA || mode_233[(98-(index))] == MODE_INTRA_Q) { /* Intra */
+          bp_304 = ld_281->block[comp_283];
+          bp_304[0] = getbits(8);
+          if (0) {
+              printf("DC[%d]: (",comp_283);
+              printbits((int)bp_304[0],8,8);
+              printf("): %d\n",(int)bp_304[0]);
+          }
+
+          if (bp_304[0] == 128)
+            if (!quiet_264)
+              fprintf(stderr,"Illegal DC-coeff: 1000000\n");
+          if (bp_304[0] == 255)  /* Spec. in H.26P, not in TMN4 */
+            bp_304[0] = 128;
+          if ( (CBP_234[(98-(index))] & (1<<(6-1-comp_283))) ) {
+		  getblock(comp_283,0);
+          }
+        }
+        else { /* Inter */
+          if ( (CBP_234[(98-(index))] & (1<<(6-1-comp_283))) ) {
+		getblock(comp_283,1);
+          }
+
+        }
+        if (fault_272) goto resync_319;
+      }
+    }
+
+    /* advance to next macroblock */
+    fflush(stdout);
+
+    if (phase >= MBAmax_285 && !last_done_302) {
+      COD_288 = 1;
+      xpos_294 = 0;
+      ypos_295++;
+      last_done_302 = 1;
+      goto reconstruct_mb_321;
+    }
+
+      /* copy or add block data into P-picture */
+      /* inverse DCT */
+      for(comp_283=0; comp_283<6; comp_283++) {
+	int i;	
+        if (mode_233[(98-(index))] == MODE_INTRA || mode_233[(98-(index))] == MODE_INTRA_Q) {
+          if (comp_283 <4) { 
+            for (i=0;i<64;i++) { 
+              YBlock_228[(395-(4*index+3-comp_283))].data[i] = (int)ld_281->block[comp_283][i];
+	    }
+          } else if (comp_283 == 4) {
+            for (i=0;i<64;i++){
+		UBlock_229[(98-(index))].data[i] = (int)ld_281->block[comp_283][i];
+	    }
+          } else { 
+            for (i=0;i<64;i++) {
+		VBlock_230[(98-(index))].data[i] = (int)ld_281->block[comp_283][i];
+	    }
+          }
+        } else if ( (CBP_234[(98-(index))] & (1<<(6-1-comp_283))) ) {
+          /* No need to to do this for blocks with no coeffs */
+          if (comp_283 <4) { 
+            for (i=0;i<64;i++) {
+              YBlock_228[(395-(4*index+3-comp_283))].data[i] = (int)ld_281->block[comp_283][i];
+            }
+          }
+          else if (comp_283 == 4) {
+            for (i=0;i<64;i++) {
+              UBlock_229[(98-(index))].data[i] = (int)ld_281->block[comp_283][i];
+            }
+          }
+	  else { 
+            for (i=0;i<64;i++) {
+              VBlock_230[(98-(index))].data[i] = (int)ld_281->block[comp_283][i];
+            }
+          }
+        } else {
+          /* CBP == 0 */
+          if (comp_283 <4) {
+            for (i=0;i<64;i++) {
+              YBlock_228[(395-(4*index+3-comp_283))].data[i] = 0;
+            }
+          }
+          else if (comp_283 == 4) {
+            for (i=0;i<64;i++) {
+              UBlock_229[(98-(index))].data[i] = 0;
+            }
+          }
+          else {
+            for (i=0;i<64;i++) {
+              VBlock_230[(98-(index))].data[i] = 0;
+            }
+          }
+        }
+      } //end  for 
+
+   /* update dx,dy index */
+   dx_array_309[dx_index_307] = dx_231[(98-(index))];
+   dy_array_310[dy_index_308] = dy_232[(98-(index))];
+
+   dx_index_307++; dy_index_308++;
+   if(dx_index_307>=11)
+     dx_index_307-=11;
+
+   if(dy_index_308>=11)
+     dy_index_308-=11;
+
+   /* end of getMBs */
+
+    QP_235[(98-(index))] = quant_276; 	
+
+    if(phase==0) {
+      if (pict_type_265 == PCT_INTER) 
+        type_236 = 1;
+      else
+        type_236 = 0;
+     }
+
+     if (0 && phase==98)
+       framenum++;
+	}
+	}
+
+#ifdef MX_PROFILE
+/* Star 4 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 4;
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.ForkI31 (class CGCFork) */
+	}
+
+#ifdef MX_PROFILE
+/* Star 4 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 4;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 4) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.BlackHoleI13 (class CGCBlackHole) */
+/* This star generates no code */
+	}
+
+#ifdef MX_PROFILE
+/* Star 5 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 5;
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.ForkI79 (class CGCFork) */
+	}
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI25.ForkI18 (class CGCFork) */
+	}
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI19.ForkI18 (class CGCFork) */
+	}
+        { int sdfLoopCounter_14;for (sdfLoopCounter_14 = 0; sdfLoopCounter_14 < 99; sdfLoopCounter_14++) {
+
+#ifdef MX_PROFILE
+/* Star 5 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 5;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 5) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI19.H263DeQI6 (class CGCH263DeQ) */
+		doDeQuantizer(output_197.data,UBlock_229[input_246].data,QP_235[DeQP_247],mode_233[mode_248]);
+	input_246 += 1;
+	DeQP_247 += 1;
+	mode_248 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 6 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 6;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 6 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 6;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 6) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI19.InvZigzagBlockI11 (class CGCInvZigzagBlock) */
+		doInvZigzag(output_198.data,output_197.data);
+	}
+
+#ifdef MX_PROFILE
+/* Star 7 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 7;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 7 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 7;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 7) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.H263UnpackCBPI82 (class CGCH263UnpackCBP) */
+		if(CBP_234[input_263]&32) CBPY_224[(3-(3))] = 1;
+		else CBPY_224[(3-(3))] = 0;
+		if(CBP_234[input_263]&16) CBPY_224[(3-(2))] = 1;
+		else CBPY_224[(3-(2))] = 0;
+		if(CBP_234[input_263]&8) CBPY_224[(3-(1))] = 1;
+		else CBPY_224[(3-(1))] = 0;
+		if(CBP_234[input_263]&4) CBPY_224[(3-(0))] = 1;
+		else CBPY_224[(3-(0))] = 0;
+		if(CBP_234[input_263]&2) CBPU_225 = 1;
+		else CBPU_225 = 0;
+		if(CBP_234[input_263]&1) CBPV_226 = 1;
+		else CBPV_226 = 0;
+	input_263 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 8 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 8;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 8 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 8;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 8) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI25.H263DeQI6 (class CGCH263DeQ) */
+		doDeQuantizer(output_202.data,VBlock_230[input_251].data,QP_235[DeQP_252],mode_233[mode_253]);
+	input_251 += 1;
+	DeQP_252 += 1;
+	mode_253 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 9 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 9;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 9 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 9;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 9) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI25.InvZigzagBlockI11 (class CGCInvZigzagBlock) */
+		doInvZigzag(output_203.data,output_202.data);
+	}
+
+#ifdef MX_PROFILE
+/* Star 10 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 10;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 10 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 10;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 10) == 1)
+#endif
+	int i=0;
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI25.FixCBPIDCTBlockI22 (class CGCFixCBPIDCTBlock) */
+		if(CBPV_226){
+                	//doIDCT(output_206[output_255].data,output_203.data);
+			memcpy(idct_block_1.outBlock, output_206[output_255].data, 64*sizeof(short));
+			memcpy(idct_block_1.inBlock, output_203.data, 64*sizeof(short));
+
+			idct_block_1 = LIBCALL(idct_2, doIDCT, idct_block_1);
+
+			memcpy(output_206[output_255].data, idct_block_1.outBlock, 64*sizeof(short));
+			memcpy(output_203.data, idct_block_1.inBlock, 64*sizeof(short));
+		}
+		else if(mode_233[mode_254]==MODE_INTRA || mode_233[mode_254]==MODE_INTRA_Q) {
+			int i;
+			for(i=0; i<64; i++)
+				output_206[output_255].data[i] = output_203.data[0]>>3;
+		} else {
+			int i;
+			for(i=0; i<64; i++)
+				output_206[output_255].data[i] = 0;
+		}
+	mode_254 += 1;
+	output_255 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 11 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 11;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 11 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 11;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 11) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.RepeatI36 (class CGCRepeat) */
+	{
+		int i;
+		for (i = 0; i < 4; i++) {
+			output_210[(3-(i))] = mode_233[input_256];
+		}
+	}
+	input_256 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 12 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 12;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 12 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 12;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 12) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.RepeatI0 (class CGCRepeat) */
+	{
+		int i;
+		for (i = 0; i < 4; i++) {
+			output_191[(3-(i))] = QP_235[input_239];
+		}
+	}
+	input_239 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 13 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 13;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 13 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 13;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 13) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI19.FixCBPIDCTBlockI22 (class CGCFixCBPIDCTBlock) */
+		if(CBPU_225){
+                	//doIDCT(output_201[output_250].data,output_198.data);
+			memcpy(idct_block_2.outBlock, output_201[output_250].data, 64*sizeof(short));
+			memcpy(idct_block_2.inBlock, output_198.data, 64*sizeof(short));
+
+			idct_block_2 = LIBCALL(idct_2, doIDCT, idct_block_2);
+
+			memcpy(output_201[output_250].data, idct_block_2.outBlock, 64*sizeof(short));
+			memcpy(output_198.data, idct_block_2.inBlock, 64*sizeof(short));
+		}
+		else if(mode_233[mode_249]==MODE_INTRA || mode_233[mode_249]==MODE_INTRA_Q) {
+			int i;
+			for(i=0; i<64; i++)
+				output_201[output_250].data[i] = output_198.data[0]>>3;
+		} else {
+			int i;
+			for(i=0; i<64; i++)
+				output_201[output_250].data[i] = 0;
+		}
+	mode_249 += 1;
+	output_250 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 14 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 14;
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI13.ForkI18 (class CGCFork) */
+	}
+            { int sdfLoopCounter_15;for (sdfLoopCounter_15 = 0; sdfLoopCounter_15 < 4; sdfLoopCounter_15++) {
+
+#ifdef MX_PROFILE
+/* Star 14 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 14;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 14) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI13.H263DeQI6 (class CGCH263DeQ) */
+		doDeQuantizer(output_192.data,YBlock_228[input_240].data,output_191[DeQP_241],output_210[mode_242]);
+	input_240 += 1;
+	DeQP_241 += 1;
+	if (DeQP_241 >= 4)
+		DeQP_241 -= 4;
+	mode_242 += 1;
+	if (mode_242 >= 4)
+		mode_242 -= 4;
+	}
+
+#ifdef MX_PROFILE
+/* Star 15 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 15;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 15 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 15;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 15) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI13.InvZigzagBlockI11 (class CGCInvZigzagBlock) */
+		doInvZigzag(output_193.data,output_192.data);
+	}
+
+#ifdef MX_PROFILE
+/* Star 16 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 16;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 16 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 16;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 16) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.BlkDecI13.FixCBPIDCTBlockI22 (class CGCFixCBPIDCTBlock) */
+		if(CBPY_224[enable_244]){
+                	//doIDCT(output_196[output_245].data,output_193.data);
+			memcpy(idct_block_3.outBlock, output_196[output_245].data, 64*sizeof(short));
+			memcpy(idct_block_3.inBlock, output_193.data, 64*sizeof(short));
+
+			idct_block_3 = LIBCALL(idct_2, doIDCT, idct_block_3);
+
+			memcpy(output_196[output_245].data, idct_block_3.outBlock, 64*sizeof(short));
+			memcpy(output_193.data, idct_block_3.inBlock, 64*sizeof(short));
+		}
+		else if(output_210[mode_243]==MODE_INTRA || output_210[mode_243]==MODE_INTRA_Q) {
+			int i;
+			for(i=0; i<64; i++)
+				output_196[output_245].data[i] = output_193.data[0]>>3;
+		} else {
+			int i;
+			for(i=0; i<64; i++)
+				output_196[output_245].data[i] = 0;
+		}
+	mode_243 += 1;
+	if (mode_243 >= 4)
+		mode_243 -= 4;
+	enable_244 += 1;
+	if (enable_244 >= 4)
+		enable_244 -= 4;
+	output_245 += 1;
+	}
+
+#ifdef MX_PROFILE
+/* Star 17 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 17;
+#endif
+}} /* end repeat, depth 3*/
+}} /* end repeat, depth 2*/
+
+#ifdef MX_PROFILE
+/* Star 17 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 17;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 17) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.H263ReconI55 (class CGCH263Recon) */
+	int numMacroBlocks = 176*144/(16*16);
+	int k;
+
+#pragma 99 parallel private (k)
+{
+#pragma 99 for
+	for(k=0; k<numMacroBlocks; k++) {
+
+		// phase
+		int offset = numMacroBlocks-1-k;
+
+		int x_curr = (k*16)%176;
+		int y_curr = 16*((k*16)/176);
+		int dx, dy;
+
+		dx = dx_231[(98-(offset))];
+		dy = dy_232[(98-(offset))];
+
+		if(mode_233[CGC_MOD(98-(offset)+99,99)] == MODE_INTER || mode_233[CGC_MOD(98-(offset)+99,99)] == MODE_INTER_Q) {
+			// reconstruct luminance  
+      			reconBlockIntoImage(x_curr,y_curr,dx,dy,
+				(unsigned char *)outputY_215[prevY_257].data,output_196[(395-(4*offset+3))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+      			reconBlockIntoImage(x_curr+8,y_curr,dx,dy,
+				(unsigned char *)outputY_215[prevY_257].data,output_196[(395-(4*offset+2))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+      			reconBlockIntoImage(x_curr,y_curr+8,dx,dy,
+				(unsigned char *)outputY_215[prevY_257].data,output_196[(395-(4*offset+1))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+      			reconBlockIntoImage(x_curr+8,y_curr+8,dx,dy,
+				(unsigned char *)outputY_215[prevY_257].data,output_196[(395-(4*offset))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+
+			// reconstruct chrominance
+			dx = ( dx % 4 == 0 ? dx >> 1 : (dx>>1)|1 );
+			dy = ( dy % 4 == 0 ? dy >> 1 : (dy>>1)|1 );
+      			reconBlockIntoImage(x_curr/2,y_curr/2,dx,dy,
+				(unsigned char *)outputU_216[prevU_258].data,output_201[(98-(offset))].data,
+				(unsigned char *)outputU_216[outputU_261].data,176/2);
+      			reconBlockIntoImage(x_curr/2,y_curr/2,dx,dy,
+				(unsigned char *)outputV_217[prevV_259].data,output_206[(98-(offset))].data,
+				(unsigned char *)outputV_217[outputV_262].data,176/2);
+		} else {
+			// copy
+			copyBlockIntoImage(x_curr,y_curr,output_196[(395-(4*offset+3))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+			copyBlockIntoImage(x_curr+8,y_curr,output_196[(395-(4*offset+2))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+			copyBlockIntoImage(x_curr,y_curr+8,output_196[(395-(4*offset+1))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+			copyBlockIntoImage(x_curr+8,y_curr+8,output_196[(395-(4*offset))].data,
+				(unsigned char *)outputY_215[outputY_260].data,176);
+			copyBlockIntoImage(x_curr/2,y_curr/2,output_201[(98-(offset))].data,
+				(unsigned char *)outputU_216[outputU_261].data,176/2);
+			copyBlockIntoImage(x_curr/2,y_curr/2,output_206[(98-(offset))].data,
+				(unsigned char *)outputV_217[outputV_262].data,176/2);
+		}
+	}
+}
+
+	prevY_257 += 1;
+	if (prevY_257 >= 2)
+		prevY_257 -= 2;
+	prevU_258 += 1;
+	if (prevU_258 >= 2)
+		prevU_258 -= 2;
+	prevV_259 += 1;
+	if (prevV_259 >= 2)
+		prevV_259 -= 2;
+	outputY_260 += 1;
+	if (outputY_260 >= 2)
+		outputY_260 -= 2;
+	outputU_261 += 1;
+	if (outputU_261 >= 2)
+		outputU_261 -= 2;
+	outputV_262 += 1;
+	if (outputV_262 >= 2)
+		outputV_262 -= 2;
+	}
+
+#ifdef MX_PROFILE
+/* Star 18 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 18;
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.ForkI43 (class CGCFork) */
+	}
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.ForkI71 (class CGCFork) */
+	}
+
+#ifdef MX_PROFILE
+/* Star 18 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 18;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 18) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.pt_CGCSendM2 (class CGCSendM) */
+	MQ_SEND(port_Y_out, (char *)&outputY_215[input_313], 25344);
+	input_313 += 1;
+	if (input_313 >= 2)
+		input_313 -= 2;
+	}
+
+#ifdef MX_PROFILE
+/* Star 19 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 19;
+#endif
+
+#ifdef MX_PROFILE
+/* Star 19 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 19;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 19) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.pt_CGCSendM4 (class CGCSendM) */
+	MQ_SEND(port_V_out, (char *)&outputV_217[input_317], 6336);
+	input_317 += 1;
+	if (input_317 >= 2)
+		input_317 -= 2;
+	}
+
+#ifdef MX_PROFILE
+/* Star 20 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 20;
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.DecForDecI0.ForkI39 (class CGCFork) */
+	}
+
+#ifdef MX_PROFILE
+/* Star 20 started. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 20;
+#endif
+
+#ifdef PROFILE
+if (checkBlockTime(H263Dec2I3_task_info->task_id, 20) == 1)
+#endif
+	{  /* star H263Codec_clustering.H263Dec2I3.H263Dec2_GI3.pt_CGCSendM3 (class CGCSendM) */
+	MQ_SEND(port_U_out, (char *)&outputU_216[input_315], 6336);
+	input_315 += 1;
+	if (input_315 >= 2)
+		input_315 -= 2;
+	}
+
+#ifdef MX_PROFILE
+/* Star 21 ended. */
+*(volatile unsigned *)((MX_PROFILER_BASE) + 4) = 0x80000000 + 21;
+#endif
+input_246 = 0;
+DeQP_247 = 0;
+mode_248 = 0;
+input_263 = 0;
+input_251 = 0;
+DeQP_252 = 0;
+mode_253 = 0;
+mode_254 = 0;
+output_255 = 0;
+input_256 = 0;
+input_239 = 0;
+mode_249 = 0;
+output_250 = 0;
+input_240 = 0;
+output_245 = 0;
+
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

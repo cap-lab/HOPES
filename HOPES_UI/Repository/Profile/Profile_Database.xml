@@ -1,0 +1,1065 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_Profile xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <task name="H264Dec_VP_ReadFileH">
+        <mode name="Dafault">
+            <profile value="70224" unit="us" processorType="arm926ej-s"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="I_Frame">
+            <profile value="1170" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="A">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1" unit="cycle" processorType="PPE"/>
+            <profile value="1" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="B">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1" unit="cycle" processorType="PPE"/>
+            <profile value="1" unit="cycle" processorType="SPE"/>
+        </mode>
+        <mode name="Default2">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="0" unit="cycle" processorType="PPE"/>
+            <profile value="0" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="C">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1" unit="cycle" processorType="PPE"/>
+            <profile value="1" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="D">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1" unit="cycle" processorType="PPE"/>
+            <profile value="1" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="E">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1" unit="cycle" processorType="PPE"/>
+            <profile value="1" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="F">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1" unit="cycle" processorType="PPE"/>
+            <profile value="1" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_Decode">
+        <mode name="I_Frame">
+            <profile value="21540" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="21540" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_InterPredY">
+        <mode name="I_Frame">
+            <profile value="15840" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="3000" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_InterPredU">
+        <mode name="I_Frame">
+            <profile value="5070" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="1500" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_InterPredV">
+        <mode name="I_Frame">
+            <profile value="5070" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="1500" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_Deblock">
+        <mode name="I_Frame">
+            <profile value="6230" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="6230" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_WriteFileH">
+        <mode name="I_Frame">
+            <profile value="1250" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="1250" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_IntraPredY">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="15520" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_IntraPredU">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="2970" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_VP_IntraPredV">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="3600" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264Enc_ME_0">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="x264Enc_Encoder_1">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="x264Enc_Deblock_2">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="x264Enc_Init_3">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="x264Enc_VLC_4">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_VLDStream">
+        <mode name="Default">
+            <profile value="288532" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_DeQ">
+        <mode name="Default">
+            <profile value="283160" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_Stereo">
+        <mode name="Default">
+            <profile value="9670" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_Reorder">
+        <mode name="Default">
+            <profile value="10260" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_Antialias">
+        <mode name="Default">
+            <profile value="11627" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_Hybrid">
+        <mode name="Default">
+            <profile value="187503" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_Subband">
+        <mode name="Default">
+            <profile value="152030" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_WriteFileM">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="G723Dec">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="G723Enc">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="UserInput">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_ReadFileH">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_Decode">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_InterPredY">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_InterPredU">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_InterPredV">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_Deblock">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_WriteFileH">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_IntraPredY">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_IntraPredU">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="H264Dec_PHONE_IntraPredV">
+        <mode name="I_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Interrupt">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Control">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Producer">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="0" unit="cycle" processorType="PPE"/>
+            <profile value="0" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="Compute">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="1234" unit="ms" processorType="PPE"/>
+            <profile value="1234" unit="us" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="Printer">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="PPE_0"/>
+            <profile value="0" unit="cycle" processorType="SPE_0"/>
+            <profile value="0" unit="us" processorType="PPE"/>
+            <profile value="342" unit="cycle" processorType="SPE"/>
+        </mode>
+    </task>
+    <task name="Input">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Graph_Counter">
+        <mode name="SIN">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="COS">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Graph_Calculator">
+        <mode name="SIN">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="COS">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Graph_Display_Graph">
+        <mode name="SIN">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="COS">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_ReadImage">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_ContrastEnhancer">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_Smoother">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_Noising_C">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_Noising_S">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_Display_Image_C">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_Display_Image_S">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="ReadImage">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Sharpener">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Smoother">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Noising_C">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Noising_S">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Display_Image_C">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="Display_Image_S">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7"/>
+        </mode>
+    </task>
+    <task name="MatA">
+        <mode name="Default">
+            <profile value="10" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="MatB">
+        <mode name="Default">
+            <profile value="10" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="VecMul">
+        <mode name="Default">
+            <profile value="10" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Display">
+        <mode name="Default">
+            <profile value="10" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Image_Sharpener">
+        <mode name="Default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="DedupInit_SDF">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Fragment_SDF">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF1">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF2">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF3">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF4">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF5">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF6">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF7">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF8">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF9">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinment_SDF10">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF1">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF2">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF3">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF4">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF5">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF6">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF7">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF8">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF9">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Deduplicate_SDF10">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="FragmentRefinement_SDF10">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF1">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF2">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF3">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF4">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF5">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF6">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF7">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF8">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF9">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Compress_SDF10">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="Reorder_SDF">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="DedupWrapUp_SDF">
+        <mode name="default">
+            <profile value="20" unit="cycle" processorType="xeonphi_0"/>
+        </mode>
+    </task>
+    <task name="a">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="xeonphi_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="b">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="xeonphi_0"/>
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="ME_0">
+        <mode name="default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Encoder_1">
+        <mode name="default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Deblock_2">
+        <mode name="default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Init_3">
+        <mode name="default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="VLC_4">
+        <mode name="default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264_ME_0">
+        <mode name="Default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264_Encoder_1">
+        <mode name="Default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264_Deblock_2">
+        <mode name="Default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264_Init_3">
+        <mode name="Default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264_VLC_4">
+        <mode name="Default">
+            <profile value="100" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_ReadFileH">
+        <mode name="I_Frame">
+            <profile value="233" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="233" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_Decode">
+        <mode name="I_Frame">
+            <profile value="1501" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="1501" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_InterPredY">
+        <mode name="I_Frame">
+            <profile value="487" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="487" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_InterPredU">
+        <mode name="I_Frame">
+            <profile value="94" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="94" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_InterPredV">
+        <mode name="I_Frame">
+            <profile value="98" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="98" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_Deblock">
+        <mode name="I_Frame">
+            <profile value="541" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="541" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_WriteFileH">
+        <mode name="I_Frame">
+            <profile value="801" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="801" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_IntraPredY">
+        <mode name="I_Frame">
+            <profile value="260" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_IntraPredU">
+        <mode name="I_Frame">
+            <profile value="43" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="h264decoder_IntraPredV">
+        <mode name="I_Frame">
+            <profile value="42" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+        <mode name="P_Frame">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264dec_ME_0">
+        <mode name="Default">
+            <profile value="110090" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264dec_Encoder_1">
+        <mode name="Default">
+            <profile value="31754" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264dec_Deblock_2">
+        <mode name="Default">
+            <profile value="2679" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264dec_Init_3">
+        <mode name="Default">
+            <profile value="903" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="x264dec_VLC_4">
+        <mode name="Default">
+            <profile value="11963" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Util_BitStreamSyntaxParser">
+        <mode name="Default">
+            <profile value="1085" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_MVR_MedianOfThreeLeftAndTopAndTopRight">
+        <mode name="Default">
+            <profile value="2272" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_DCRInvPred_CHROMA_8x8_U">
+        <mode name="Default">
+            <profile value="447" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Util_DCAC_YUV_Split">
+        <mode name="Default">
+            <profile value="280" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IS_ZigzagOrAlternateHorizontalVertical_8x8_U">
+        <mode name="Default">
+            <profile value="1092" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IAP_AdaptiveHorizontalOrVerticalPred_8x8_U">
+        <mode name="Default">
+            <profile value="382" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IQ_QSAndQmatrixMp4vOrH263Scaler_U">
+        <mode name="Default">
+            <profile value="1066" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IDCT2D_ISOIEC_23002_1_U">
+        <mode name="Default">
+            <profile value="1477" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_PictureReconstruction_Saturation_U">
+        <mode name="Default">
+            <profile value="311" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Util_merge_YUV">
+        <mode name="Default">
+            <profile value="310" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Mgnt_FB_U">
+        <mode name="Default">
+            <profile value="4270" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_Interp_HalfpelBilinearRoundingControl_U">
+        <mode name="Default">
+            <profile value="2007" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_DCRInvPred_CHROMA_8x8_V">
+        <mode name="Default">
+            <profile value="414" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IS_ZigzagOrAlternateHorizontalVertical_8x8_V">
+        <mode name="Default">
+            <profile value="1062" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IAP_AdaptiveHorizontalOrVerticalPred_8x8_V">
+        <mode name="Default">
+            <profile value="391" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IQ_QSAndQmatrixMp4vOrH263Scaler_V">
+        <mode name="Default">
+            <profile value="1067" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IDCT2D_ISOIEC_23002_1_V">
+        <mode name="Default">
+            <profile value="1477" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Mgnt_FB_V">
+        <mode name="Default">
+            <profile value="4226" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_Interp_HalfpelBilinearRoundingControl_V">
+        <mode name="Default">
+            <profile value="1979" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_PictureReconstruction_Saturation_V">
+        <mode name="Default">
+            <profile value="297" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_DCRInvPred_LUMA_16x16_Y">
+        <mode name="Default">
+            <profile value="1692" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IS_ZigzagOrAlternateHorizontalVertical_8x8_Y">
+        <mode name="Default">
+            <profile value="4384" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IAP_AdaptiveHorizontalOrVerticalPred_16x16_Y">
+        <mode name="Default">
+            <profile value="391" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IQ_QSAndQmatrixMp4vOrH263Scaler_Y">
+        <mode name="Default">
+            <profile value="4880" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_IDCT2D_ISOIEC_23002_1_Y">
+        <mode name="Default">
+            <profile value="800" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_PictureReconstruction_Saturation_Y">
+        <mode name="Default">
+            <profile value="1188" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Algo_Interp_HalfpelBilinearRoundingControl_Y">
+        <mode name="Default">
+            <profile value="7964" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="mpeg4_Mgnt_FB_Y">
+        <mode name="Default">
+            <profile value="16060" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="MP3Dec_WriteFile">
+        <mode name="Default">
+            <profile value="28458" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="ReadFileH">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Decode">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="InterPredY">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="InterPredU">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="InterPredV">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="Deblock">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="WriteFileH">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="IntraPredY">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="IntraPredU">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <task name="IntraPredV">
+        <mode name="default">
+            <profile value="0" unit="cycle" processorType="intel_i7_0"/>
+        </mode>
+    </task>
+    <comm timeunit="ms" src="arm926ej-s" sizeunit="B" size="1" settingcost="1" dst="arm926ej-s" cost="1"/>
+    <comm timeunit="us" src="arm926ej-s" sizeunit="B" size="10" settingcost="9" dst="arm926ej-s-dsp" cost="1"/>
+    <comm timeunit="ms" src="arm926ej-s-dsp" sizeunit="B" size="1" settingcost="9999" dst="arm926ej-s-dsp" cost="1"/>
+    <comm timeunit="cycle" src="arm926ej-s-dsp" sizeunit="B" size="4" settingcost="4" dst="arm926ej-s" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s-dsp" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s-dsp" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_0" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_1" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_1" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_0" cost="0"/>
+    <comm timeunit="us" src="arm926ej-s_1" sizeunit="B" size="0" settingcost="0" dst="arm926ej-s_1" cost="0"/>
+    <comm timeunit="us" src="PPE_0" sizeunit="B" size="0" settingcost="0" dst="PPE_0" cost="0"/>
+    <comm timeunit="us" src="PPE_0" sizeunit="B" size="0" settingcost="0" dst="SPE_0" cost="0"/>
+    <comm timeunit="us" src="SPE_0" sizeunit="B" size="0" settingcost="0" dst="PPE_0" cost="0"/>
+    <comm timeunit="us" src="SPE_0" sizeunit="B" size="0" settingcost="0" dst="SPE_0" cost="0"/>
+    <comm timeunit="us" src="intel_i7_0" sizeunit="B" size="0" settingcost="0" dst="intel_i7_0" cost="0"/>
+    <comm timeunit="us" src="xeonphi_0" sizeunit="B" size="0" settingcost="0" dst="xeonphi_0" cost="0"/>
+    <comm timeunit="us" src="xeonphi_0" sizeunit="B" size="0" settingcost="0" dst="intel_i7_0" cost="0"/>
+    <comm timeunit="us" src="intel_i7_0" sizeunit="B" size="0" settingcost="0" dst="xeonphi_0" cost="0"/>
+</CIC_Profile>
+

@@ -1,0 +1,23 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "delay" int "32"
+Star "./icon/FIR.icon" I0 248 100 0
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "0 [delay] 1" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "1"
+Star "./icon/Hilbert.icon" I3 248 188 0
+StarParameter 5 "procId" INT "-1" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "1" "N" INT "2*delay + 1"
+Star "./icon/RectToCx.icon" I6 316 148 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I10 180 164 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "0.70710678118654752441"
+Star "./library/Peace/Port/inport.ilink" I13 136 164 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I15 388 164 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I17 "" Star I0 "signalOut" Star I6 "real" 1 304 132 316 172 
+Line I18 "" Star I3 "signalOut" Star I6 "imag" 1 304 220 316 188 
+Line I19 "" Star I10 "output" Star I0 "signalIn" 1 236 180 248 132 
+Line I20 "" Star I10 "output" Star I3 "signalIn" 1 236 180 248 220 
+Line I21 "" Star I13 "output" Star I10 "input" 1 168 180 180 180 
+Line I22 "" Star I6 "output" Star I15 "input" 1 372 180 388 180 
+CommText 148 24 20 -16777216 "Phase splitter: recover analytic \nsingal from the real part"

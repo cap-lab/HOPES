@@ -1,0 +1,131 @@
+/************************************
+ *
+ * File : Ant.cic
+ * Date : Sep 18, 2012 1:47 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <math.h>
+#include "mp3_struct.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+
+static REAL Ci[8] = {-0.6,-0.535,-0.33,-0.185,-0.095,-0.041,-0.0142,-0.0037};
+
+
+static void III_antialias(
+    REAL                 xr[SBLIMIT][SSLIMIT],
+    REAL                 hybridIn[SBLIMIT][SSLIMIT],
+    gr_info_s    *gr_info,
+    frame_params        *fr_ps)
+{
+    static int    init = 1;
+    static REAL   ca[8], cs[8];
+    REAL          bu, bd;       /* upper and lower butterfly inputs */
+    int           ss, sb, sblim;
+
+    if (init == 1) {
+        int     i;
+        REAL    sq;
+        for (i = 0; i < 8; i++) {
+            sq = sqrt(1.0 + Ci[i] * Ci[i]);
+            cs[i] = 1.0 / sq;
+            ca[i] = Ci[i] / sq;
+        }
+        init = 0;
+    }
+
+    /* Clear all inputs */
+    for(sb=0;sb<SBLIMIT;sb++)
+        for(ss=0;ss<SSLIMIT;ss++)
+            hybridIn[sb][ss] = xr[sb][ss];
+
+    if  (gr_info->window_switching_flag && (gr_info->block_type == 2) &&
+                        !gr_info->mixed_block_flag )
+        return;
+
+    if ( gr_info->window_switching_flag && gr_info->mixed_block_flag &&
+                        (gr_info->block_type == 2))
+        sblim = 1;
+    else
+        sblim = SBLIMIT-1;
+
+    /*
+     * 31 alias-reduction operations between each pair of sub-bands
+     * with 8 butterflies between each pair
+     */
+    for (sb = 0; sb < sblim; sb++)
+        for (ss = 0; ss < 8; ss++) {
+            bu = xr[sb][17-ss];
+            bd = xr[sb+1][ss];
+            hybridIn[sb][17-ss] = (bu * cs[ss]) - (bd * ca[ss]);
+            hybridIn[sb+1][ss] = (bd * cs[ss]) + (bu * ca[ss]);
+        }
+}
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+STATIC Packet3 Packet;
+STATIC struct MP3DeQData output_8;
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_input, (unsigned char*)&Packet, sizeof(Packet3));
+
+    III_antialias(Packet.output.data, output_8.data, &Packet.groupInformation, &Packet.frameHeader);
+
+    memcpy(&Packet.output, &output_8, sizeof(struct MP3DeQData));
+
+    MQ_SEND(port_output, (unsigned char*)&Packet, sizeof(Packet3));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

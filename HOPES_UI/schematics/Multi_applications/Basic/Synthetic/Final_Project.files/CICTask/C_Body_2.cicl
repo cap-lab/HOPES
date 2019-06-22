@@ -1,0 +1,47 @@
+// You SHOULD NOT forget to use the access modifier "static"
+
+ 
+LIBFUNC(void, init, void) {
+  //.. something to do for initialization
+}
+ 
+LIBFUNC(void, wrapup, void) {
+  //.. something to do for finalization
+}
+
+LIBFUNC(int, processChar, char input) {
+  //.. something to do for finalization
+
+  if(input == 'w')
+  {
+	LIBCALL(L_Motor, goForward);
+	LIBCALL(R_Motor, goForward);
+  }
+  else if(input== 'x')
+  {
+	LIBCALL(L_Motor, goBackward);
+	LIBCALL(R_Motor, goBackward);
+  }
+  else if(input == 'a')
+  {
+	LIBCALL(L_Motor, turnLeft);
+	LIBCALL(R_Motor, turnLeft);
+  }
+  else if(input == 'd')
+  {
+	LIBCALL(L_Motor, turnRight);
+	LIBCALL(R_Motor, turnRight);
+  }
+  else if(input == 's')
+  {
+	LIBCALL(L_Motor, Stop);
+	LIBCALL(R_Motor, Stop);
+  }
+  else if(input == 'q')
+  {
+	LIBCALL(L_Motor, Quit);
+	LIBCALL(R_Motor, Quit);
+  }
+  return 0;
+}
+

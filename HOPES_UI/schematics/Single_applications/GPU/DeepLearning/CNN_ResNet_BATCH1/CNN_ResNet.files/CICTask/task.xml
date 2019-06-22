@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="CNN_ResNet">
+  <setting_list>
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="ReadImage" type="Computational">
+      <config>
+        <location x="80" y="220" width="80" height="60" />
+        <parameter name="CICFile" value="ReadImage.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="-I/home/sindong008/cuda/include" />
+        <parameter name="LinkFlags" value="-lcublas -L/home/sindong008/cuda/lib64 -lcudnn -lcurand -lcudart" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="out_imgpath" type="fifo" sample_size="100" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1000" />
+        </port>
+        <port id="1" export="false" name="out_label" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1000" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Layer" type="Loop">
+      <config>
+        <location x="376" y="220" width="80" height="60" />
+        <parameter name="CICFile" value="Layer/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="DATA" />
+        <parameter name="LoopCount" value="1000" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_imgpath" type="fifo" sample_size="100" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1000" />
+        </port>
+        <port id="1" export="false" name="in_label" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1000" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out_result" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1000" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="Layer" macroNodePort="in_imgpath" direction="In" insideTask="ReadData" insideTaskPort="input_image_path" portType="fifo" portMapType="distributing" />
+        <portMap macroNode="Layer" macroNodePort="in_label" direction="In" insideTask="ReadData" insideTaskPort="input_label" portType="fifo" portMapType="distributing" />
+        <portMap macroNode="Layer" macroNodePort="out_result" direction="Out" insideTask="Delta" insideTaskPort="output_result" portType="fifo" portMapType="distributing" />
+      </portMap_list>
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="PrintResult" type="Computational">
+      <config>
+        <location x="648" y="220" width="80" height="40" />
+        <parameter name="CICFile" value="PrintResult.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_result" type="fifo" sample_size="4" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1000" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="ReadImage" src_port="out_imgpath" dst_task="Layer" dst_port="in_imgpath" size="100000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="160" y="240" />
+        <edge id="1" x="376" y="240" />
+      </edge_list>
+    </channel>
+    <channel src_task="ReadImage" src_port="out_label" dst_task="Layer" dst_port="in_label" size="4000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="160" y="260" />
+        <edge id="1" x="376" y="260" />
+      </edge_list>
+    </channel>
+    <channel src_task="Layer" src_port="out_result" dst_task="PrintResult" dst_port="in_result" size="4000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="456" y="240" />
+        <edge id="1" x="648" y="240" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+</cic_manual>
+

@@ -1,0 +1,55 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "numInputs" int "512"
+Parameter "order" int "16"
+Parameter "log2resolution" int "7"
+Star "./icon/inport.icon" I0 8 64 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 728 56 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/WaveForm.icon" I4 4 96 0
+StarParameter 5 "procId" INT "-1" "value" FLOATARRAY "1 -1" "haltAtEnd" INT "NO" "periodic" INT "YES" "period" INT "0"
+Star "./icon/Mpy2.icon" I6 52 64 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Burg.icon" I10 108 48 0
+StarParameter 3 "procId" INT "-1" "order" INT "order" "numInputs" INT "numInputs"
+Star "./icon/Gain.icon" I15 184 56 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "-1.0"
+Star "./icon/Add2.icon" I18 320 56 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Chop.icon" I22 244 40 0
+StarParameter 5 "procId" INT "-1" "nread" INT "order" "nwrite" INT "order + 1" "offset" INT "1" "use_past_inputs" INT "NO"
+Star "./icon/FFTCx.icon" I25 396 40 0
+StarParameter 4 "procId" INT "-1" "order" INT "log2resolution" "size" INT "order + 1" "direction" INT "1"
+Star "./icon/Impulse.icon" I28 244 80 0
+StarParameter 4 "procId" INT "-1" "level" FLOAT "1.0" "period" INT "order + 1" "delay" INT "0"
+Star "./icon/Mpy2.icon" I30 480 56 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Reciprocal.icon" I34 548 40 0
+StarParameter 2 "procId" INT "-1" "magLimit" FLOAT "10000.0"
+Star "./icon/Mpy2.icon" I37 644 56 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Repeat.icon" I41 300 144 0
+StarParameter 2 "procId" INT "-1" "numTimes" INT "2^ log2resolution"
+Star "./icon/Chop.icon" I44 216 144 0
+StarParameter 5 "procId" INT "-1" "nread" INT "order + 1" "nwrite" INT "1" "offset" INT "- order" "use_past_inputs" INT "NO"
+Star "./icon/BlackHole.icon" I47 164 100 0
+StarParameter 1 "procId" INT "-1"
+Line I49 "" Star I0 "output" Star I6 "input#1" 1 40 80 52 80 
+Line I50 "" Star I6 "output" Star I10 "input" 1 108 80 108 80 
+Line I51 "" Star I10 "lp" Star I15 "input" 1 164 72 184 72 
+Line I52 "" Star I22 "input" Star I15 "output" 1 244 72 240 72 
+Line I53 "" Star I22 "output" Star I18 "input#1" 1 300 72 320 72 
+Line I54 "" Star I18 "output" Star I25 "input" 1 376 72 396 72 
+Line I55 "" Star I25 "output" Star I30 "input#1" 1 452 72 480 72 
+Line I56 "" Star I25 "output" Star I30 "input#2" 1 452 72 507 100 
+Line I57 "" Star I30 "output" Star I34 "input" 1 536 72 548 72 
+Line I58 "" Star I34 "output" Star I37 "input#1" 1 604 72 644 72 
+Line I59 "" Star I37 "output" Star I2 "input" 1 700 72 728 72 
+Line I60 "" Star I41 "output" Star I37 "input#2" 2 352 176 672 176 671 100 
+Line I61 "" Star I44 "output" Star I41 "input" 1 272 176 300 176 
+Line I62 "" Star I28 "output" Star I18 "input#2" 1 300 112 347 100 
+Line I63 "" Star I10 "errPower" Star I44 "input" 2 164 88 168 88 216 176 
+Line I64 "" Star I10 "refl" Star I47 "input" 1 164 80 164 104 
+Line I65 "" Star I4 "output" Star I6 "input#2" 1 60 128 79 108 

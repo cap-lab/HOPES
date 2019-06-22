@@ -1,0 +1,97 @@
+/************************************
+ *
+ * File : PrePro.cic
+ * Date : Jun 1, 2018 4:43 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+
+#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv/highgui.h>
+
+#include "format.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+STATIC int port_out_d;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC CapMatColor inputMat;
+STATIC CapMat capMat;
+STATIC CapMat capMat2;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+    port_out_d = PORT_INITIALIZE(TASK_ID, "out_d");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&inputMat, sizeof(CapMatColor));
+        
+    cv::Mat currMat = cv::Mat(imgHeight, imgWidth, CV_8UC3, inputMat.data);
+    //imshow("Input", currMat);
+    
+    cv::Mat grey(imgHeight, imgWidth, CV_8UC1);
+        
+    cv::cvtColor(currMat, grey, CV_BGR2GRAY);
+    
+    //capImg = grey.clone();
+    //imshow("Input",grey);    
+    //cv::waitKey(5000);
+
+    memcpy(capMat.data, grey.data, imgHeight*imgWidth);
+    memcpy(capMat2.data, grey.data, imgHeight*imgWidth);
+ 
+    MQ_SEND(port_out, (unsigned char*)&capMat, sizeof(CapMat));
+    MQ_SEND(port_out_d, (unsigned char*)&capMat2, sizeof(CapMat));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

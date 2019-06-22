@@ -1,0 +1,104 @@
+{
+  "mProcessorList": [
+    {
+      "mProcessorModelName": "i7",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 4,
+      "mMaxCoreSize": 4,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "xeonPhi",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 64,
+      "mMaxCoreSize": 64,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "cuda_cpu",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "cuda_gpu_sm20",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "arm926ej-s",
+      "mProcessorOS": "UC_OS",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "arm926ej-s-dsp",
+      "mProcessorOS": "UC_OS",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "A7",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 4,
+      "mMaxCoreSize": 4,
+      "mClockSpeed": 1500,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "A15",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 4,
+      "mMaxCoreSize": 4,
+      "mClockSpeed": 2100,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "atmega328p_16Mhz",
+      "mProcessorOS": "NO_OS",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 16,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "atmega328p_8Mhz",
+      "mProcessorOS": "NO_OS",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 8,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    }
+  ]
+}

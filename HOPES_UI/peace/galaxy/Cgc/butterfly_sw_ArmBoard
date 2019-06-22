@@ -1,0 +1,80 @@
+Domain "CGC"
+Target "CGC-ArmBoard"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "DEF #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "interfaceArch" STRING "Shared memory"
+TargetParameter "sndNum" STRING "1"
+TargetParameter "rcvNum" STRING "1"
+TargetParameter "sndFWL" STRING "8"
+TargetParameter "rcvFWL" STRING "6"
+Run 10
+Star "./icon/Ramp.icon" I0 8 8 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0 / 512.0" "value" FLOAT "0.0"
+Star "./icon/Gain.icon" I2 120 80 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "4.0"
+Star "./icon/Gain.icon" I5 120 152 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1/12"
+Star "./icon/MCos.icon" I8 200 64 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/MSin.icon" I11 200 136 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I14 440 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I18 352 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I22 504 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add.icon" I26 480 272 2
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I29 352 80 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "-2.0"
+Star "./icon/MPolarToRect.icon" I32 304 240 2
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Fork.icon" I37 128 16 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/BlackHole.icon" I40 592 168 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/ArmBoardSMSnd.icon" I42 592 16 0
+StarParameter 2 "procId" INT "-1" "id" INT "0"
+Star "./icon/ArmBoardSMRcv.icon" I46 592 240 2
+StarParameter 2 "procId" INT "-1" "id" INT "0"
+Star "./icon/ConstInt.icon" I50 472 48 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Star "./icon/ArmBoardDisplay.icon" I52 80 240 2
+StarParameter 8 "procId" INT "-1" "maxX" FLOAT "4.0" "minX" FLOAT "-3.0" "maxY" FLOAT "4.0" "minY" FLOAT "-4.0" "lastX" INT "160" "lastY" INT "120" "drawLine" INT "1"
+Line I55 "" Star I2 "output" Star I8 "input" 1 176 95 200 96 
+Line I56 "" Star I5 "output" Star I11 "input" 1 176 167 200 168 
+Line I57 "" Star I11 "output" Star I18 "input#1" 1 328 168 352 167 
+Line I58 "" Star I18 "output" Star I14 "input#1" 1 408 167 440 167 
+Line I59 "" Star I14 "output" Star I22 "input#1" 1 496 167 504 167 
+Line I60 "" Star I11 "output" Star I18 "input#2" 1 328 168 379 195 
+Line I61 "" Star I18 "output" Star I14 "input#2" 2 408 167 408 192 467 195 
+Line I62 "" Star I8 "output" Star I29 "input" 1 328 96 352 95 
+Line I63 "" Star I26 "output" Star I32 "magnitude" 1 480 288 432 288 
+Line I64 "" Star I11 "output" Star I22 "input#2" 3 328 168 328 208 528 208 531 195 
+Line I65 "" Star I22 "output" Star I26 "input" 2 560 167 560 288 536 288 
+Line I66 "" Star I29 "output" Star I26 "input" 3 408 95 576 96 576 288 536 288 
+Line I67 "" Star I0 "output" Star I37 "input" 1 104 40 128 31 
+Line I68 "" Star I37 "output" Star I2 "input" 4 184 31 184 64 104 64 104 96 120 95 
+Line I69 "" Star I37 "output" Star I5 "input" 4 184 31 184 64 104 64 104 168 120 167 
+Line I70 "" Star I37 "output" Star I32 "phase" 6 184 31 184 64 104 64 104 216 464 216 464 272 432 272 
+Line I71 "" Star I37 "output" Star I42 "input" 1 184 31 592 32 
+Line I72 "" Star I46 "output" Star I26 "input" 1 592 288 536 288 
+Line I73 "" Star I46 "arcOut" Star I40 "input" 1 592 272 592 172 
+Line I74 "" Star I42 "arcOut" Star I46 "arcIn" 1 720 48 720 272 
+Line I75 "" Star I42 "arcIn" Star I50 "output" 1 592 48 559 64 
+Line I76 "" Star I52 "inputY" Star I32 "y" 1 176 272 304 272 
+Line I77 "" Star I32 "x" Star I52 "inputX" 1 304 288 176 288 

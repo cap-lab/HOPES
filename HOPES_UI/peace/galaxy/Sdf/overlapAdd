@@ -1,0 +1,23 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "inFrameSize" int "128"
+Parameter "outFrameSize" int "64"
+Star "./icon/inport.icon" I0 8 52 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 296 16 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Chop.icon" I4 148 0 0
+StarParameter 5 "procId" INT "-1" "nread" INT "inFrameSize" "nwrite" INT "outFrameSize" "offset" INT "0" "use_past_inputs" INT "YES"
+Star "./icon/Chop.icon" I7 148 72 0
+StarParameter 5 "procId" INT "-1" "nread" INT "inFrameSize" "nwrite" INT "outFrameSize" "offset" INT "- outFrameSize" "use_past_inputs" INT "YES"
+Star "./icon/Fork2.icon" I10 68 52 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add2.icon" I14 220 16 0
+StarParameter 1 "procId" INT "-1"
+Line I18 "" Star I10 "output#1" Star I4 "input" 1 121 60 148 32 
+Line I19 "" Star I10 "output#2" Star I7 "input" 1 121 76 148 104 
+Line I20 "" Star I0 "output" Star I10 "input" 1 40 68 68 68 
+Line I21 "" Star I4 "output" Star I14 "input#1" 1 204 32 220 32 
+Line I22 "outFrameSize" Star I7 "output" Star I14 "input#2" 2 204 104 240 104 247 60 
+Line I23 "" Star I14 "output" Star I2 "input" 1 276 32 296 32 

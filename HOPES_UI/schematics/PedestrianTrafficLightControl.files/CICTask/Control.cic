@@ -1,0 +1,152 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Apr 30, 2018 11:17 AM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_RED 0
+#define ID_STATE_GREEN 1
+#define ID_STATE_RED_PENDING 2
+#define ID_TRANSITION_TRANSITION_GREENTORED 0
+#define ID_TRANSITION_TRANSITION_REDTOREDPENDING 1
+#define ID_TRANSITION_TRANSITION_REDPENDINGTOGREEN 2
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_pedestrian_in;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state_0;
+// ##VARIABLE_SECTION::END
+
+STATIC int timer_id = 0;
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_pedestrian_in = PORT_INITIALIZE(TASK_ID, "pedestrian_in");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state_0 = ID_STATE_RED;
+// ##INIT_SECTION::END
+
+
+    // TODO: task initialize code
+
+}
+
+//-----------------------------------
+// hierarchical code
+//-----------------------------------
+// ##HIERARCHICAL_SECTION::START
+// ##HIERARCHICAL_SECTION::END
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add trigerring code here.
+
+	switch( current_state_0 )
+	{
+	case ID_STATE_RED:
+		{
+			int pedestrian_in_buf = 0;
+			int ret_pedestrian_in = MQ_AVAILABLE(port_pedestrian_in);
+			if(ret_pedestrian_in > 0)	MQ_RECEIVE(port_pedestrian_in, (unsigned char*)&pedestrian_in_buf, sizeof(int));
+			if(pedestrian_in_buf == 1)
+			{
+				// Add exit code for ID_STATE_RED state here.
+
+				// Add transition code for "from ID_STATE_RED state to ID_STATE_RED_PENDING state" here.
+				
+
+				// State transition
+				current_state_0 = ID_STATE_RED_PENDING;
+
+				// Add enter code for ID_STATE_RED_PENDING state here.
+				timer_id = SYS_REQ(SET_TIMER, 5, "S");
+			}
+		}
+		break;
+	case ID_STATE_GREEN:
+		{
+			if(SYS_REQ(GET_TIMER_ALARMED, timer_id) == 1)
+			{
+				// Add exit code for ID_STATE_GREEN state here.
+
+				// Add transition code for "from ID_STATE_GREEN state to ID_STATE_RED state" here.
+
+				// State transition
+				current_state_0 = ID_STATE_RED;
+
+				// Add enter code for ID_STATE_RED state here.
+				SYS_REQ(RUN_TASK, "DisplayRed");
+
+			}
+		}
+		break;
+	case ID_STATE_RED_PENDING:
+		{
+			if(SYS_REQ(GET_TIMER_ALARMED, timer_id) == 1)
+			{
+				// Add exit code for ID_STATE_RED_PENDING state here.
+
+				// Add transition code for "from ID_STATE_RED_PENDING state to ID_STATE_GREEN state" here.
+
+				// State transition
+				current_state_0 = ID_STATE_GREEN;
+
+				// Add enter code for ID_STATE_GREEN state here.
+				timer_id = SYS_REQ(SET_TIMER, 7, "S");
+				SYS_REQ(RUN_TASK, "DisplayGreen");
+			}
+		}
+		break;
+	}
+// ##GO_SECTION::END
+
+
+    // TODO: task main code
+
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

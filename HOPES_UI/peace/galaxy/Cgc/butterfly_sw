@@ -1,0 +1,64 @@
+Domain "CGC"
+Target "CGC-ARMulator"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PTOLEMY_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Star "./icon/Ramp.icon" I0 8 8 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "1.0 / 512.0" "value" FLOAT "0.0"
+Star "./icon/Gain.icon" I2 120 80 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "4.0"
+Star "./icon/Gain.icon" I5 120 152 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "1/12"
+Star "./icon/MCos.icon" I8 200 64 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/MSin.icon" I11 200 136 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I14 440 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I18 352 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I22 504 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I26 352 80 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "-2.0"
+Star "./icon/Fork.icon" I29 128 16 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/outport.icon" I32 584 16 0
+StarParameter 4 "name" string "output1" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I34 584 80 0
+StarParameter 4 "name" string "output2" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I36 584 152 0
+StarParameter 4 "name" string "output3" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I38 584 48 0
+StarParameter 4 "name" string "phaseOut" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I40 "" Star I2 "output" Star I8 "input" 1 176 95 200 96 
+Line I41 "" Star I5 "output" Star I11 "input" 1 176 167 200 168 
+Line I42 "" Star I11 "output" Star I18 "input#1" 1 328 168 352 167 
+Line I43 "" Star I18 "output" Star I14 "input#1" 1 408 167 440 167 
+Line I44 "" Star I14 "output" Star I22 "input#1" 1 496 167 504 167 
+Line I45 "" Star I11 "output" Star I18 "input#2" 1 328 168 379 195 
+Line I46 "" Star I18 "output" Star I14 "input#2" 2 408 167 408 192 467 195 
+Line I47 "" Star I8 "output" Star I26 "input" 1 328 96 352 95 
+Line I48 "" Star I11 "output" Star I22 "input#2" 3 328 168 328 208 528 208 531 195 
+Line I49 "" Star I0 "output" Star I29 "input" 1 104 40 128 31 
+Line I50 "" Star I29 "output" Star I2 "input" 4 184 31 184 64 104 64 104 96 120 95 
+Line I51 "" Star I29 "output" Star I5 "input" 4 184 31 184 64 104 64 104 168 120 167 
+Line I52 "" Star I29 "output" Star I32 "input" 1 184 31 584 32 
+Line I53 "" Star I26 "output" Star I34 "input" 1 408 95 584 96 
+Line I54 "" Star I22 "output" Star I36 "input" 1 560 167 584 168 
+Line I55 "" Star I29 "output" Star I38 "input" 1 184 31 584 64 

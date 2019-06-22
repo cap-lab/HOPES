@@ -1,0 +1,8 @@
+Platform
+Core
+"VRep_BubbleRob"
+68 72
+"./platform/iconImage/VRep_BubbleRob.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "AHBMasterOut"

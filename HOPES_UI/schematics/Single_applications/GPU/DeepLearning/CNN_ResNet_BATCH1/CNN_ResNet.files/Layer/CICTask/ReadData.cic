@@ -1,0 +1,131 @@
+/************************************
+ *
+ * File : ReadData.cic
+ * Date : Oct 30, 2018 2:37 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+#include "cuda.h"
+#include "weight.h"
+
+// ##DEFINE_SECTION::START
+#define BATCH 1
+
+#define INPUT_WIDTH 224
+#define INPUT_HEIGHT 224
+#define INPUT_CHANNEL 3
+
+#define INPUT_SIZE (INPUT_WIDTH * INPUT_HEIGHT * INPUT_CHANNEL)
+#define NUM_CLASSES 1000
+#define TEST_ITER   1000
+
+#define Printopt 0
+// ##DEFINE_SECTION::END
+
+static char test_Image_Path[BATCH][100];
+static int test_Label[BATCH];
+
+static float test_Image[BATCH][INPUT_SIZE];
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input_image;
+STATIC int port_input_label;
+STATIC int port_input_block;
+STATIC int port_output_image;
+STATIC int port_output_label;
+STATIC int port_output_chunkindex;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+static const char* filename;
+
+TASK_INIT
+{
+	init_weight();
+	cudnn_handle_create();
+
+	if(Printopt == 1)
+		printf("ReadData) start init\n");
+// ##INIT_PORT_SECTION::START
+    port_input_image = PORT_INITIALIZE(TASK_ID, "input_image_path");
+    port_input_label = PORT_INITIALIZE(TASK_ID, "input_label");
+    port_input_block = PORT_INITIALIZE(TASK_ID, "input_block");
+    port_output_image = PORT_INITIALIZE(TASK_ID, "output_image");
+    port_output_label = PORT_INITIALIZE(TASK_ID, "output_label");
+    port_output_chunkindex = PORT_INITIALIZE(TASK_ID, "output_chunkindex");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+	if(Printopt == 1)
+		printf("ReadData) end init\n");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+void read_cls(float *pfInput, char *filename, int channels) {
+    FILE *fp = fopen(filename, "r");
+    fread(pfInput, sizeof(float), INPUT_SIZE, fp);
+    fclose(fp);
+}
+
+static int iter = 0;
+TASK_GO
+{
+    // TODO: task main code
+    int i;
+    int nChunkindex;
+
+    nChunkindex = AC_CHECK(port_input_image);
+
+    AC_RECEIVE(port_input_image, (unsigned char*)&test_Image_Path, sizeof(test_Image_Path), nChunkindex);
+    AC_RECEIVE(port_input_label, (unsigned char*)test_Label, sizeof(test_Label), nChunkindex);
+	if(Printopt == 1)
+		printf("ReadData) test_Image_Path : %s\n",test_Image_Path);
+
+    for(i = 0; i < BATCH; i++){
+        read_cls(test_Image[i], test_Image_Path[i], 3);
+    }
+    
+    MQ_SEND(port_output_image, (unsigned char*)&test_Image, sizeof(test_Image));
+    MQ_SEND(port_output_label, (unsigned char*)test_Label, sizeof(test_Label));
+    MQ_SEND(port_output_chunkindex, (unsigned char*)&nChunkindex, sizeof(int));
+	if(Printopt == 1)
+		printf("ReadData) iter : %d send finish\n",iter);
+	iter++;
+	if(Printopt > 0){
+		printf("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n");
+		printf("RR ReadData) iter : %d send finish\n",iter);
+		printf("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR\n");
+	}
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

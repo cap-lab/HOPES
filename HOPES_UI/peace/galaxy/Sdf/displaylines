@@ -1,0 +1,30 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "type" string "for"
+Parameter "conName" int "count"
+Star "./icon/Integrator.icon" I0 216 84 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1.0" "top" FLOAT "0.0" "bottom" FLOAT "0.0" "saturate" INT "YES" "state" FLOAT "0.0"
+Star "./icon/Integrator.icon" I4 212 180 0
+StarParameter 6 "procId" INT "-1" "feedbackGain" FLOAT "1.0" "top" FLOAT "0.0" "bottom" FLOAT "0.0" "saturate" INT "YES" "state" FLOAT "0.0"
+Star "./icon/XYgraph.icon" I8 312 124 0
+StarParameter 6 "procId" INT "-1" "title" STRING "Path a moth" "saveFile" STRING "" "options" STRING "-P -0 moth  =500x500+0+0 -bb -tk" "ignore" INT "0" "resources" STRINGARRAY "STDIO"
+Star "./icon/ConstInt.icon" I11 124 132 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "0"
+Star "./library/Peace/Port/inport.ilink" I13 36 84 0
+StarParameter 4 "name" string "in1" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/inport.ilink" I15 36 180 0
+StarParameter 4 "name" string "in2" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Repeater.icon" I17 120 68 0
+StarParameter 2 "procId" INT "-1" "count" INT "count"
+Star "./icon/Repeater.icon" I20 112 164 0
+StarParameter 2 "procId" INT "-1" "count" INT "count"
+Line I23 "" Star I11 "output" Star I4 "reset" 1 172 148 212 220 
+Line I24 "" Star I11 "output" Star I0 "reset" 1 172 148 216 124 
+Line I25 "" Star I0 "output" Star I8 "input" 1 272 116 312 148 
+Line I26 "" Star I4 "output" Star I8 "xInput" 1 268 212 312 164 
+Line I27 "" Star I17 "output" Star I0 "data" 1 176 100 216 108 
+Line I28 "" Star I13 "output" Star I17 "input" 1 68 100 120 100 
+Line I29 "" Star I20 "output" Star I4 "data" 1 168 196 212 204 
+Line I30 "" Star I15 "output" Star I20 "input" 1 68 196 112 196 
+CommText 88 0 20 -16777216 "Plot a point by incrementing \nfrom the previous position"

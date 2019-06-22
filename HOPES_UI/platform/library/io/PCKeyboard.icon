@@ -1,0 +1,8 @@
+Platform
+Io
+"PCKeyboard"
+68 72
+"./platform/iconImage/PCKeyboard.image"
+"" ""
+"" ""
+outport "output" 62 36 false

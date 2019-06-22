@@ -1,0 +1,8 @@
+Domain "BP"
+Target "<parent>"
+Run 10
+Parameter "nodename" string "src1"
+Galaxy "./icon/fsm_sched_src1.icon" I0 92 56 0
+StarParameter 4 "period" int "100000" "nodename" string "ramp1" "value1" float "0.0" "globalstate" stringArray "value1"
+Galaxy "./icon/fsm_sched_sync.icon" I2 268 56 0
+Line I4 "" Star I0 "output" Star I2 "input" 1 148 88 268 88 

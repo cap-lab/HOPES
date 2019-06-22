@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="Init" x="332" y="72" initial_state="true" hierarchical="false" />
+      <state name="FollowTLD" x="692" y="68" initial_state="false" hierarchical="false" />
+      <state name="Finish" x="332" y="400" initial_state="false" hierarchical="false" />
+      <state name="FollowLDS" x="684" y="416" initial_state="false" hierarchical="true" hierarchical_mode="RESET" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_0_0" src_state="Init" dst_state="FollowTLD" curve0_x="428" curve0_y="96" curve1_x="580" curve1_y="64">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_3" src_state="FollowTLD" dst_state="Finish" curve0_x="668" curve0_y="72" curve1_x="380" curve1_y="396">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_2" src_state="FollowTLD" dst_state="FollowLDS" curve0_x="684" curve0_y="188" curve1_x="680" curve1_y="404">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_0_3" src_state="FollowLDS" dst_state="FollowTLD" curve0_x="804" curve0_y="360" curve1_x="788" curve1_y="148">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+  <fsm name="FollowLDS_1">
+    <state_list>
+      <state name="Start_record" x="460" y="104" initial_state="false" hierarchical="false" />
+      <state name="End_record" x="472" y="352" initial_state="false" hierarchical="false" />
+      <state name="Wait_nonblock" x="788" y="88" initial_state="false" hierarchical="false" />
+      <state name="LDS_turn" x="788" y="356" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_FollowLDS_1_0" src_state="Start_record" dst_state="End_record" curve0_x="500" curve0_y="212" curve1_x="496" curve1_y="316">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_FollowLDS_1_1" src_state="End_record" dst_state="LDS_turn" curve0_x="576" curve0_y="400" curve1_x="732" curve1_y="384">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_FollowLDS_1_2" src_state="LDS_turn" dst_state="Wait_nonblock" curve0_x="820" curve0_y="348" curve1_x="816" curve1_y="152">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_FollowLDS_1_3" src_state="Wait_nonblock" dst_state="Start_record" curve0_x="732" curve0_y="128" curve1_x="552" curve1_y="120">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

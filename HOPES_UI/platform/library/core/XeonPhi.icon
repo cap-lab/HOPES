@@ -1,0 +1,8 @@
+Platform
+Core
+"XeonPhi"
+68 72
+"./platform/iconImage/XeonPhi.image"
+"" ""
+"" ""
+busoutport "master" 32 62 false "MasterOut"

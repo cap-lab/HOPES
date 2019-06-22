@@ -1,0 +1,314 @@
+#include <stdint.h>
+#include <limits>
+
+
+// ## DEFINE_SECTION::START
+#define ID_STATE_INIT 0
+#define ID_STATE_TLD_FOLLOW 1
+#define ID_STATE_LDS_FOLLOW 2
+#define ID_STATE_FINISH 3
+
+#define ID_STATE_LDS_FOLLOW_LDS_START_RECORD 0
+#define ID_STATE_LDS_FOLLOW_LDS_END_RECORD 1
+#define ID_STATE_LDS_FOLLOW_LDS_TURN 2 
+#define ID_STATE_LDS_FOLLOW_WAIT_NONBLOCK 3
+
+
+/************CMD DEFINITION START************/
+#define CMD_FAIL -1
+#define CMD_STOP 0 
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+
+#define CMD_TURN_LEFT 10
+#define CMD_TURN_RIGHT 11
+#define CMD_FORWARD_LEFT 12
+#define CMD_FORWARD_RIGHT 13
+/************CMD DEFINITION END************/
+
+#define FILTERED_DISTANCE -1  //if distance == -1 means useless, filtered distance
+#define FINISH_DISTANCE 5
+#define STOP_DISTANCE 15
+#define MAX_DISTANCE std::numeric_limits<uint16_t>::max()
+#define TOLERANT 20
+#define THETA_MAX 90
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+//global definition 
+
+// ## DEFINE_STATE_SECTION::START
+static int current_state_1;
+static int current_state_LDS_FOLLOW_0;
+void execute_LDS_FOLLOW_l_state();
+
+// ## DEFINE_STATE_SECTION::END
+
+// ## DEFINE_PORT_SECTION::START
+static int port_distance;
+static int port_in_tld_cmd;
+
+
+typedef struct _SDistance{
+    int distance[2 * THETA_MAX + 1];        
+} SDistance; 
+
+static SDistance stDistance;
+
+void stDistanceInitialize(SDistance* stDistance){
+   int i = 0;
+   for(i=0;i<=2*THETA_MAX ;i++){
+        stDistance->distance[i] = MAX_DISTANCE;
+   }
+}
+// ## DEFINE_PORT_SECTION::END
+
+// ## DEFINE_VARIABLE_SECTION::START
+static int tld_cmd;
+static int cmd;
+static int nTurnAngle;
+static int nTimerID;
+static int bWaitStart;
+// ## DEFINE_VARIABLE_SECTION::END
+
+void resetLDSFollow(){
+    bWaitStart = 0;
+    current_state_LDS_FOLLOW_0 = ID_STATE_LDS_FOLLOW_LDS_START_RECORD;
+    nTurnAngle = 0;
+    SYS_REQ(RESET_TIMER, nTimerID); 
+}
+
+TASK_INIT
+{
+	port_distance = PORT_INITIALIZE(TASK_ID, "distance");
+	port_in_tld_cmd = PORT_INITIALIZE(TASK_ID, "in_tld_cmd");
+	
+	current_state_1 = ID_STATE_INIT;
+	stDistanceInitialize(&stDistance);	
+    nTimerID = SYS_REQ(SET_TIMER, 1, "US");
+    resetLDSFollow();
+}
+ 
+int checkDiff(int r1, int r2){ //check if difference happened.
+	/* To avoid LDS error estimation
+	 * 1. set TOLERANT , meaning ignore some minor distance changes.
+	 * 2. ignore MAX_DISTANCE(MAX_DISTANCE means distance measurement failure
+	 * 3. ignore FILTERED_DISTANCE(filtered distance).
+	 * */
+    if((r2 < r1 * ( 1 - (TOLERANT/100.0)) || (r2 > r1 * (1 + (TOLERANT/100.0)))) && 
+			r1 != MAX_DISTANCE && r2 != MAX_DISTANCE && 
+			r1 != FILTERED_DISTANCE && r2 != FILTERED_DISTANCE){ //tolerate error rate
+        return 1;
+    }else{
+        return 0;
+    }     
+}
+
+int convert2RealAngle(int nAngle){ //convert index to real angle.
+	/* For example, when THETA_MAX == 90, distance[30] means -30 angle.
+	 * distance[120] means +30 angle.
+	 * */
+    int nResultAngle = 0;
+    if(nAngle <= THETA_MAX ){     
+        nResultAngle = nAngle * -1;        
+    }else{                 
+        nResultAngle = nAngle - THETA_MAX;
+    }
+    return nResultAngle;
+}
+
+int findTurnAngle(SDistance stDistance, SDistance stNewDistance){ //find Turn direction.
+    int aDiffAngles[2 * THETA_MAX + 1]; 
+    int nDiffAnglesCount = 0;
+    int nTurnAngle = 0;
+    for(int i=1;i<=2 * THETA_MAX ; i++){ //don't care distance[0].
+        if(checkDiff(stDistance.distance[i], stNewDistance.distance[i])){ //is different
+            aDiffAngles[i] = 1;
+            nTurnAngle+= convert2RealAngle(i);
+            nDiffAnglesCount++;
+			printf("valid aDiffAngles[%d] : %d\n ,",i,aDiffAngles[i]);
+        }else{
+            aDiffAngles[i] = 0;
+        }
+    }
+	/*
+    printf("*********aDiffAngles in findTurnAngle ***************** \n");
+    for(i=0;i<=2 * THETA_MAX ; i++){
+        printf("aDiffAngles[%d] : %d\n ,",i,aDiffAngles[i]);
+    }
+    printf("\n");
+	*/
+    if(nDiffAnglesCount <= 2){//ignore the occurrence of two or less differences.
+        return 0;
+    }else{
+        nTurnAngle /= nDiffAnglesCount; //calculate mean angle.
+        return nTurnAngle;
+    }       
+}
+
+static int updatecount = 0;
+void updateOriginalDistance(SDistance* pstDistance, SDistance* pstNewDistance){
+	updatecount++;
+	if(updatecount == 9){ //update original distance to new distance after the LDS sensor has measured 9 times.
+		for(int i=0;i<=2 * THETA_MAX ;i++){
+			pstDistance->distance[i] = pstNewDistance->distance[i];
+		}         
+		updatecount = 0;
+	}
+}
+
+int isFinishCondition(){
+   printf("stDisatnce : %d\n",stDistance.distance[0]);
+   if(stDistance.distance[0]<FINISH_DISTANCE){
+	   return 1;
+	}else{
+	   return 0;
+	}
+}
+
+void execute_LDS_FOLLOW_l_state(){
+    switch(current_state_LDS_FOLLOW_0){
+        case ID_STATE_LDS_FOLLOW_LDS_START_RECORD:
+        {
+            if(bWaitStart == 0){
+                 SYS_REQ(SET_PARAM_INT, "wheel_control", "cmd", CMD_STOP); //initially stop motor.
+                 SYS_REQ(CALL_TASK, "wheel_control");
+                 printf("cmd set by control.cic ID_STATE_LDS_FOLLOW_LDS_START_RECORD : %d\n",CMD_STOP);
+                nTimerID = SYS_REQ(SET_TIMER, 600, "MS");
+                bWaitStart = 1;
+				return ;
+            }else{
+                if(SYS_REQ(GET_TIMER_ALARMED, nTimerID)){                
+                    bWaitStart = 0;                                       
+                }else{
+                    return ;
+                }
+            }
+                   
+            if(MQ_AVAILABLE(port_distance)){
+                MQ_RECEIVE(port_distance, (unsigned char*)&stDistance, sizeof(stDistance));                
+				printf("original stDistance received!\n");
+            }else{
+                return ;
+            }
+            current_state_LDS_FOLLOW_0 = ID_STATE_LDS_FOLLOW_LDS_END_RECORD;
+            break;      
+        }
+        case ID_STATE_LDS_FOLLOW_LDS_END_RECORD:
+        {
+            SDistance stNewDistance;
+            if(MQ_AVAILABLE(port_distance)){
+                MQ_RECEIVE(port_distance, (unsigned char*)&stNewDistance, sizeof(stNewDistance));
+            }else{
+                return ;
+            }
+            nTurnAngle = findTurnAngle(stDistance, stNewDistance);
+            if(nTurnAngle == 0){ //failed to find target
+                updateOriginalDistance(&stDistance, &stNewDistance);
+				printf("original stDistance updated!\n");
+                return ;
+            }else{
+                current_state_LDS_FOLLOW_0 = ID_STATE_LDS_FOLLOW_LDS_TURN;
+            }
+            
+            break;            
+        }              
+        case ID_STATE_LDS_FOLLOW_LDS_TURN:
+        {        
+            if(nTurnAngle > 0){
+                cmd = CMD_TURN_RIGHT;
+            }else if(nTurnAngle < 0){
+                cmd = CMD_TURN_LEFT;
+            }else{ //illegal case
+                printf("illegal turnAngle in Control.cic LDS_TURN state!\n");
+            }
+            printf("cmd set by control.cic at state LDS_FOLLOW_LDS_TURN : %d\n",cmd);
+            SYS_REQ(SET_PARAM_INT, "wheel_control", "cmd", cmd);
+            SYS_REQ(CALL_TASK, "wheel_control");
+            current_state_LDS_FOLLOW_0 = ID_STATE_LDS_FOLLOW_WAIT_NONBLOCK;           
+            break;
+        }
+        case ID_STATE_LDS_FOLLOW_WAIT_NONBLOCK:
+        {
+            if(bWaitStart == 0){
+                nTimerID = SYS_REQ(SET_TIMER, 350, "MS");
+                bWaitStart = 1;
+				return ;
+            }else{
+                if(SYS_REQ(GET_TIMER_ALARMED, nTimerID)){                
+                    current_state_LDS_FOLLOW_0 = ID_STATE_LDS_FOLLOW_LDS_START_RECORD;
+                    bWaitStart = 0;                                       
+                }else{
+                    return ;
+                }
+            }
+            break;
+        }
+    }        
+}
+
+TASK_GO
+{
+	int in_tld_cmd_ok = BUF_RECEIVE( port_in_tld_cmd, (unsigned char*)&tld_cmd, sizeof(int));
+	if(in_tld_cmd_ok == 0) return;		
+	BUF_RECEIVE( port_in_tld_cmd, (unsigned char*)&tld_cmd, sizeof(int));
+	
+	switch( current_state_1 ) 
+	{
+	    case ID_STATE_INIT:
+	    {
+            current_state_1 = ID_STATE_TLD_FOLLOW;
+            break;
+	    }	    
+		case ID_STATE_TLD_FOLLOW :
+		{
+		    if(isFinishCondition()){
+              cmd = CMD_STOP;
+              current_state_1 = ID_STATE_FINISH;       
+		    }else if(tld_cmd == CMD_FAIL){
+		      cmd = CMD_STOP;              
+              current_state_1 = ID_STATE_LDS_FOLLOW;	    
+		    }else{ //tld success              
+              if(stDistance.distance[0] <= STOP_DISTANCE){
+                cmd = CMD_STOP;
+              }else{
+                cmd = tld_cmd;
+              }                		   
+		    }
+		    SYS_REQ(SET_PARAM_INT, "wheel_control", "cmd", cmd);
+            printf("cmd set by control.cic TLD_FOLLOW : %d\n",cmd);
+            SYS_REQ(CALL_TASK, "wheel_control");  
+	        break;
+		}
+		case ID_STATE_LDS_FOLLOW:
+		{
+		  if(tld_cmd != CMD_FAIL){ //if TLD succeed, stop all LDS FOLLOW jobs.
+              current_state_1 = ID_STATE_TLD_FOLLOW;               
+              resetLDSFollow();
+               
+		  }else{
+		      execute_LDS_FOLLOW_l_state();
+		  }				
+		  break;  
+		}	
+		case ID_STATE_FINISH :
+		{
+			printf("Finish Mission! \n");
+			SYS_REQ(STOP);
+			////sleep(2);
+			break;
+		}
+	}
+}
+
+TASK_WRAPUP
+{
+
+}
+
+TASK_CODE_END

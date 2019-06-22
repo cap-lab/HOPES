@@ -1,0 +1,9 @@
+Platform
+Port
+"linkInPort"
+24 8
+"./platform/iconImage/linkInPort.image"
+"" ""
+"" ""
+numports "input" 1
+inport input 24 4 false

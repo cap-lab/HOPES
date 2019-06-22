@@ -1,0 +1,69 @@
+Domain "CGC"
+Target "Task-Model"
+TargetParameter "processor" STRING "arm720T"
+TargetParameter "processorId" INT "0"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "CLUST ##DEF,CLUST,SJS,ACYLOOP"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "bufferSharing" INT "NO"
+TargetParameter "numUsable" INT "1"
+TargetParameter "seq" INT "1"
+TargetParameter "nonseq" INT "1"
+TargetParameter "DebugMode" INT "0"
+Run 10
+Parameter "period" int "30"
+Star "./icon/MP3VLDStream.icon" I0 64 80 0
+StarParameter 4 "procId" INT "-1" "fileName" STRING "-" "bufferSize" INT "4096" "stereo" STRING "YES ##YES,NO"
+Star "./icon/MP3DeQ.icon" I7 160 80 0
+StarParameter 2 "procId" INT "-1" "stereo" STRING "YES ##YES,NO"
+Star "./icon/MP3Stereo.icon" I14 236 80 0
+StarParameter 2 "procId" INT "-1" "stereo" STRING "YES ##YES,NO"
+Star "./icon/MP3Reorder.icon" I20 316 88 0
+StarParameter 2 "procId" INT "-1" "stereo" STRING "YES ##YES,NO"
+Star "./icon/MP3Antialias.icon" I25 388 88 0
+StarParameter 2 "procId" INT "-1" "stereo" STRING "YES ##YES,NO"
+Star "./icon/MP3Hybrid.icon" I30 460 88 0
+StarParameter 2 "procId" INT "-1" "stereo" STRING "YES ##YES,NO"
+Star "./icon/MP3Subband.icon" I36 532 96 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/AudioPlay.icon" I40 628 104 0
+StarParameter 4 "procId" INT "-1" "stereo" STRING "YES ##YES,NO" "bufferSize" INT "256" "machine" STRING "vox ##aix,amiga,hpux,sun,vox"
+Star "./library/Peace/Port/inport.ilink" I43 4 96 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I45 "" Star I0 "output" Star I7 "input" 1 116 104 160 104 
+Line I46 "" Star I0 "scaleFactor" Star I7 "scaleFactor" 1 116 112 160 112 
+Line I47 "" Star I0 "groupInformation" Star I7 "groupInformation" 1 116 120 160 120 
+Line I48 "" Star I0 "channel" Star I7 "channel" 1 116 136 160 136 
+Line I49 "" Star I0 "frameHeader" Star I7 "frameHeader" 1 116 128 160 128 
+Line I50 "" Star I7 "output" Star I14 "input" 1 212 112 236 104 
+Line I51 "" Star I0 "scaleFactor" Star I14 "scaleFactor" 1 116 112 236 112 
+Line I52 "" Star I0 "groupInformation" Star I14 "groupInformation" 1 116 120 236 120 
+Line I53 "" Star I0 "frameHeader" Star I14 "frameHeader" 1 116 128 236 128 
+Line I54 "" Star I14 "output" Star I20 "input" 1 288 112 316 112 
+Line I55 "" Star I0 "groupInformation" Star I20 "groupInformation" 1 116 120 316 120 
+Line I56 "" Star I0 "frameHeader" Star I20 "frameHeader" 1 116 128 316 128 
+Line I57 "" Star I20 "output" Star I25 "input" 1 368 120 388 112 
+Line I58 "" Star I0 "groupInformation" Star I25 "groupInformation" 1 116 120 388 120 
+Line I59 "" Star I0 "frameHeader" Star I25 "frameHeader" 1 116 128 388 128 
+Line I60 "" Star I25 "output" Star I30 "input" 1 440 120 460 112 
+Line I61 "" Star I0 "groupInformation" Star I30 "groupInformation" 1 116 120 460 120 
+Line I62 "" Star I0 "channel" Star I30 "channel" 1 116 136 460 128 
+Line I63 "" Star I0 "frameHeader" Star I30 "frameHeader" 1 116 128 460 136 
+Line I64 "" Star I30 "output" Star I36 "input" 1 512 120 532 120 
+Line I65 "" Star I0 "channel" Star I36 "channel" 1 116 136 532 136 
+Line I66 "" Star I36 "output" Star I40 "input" 1 584 128 628 128 
+Line I67 "" Star I0 "frameHeader" Star I40 "frameHeader" 1 116 128 628 144 
+Line I68 "" Star I43 "output" Star I0 "input" 1 36 112 64 112 
+CommText 164 28 16 -16777216 "MP3 player"

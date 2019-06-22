@@ -1,0 +1,11 @@
+Platform
+Core
+"Arduino"
+68 72
+"./platform/iconImage/Arduino.image"
+"" ""
+"" ""
+inport "input" 0 36 false
+outport "output" 62 36 false
+busoutport "master" 26 62 false "i2cOut"
+busoutport "slave" 38 62 false "BluetoothOut"

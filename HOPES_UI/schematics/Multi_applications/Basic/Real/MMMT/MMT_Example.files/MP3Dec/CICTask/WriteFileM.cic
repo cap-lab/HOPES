@@ -1,0 +1,88 @@
+/************************************
+ *
+ * File : Wr.cic
+ * Date : Sep 18, 2012 1:48 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <math.h>
+#include "mp3_struct.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC FILE *fd;
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    fd = fopen("result.wav", "wb");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+STATIC Packet4 Packet;
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_input, (unsigned char*)&Packet, sizeof(Packet4));
+
+    short int outsamp[8192] = {0, };
+    static int k=0;
+    int i, j, l;
+
+    for (i = 0; i < 18; i++){
+        for (j = 0; j < SBLIMIT; j++){
+            for (l = 0; l < Packet.frameHeader.stereo; l++) {
+                if (!(k & (8192-1)) && k) {
+                    fwrite(outsamp, 8192 * 2, sizeof(unsigned char), fd);
+                    //sound_write(audiofd_62, outsamp, 8192 * 2);
+                    k = 0;
+                }
+                if (l==0)
+                    outsamp[k++] = Packet.output[(1-(1))].data[i][j];
+                else    outsamp[k++] = Packet.output[(1-(0))].data[i][j];
+            }
+        }
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    fclose(fd);
+}
+
+TASK_CODE_END

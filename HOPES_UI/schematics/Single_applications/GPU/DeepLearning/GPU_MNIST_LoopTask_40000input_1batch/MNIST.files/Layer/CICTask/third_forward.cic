@@ -1,0 +1,154 @@
+/************************************
+ *
+ * File : th.cic
+ * Date : Jul 24, 2018 11:08 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <cublas_v2.h>
+
+#define INPUT_DIMENSION 500
+#define OUTPUT_DIMENSION 10
+
+#define BLOCK 512
+
+#define BATCH 1
+
+const double ALPHA = 1;
+const double BETA = 1; 
+
+static double *weights;
+ 
+static double *inputAc;
+static double *outputNet;
+static double *outputAc;
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_in_w;
+STATIC int port_out;
+STATIC int port_out_n;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in_input");
+    port_in_w = PORT_INITIALIZE(TASK_ID, "in_weight");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+    port_out_n = PORT_INITIALIZE(TASK_ID, "out_n");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    cudaMalloc((void **) &weights, sizeof(double)*INPUT_DIMENSION * OUTPUT_DIMENSION);
+    cudaMalloc((void **) &inputAc, sizeof(double)*INPUT_DIMENSION * BATCH);
+    cudaMalloc((void **) &outputAc, sizeof(double)*OUTPUT_DIMENSION * BATCH);
+    cudaMalloc((void **) &outputNet, sizeof(double)*OUTPUT_DIMENSION * BATCH);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static int cuda_get_device() {
+    int n = 0;
+    cudaError_t status = cudaGetDevice(&n);
+    return n;
+}
+
+static cublasHandle_t blas_handle() {
+    static int init[16] = {0};
+    static cublasHandle_t handle[16];
+    int i = cuda_get_device();
+    if (!init[i]) {
+        cublasCreate(&handle[i]);
+        init[i] = 1;
+    }
+    return handle[i];
+}
+
+static dim3 cuda_gridsize(size_t n) {
+    size_t k = (n - 1) / BLOCK + 1;
+    size_t x = k;
+    size_t y = 1;
+    if (x > 65535) {
+        x = ceil(sqrt(k));
+        y = (n - 1) / (x * BLOCK) + 1;
+    }
+    dim3 d3(x, y, 1);
+    return d3;
+}
+
+__device__ static double _relu_gpu(double x) {
+    return x*(x>0);
+}
+
+__global__ static void relu_kernel(double *x, int n) {
+    int i = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x + threadIdx.x;
+    if (i < n) {
+        x[i] = _relu_gpu(x[i]);
+    }
+}
+
+static void relu_gpu(double *x, int n) {
+    relu_kernel<<<cuda_gridsize(n), BLOCK>>>(x, n);
+}
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)inputAc, sizeof(double) * INPUT_DIMENSION * BATCH);
+    MQ_RECEIVE(port_in_w, (unsigned char*)weights, sizeof(double) * OUTPUT_DIMENSION * INPUT_DIMENSION);
+
+    cudaMemset(outputAc, 0, sizeof(double) * OUTPUT_DIMENSION * BATCH);
+
+    cublasHandle_t handle = blas_handle();
+    cublasStatus_t status = cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_N, OUTPUT_DIMENSION, BATCH, INPUT_DIMENSION,
+        &ALPHA, weights, INPUT_DIMENSION, inputAc, INPUT_DIMENSION, &BETA, outputAc, OUTPUT_DIMENSION);
+
+    //relu_gpu(outputAc, OUTPUT_DIMENSION * BATCH);
+
+	MQ_SEND(port_out, (unsigned char*)outputAc, sizeof(double) * OUTPUT_DIMENSION * BATCH);
+	MQ_SEND(port_out_n, (unsigned char*)outputAc, sizeof(double) * OUTPUT_DIMENSION * BATCH);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    cudaFree(weights);
+    cudaFree(inputAc);
+    cudaFree(outputAc);
+    cudaFree(outputNet);
+}
+
+TASK_CODE_END

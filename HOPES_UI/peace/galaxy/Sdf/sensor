@@ -1,0 +1,55 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "position_y" float "0.0"
+Parameter "prop_speed" float "10^6"
+Parameter "wavelength" float "1"
+Parameter "sample_rate" float "(10^7)*2*PI"
+Parameter "sensor" float "0"
+Star "./library/Peace/Port/inport.ilink" I0 4 260 0
+StarParameter 4 "name" string "angle" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.ilink" I2 644 160 0
+StarParameter 4 "name" string "exc" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Gain.icon" I4 44 260 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "-1.0"
+Star "./icon/MpyCx2.icon" I7 200 260 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/RectToCx.icon" I11 148 348 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/CxToRect.icon" I15 264 244 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/expjx.icon" I19 108 244 0
+Star "./icon/Gain.icon" I22 408 244 0
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "2*PI/wavelength"
+Galaxy "./icon/expjx.icon" I25 476 228 0
+Star "./icon/MpyCx2.icon" I28 572 156 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/TkSlider.icon" I32 56 332 0
+StarParameter 5 "procId" INT "-1" "low" FLOAT "-0.5" "high" FLOAT "0.5" "value" FLOAT "0.0" "identifier" STRING "sensor {sensor} offset"
+Star "./icon/Const.icon" I34 60 384 0
+StarParameter 2 "procId" INT "-1" "level" FLOAT "position_y"
+Star "./icon/BlackHole.icon" I36 392 292 0
+StarParameter 1 "procId" INT "-1"
+Galaxy "./icon/expjx.icon" I38 424 140 0
+Star "./icon/Ramp.icon" I41 304 140 0
+StarParameter 3 "procId" INT "-1" "step" FLOAT "2*PI*2*PI*prop_speed/wavelength/sample_rate" "value" FLOAT "0.0"
+Line I43 "" Star I0 "output" Star I4 "input" 1 36 276 44 276 
+Line I44 "" Star I4 "output" Star I19 "input" 1 100 276 108 276 
+Line I45 "" Star I19 "output" Star I7 "input#1" 1 164 276 200 276 
+Line I46 "" Star I7 "output" Star I15 "input" 1 256 276 264 276 
+Line I47 "" Star I15 "real" Star I22 "input" 1 320 268 408 260 
+Line I48 "" Star I22 "output" Star I25 "input" 1 464 260 476 260 
+Line I49 "" Star I25 "output" Star I28 "input#2" 1 532 260 599 200 
+Line I50 "" Star I28 "output" Star I2 "input" 1 628 172 644 176 
+Line I51 "" Star I11 "output" Star I7 "input#2" 1 204 380 227 304 
+Line I52 "" Star I32 "output" Star I11 "real" 1 112 364 148 372 
+Line I53 "" Star I34 "output" Star I11 "imag" 1 107 400 148 388 
+Line I54 "" Star I15 "imag" Star I36 "input" 1 320 284 392 296 
+Line I55 "" Star I38 "output" Star I28 "input#1" 1 480 172 572 172 
+Line I56 "" Star I41 "output" Star I38 "input" 1 356 172 424 172 
+CommText 60 4 20 -16777216 "Compute the excitation of a plane wave arriving at a sensor at\nthe given position with the given angle."
+CommText 60 72 18 -16777216 "Position (0,0) is assumed to receive phase zero for any angle of arrival"
+CommText 432 112 16 -16777216 "baseline excitation"
+CommText 496 292 16 -16777216 "phase shift"
+CommText 340 212 16 -16777216 "distance from baseline"
+CommText 16 224 16 -16777216 "angle of arrival"

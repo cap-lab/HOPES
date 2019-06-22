@@ -1,0 +1,12 @@
+Domain "BP"
+Target "<parent>"
+Run 10
+Parameter "nodename" string "divx"
+Galaxy "./icon/AviParserGal.icon" I0 28 40 0
+StarParameter 4 "file_name" string "test-av.avi" "globalstate" stringArray "file_name" "nodename" string "divxread" "period" int "1"
+Galaxy "./icon/mp3_task_CGC.icon" I3 128 76 0
+StarParameter 1 "period" int "-1"
+Galaxy "./icon/H263Decoder.icon" I5 132 8 0
+StarParameter 3 "width" int "176" "height" int "144" "period" int "-1"
+Line I7 "" Star I0 "audio_out" Star I3 "input" 1 84 80 128 108 
+Line I8 "" Star I0 "video_out" Star I5 "input" 1 84 64 132 40 

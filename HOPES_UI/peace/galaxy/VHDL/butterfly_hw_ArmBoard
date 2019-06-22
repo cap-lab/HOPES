@@ -1,0 +1,28 @@
+Domain "VHDL"
+Target "ArmBoard-VHDL"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/VHDL"
+TargetParameter "display?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "clockPeriod(ns)" INT "20"
+TargetParameter "schedName(NONE,BILI,ILP)" STRING "NONE"
+TargetParameter "Width Decision Mode(DEFAULT, FILE)" STRING "DEFAULT"
+TargetParameter "Default Width(bit)" INT "16"
+TargetParameter "Standard Interface Width(bit)" INT "32"
+TargetParameter "Default IWL" INT "7"
+TargetParameter "Width File" STRING "$HOME/PEACE_SYSTEMS/CGC/width.txt"
+TargetParameter "WIDTHVARIABLE MIN" INT "-10"
+TargetParameter "WIDTHVARIABLE MAX" INT "32"
+Run 10
+Star "./icon/MCos.icon" I0 104 16 0
+StarParameter 2 "InputWidth" INT "9" "OutputWidth" INT "8"
+Star "./icon/Exp.icon" I3 264 16 0
+StarParameter 2 "InputWidth" INT "8" "OutputWidth" INT "10"
+Star "./icon/inport.icon" I6 32 32 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I8 416 32 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I10 "" Star I0 "output" Star I3 "input" 1 232 48 264 48 
+Line I11 "" Star I3 "output" Star I8 "input" 1 392 48 416 48 
+Line I12 "" Star I6 "output" Star I0 "input" 1 64 48 104 48 

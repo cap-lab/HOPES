@@ -1,0 +1,198 @@
+/************************************
+ *
+ * File : camera.cic
+ * Date : 06/22, 2018, 08:16 ¿ÀÈÄ (KST) 
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+
+#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv/highgui.h>
+
+// ##DEFINE_SECTION::START
+#define CAP_HEIGHT 180
+#define CAP_WIDTH 320
+#define CAP_CHANNEL 3
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition  
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_Camera;
+// ##DEFINE_PORT_SECTION::END
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+typedef struct _cvMat
+{
+	unsigned char data[CAP_HEIGHT*CAP_WIDTH];
+} CapMat;
+
+typedef struct
+{
+    cv::VideoCapture *capture;
+    int lastFrame;
+    int currentFrame;
+    int startFrame;
+    int camNo;
+    double startTime;
+    float fps;
+} ImAcq ;
+
+
+
+// ImAcq.cpp
+STATIC ImAcq *capImAcq;
+STATIC cv::Mat capImg;
+STATIC CapMatColor capMat;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+ImAcq *imAcqAlloc() {
+    ImAcq *imAcq = (ImAcq *) malloc(sizeof(ImAcq));
+    imAcq->currentFrame = 1;
+    imAcq->lastFrame = 0;
+    imAcq->camNo = 0;
+    imAcq->fps = 24;
+    return imAcq;
+}
+
+void imAcqInit(ImAcq *imAcq) {
+#ifdef CAP_GET_LOG    
+	FILE *fp = fopen("learningData/vInfo.txt", "r");
+	char fn[50];
+	fscanf(fp, "%s ", fn);
+	fclose(fp);
+	std::string filename = fn; 
+	imAcq->capture = new cv::VideoCapture(filename);
+#else
+	imAcq->capture = new cv::VideoCapture(imAcq->camNo);
+#endif
+    if (imAcq->capture == NULL) {
+        printf("Error: Unable to initialize camera\n");
+        exit(0);
+    }
+    
+    imAcq->capture->set(CV_CAP_PROP_FRAME_WIDTH, CAP_WIDTH);
+    imAcq->capture->set(CV_CAP_PROP_FRAME_HEIGHT, CAP_HEIGHT);
+    
+    imAcq->startFrame = imAcq->currentFrame;
+    imAcq->startTime = cvGetTickCount();
+}
+
+
+void imAcqFree(ImAcq *imAcq) {
+
+    free(imAcq);
+}
+
+void imAcqAdvance(ImAcq *imAcq) {
+    imAcq->currentFrame++;
+}
+
+cv::Mat imAcqGrab(cv::VideoCapture *capture) {
+    cv::Mat frame;
+
+    bool bSuccess = capture->read(frame);
+
+    if (!bSuccess) {
+        printf("Error: Unable to grab image from video\n");
+        return frame;
+    }
+
+    return frame.clone();
+}
+
+cv::Mat imAcqGetImg(ImAcq *imAcq) {
+
+    cv::Mat img;
+
+    img = imAcqGrab(imAcq->capture);
+
+    imAcqAdvance(imAcq);
+
+    return img;
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out_Camera = PORT_INITIALIZE(TASK_ID, "out_Camera");
+// ##INIT_PORT_SECTION::END
+
+    capImAcq = imAcqAlloc();
+    imAcqInit(capImAcq);
+    //set CAM No (default setting : 0) - ex: capImAcq->camNo = 1;
+
+    // set camera stream and height * width
+    // cv::namedWindow("Input", CV_WINDOW_AUTOSIZE);
+#ifdef CAP_GET_LOG
+	capImg = imAcqGetImg(capImAcq);
+	capImg = imAcqGetImg(capImAcq);
+	capImg = imAcqGetImg(capImAcq);
+	capImg = imAcqGetImg(capImAcq);
+	capImg = imAcqGetImg(capImAcq);
+#endif
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+TASK_GO
+{
+    // TODO: task main code
+    //capture a cam frame
+	cv::Mat img = imAcqGetImg(capImAcq);
+	if(img.cols == 0 || img.rows == 0){}
+	else{
+        if(CAP_WIDTH != img.cols || CAP_HEIGHT != img.rows)	
+           cv::resize(img, capImg, cv::Size(CAP_WIDTH, CAP_HEIGHT));
+        else capImg = img;
+        
+        //imshow("Input",capImg);    
+        //cv::waitKey(5000);
+		
+		memcpy(capMat.data, capImg.data, CAP_WIDTH*CAP_HEIGHT*CAP_CHANNEL);
+#ifdef CAP_DEBUG
+		//uint64_t diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+#endif
+
+
+#ifdef CAP_GET_LOG
+        //2019.03.05 changed from BUF_SEND to MQ_SEND, since learning should have Queue sending
+	MQ_SEND(port_out_Camera, (unsigned char*)&capMat, sizeof(CapMatColor));
+#else    
+	BUF_SEND(port_out_Camera, (unsigned char*)&capMat, sizeof(CapMatColor));
+	//MQ_SEND(port_out_Camera, (unsigned char*)&capMat, sizeof(CapMatColor));
+#endif
+	}    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    imAcqFree(capImAcq);
+}
+
+TASK_CODE_END

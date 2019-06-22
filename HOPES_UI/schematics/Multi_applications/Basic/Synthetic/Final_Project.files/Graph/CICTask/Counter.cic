@@ -1,0 +1,91 @@
+/************************************
+ *
+ * File : Counter.cic
+ * Date : Oct 29, 2013 11:23 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC int counter=0;
+STATIC int total_counter = 0;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    counter = 0;
+    SYS_REQ(SET_MTM_PARAM_INT, "Graph_Counter", "Var", 2);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int i = 0, loop_count = 0;
+    int len = 0;
+    char* currMode = SYS_REQ(GET_MODE, "Graph_Counter");
+    if(strcmp(currMode, "SIN") == 0)        {loop_count = 1;}
+    else if(strcmp(currMode, "COS") == 0)   {loop_count = 10;}
+    if(total_counter > 500)
+    {
+        total_counter = 0;
+        SYS_REQ(END_TASK, "Graph");
+    }
+
+    if(counter > 360){
+        counter = 0;
+        int var = 0;
+        
+        //if(strcmp(currMode, "SIN") == 0)        {var = 1;    loop_count = 10;}
+        //else if(strcmp(currMode, "COS") == 0)   {var = 2;    loop_count = 1;}
+        //SYS_REQ(SET_MTM_PARAM_INT, "Graph_Counter", "Var", var);
+    }
+    usleep(3000);
+    for(i=0; i<loop_count; i++){
+        len = MQ_SEND(port_out,(const char*)&counter, sizeof(int));
+        if(len ==0) break;
+        counter++;
+        total_counter++;
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

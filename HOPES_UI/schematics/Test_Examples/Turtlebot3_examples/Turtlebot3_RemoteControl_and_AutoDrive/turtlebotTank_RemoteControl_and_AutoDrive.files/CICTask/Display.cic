@@ -1,0 +1,118 @@
+/************************************
+ *
+ * File : D.cic
+ * Date : Mar 18, 2019 5:19 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <iostream>
+#include <raspicam/raspicam_cv.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define IMSHOW_KEYDELAY_MS 20
+
+#define CAP_HEIGHT 320
+#define CAP_WIDTH 240
+#define CAP_CHANNEL 3
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_display;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC cv::Mat currMat;
+STATIC CapMatColor dummydata;
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+typedef struct _SDistance3{
+    int left30;
+    int right30;
+    int front;
+} SDistance3; 
+
+typedef struct _SDisplayItem{
+    CapMatColor imageData; //56
+    SDistance3 stDistance3; //12
+    int nControl; //4
+} SDisplayItem;
+
+
+static SDisplayItem stDisplayItem;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_display = PORT_INITIALIZE(TASK_ID, "in_display");
+// ##INIT_PORT_SECTION::END
+    // TODO: task initialize code
+    currMat = cv::Mat::zeros(CAP_WIDTH,CAP_HEIGHT,CV_8UC3);
+	//return;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code    
+    int display_ret = BUF_RECEIVE(port_in_display, (unsigned char *)&stDisplayItem, sizeof(stDisplayItem));
+    if(display_ret <= 0) { 
+        return;
+    }    
+	//printf("sizeof currMat.data : %d\n",sizeof(currMat.data));
+	//std::cout<<currMat<<std::endl;
+    memcpy(currMat.data,&(stDisplayItem.imageData), sizeof(CapMatColor));                                
+	//printf("sizeof currMat.data : %d\n",sizeof(currMat.data));
+	//std::cout<<currMat<<std::endl;
+	//for(int i=0;i<CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL;i++){
+	//	printf("currMat data[%d] : %c\n",i,currMat.data[i]);
+	//}
+            
+    while(1){
+        printf("imshow!\n");
+		cv::imshow( "picamera test", currMat);
+        cv::waitKey(IMSHOW_KEYDELAY_MS);
+        break;
+    }
+    
+    //printf("distance front : %d \n", stDisplayItem.stDistance3.front);
+    //printf("distance left30 : %d \n", stDisplayItem.stDistance3.left30);
+    //printf("distance right30 : %d \n", stDisplayItem.stDistance3.right30);
+    //printf("Display.cic! display : %d\n",display);
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

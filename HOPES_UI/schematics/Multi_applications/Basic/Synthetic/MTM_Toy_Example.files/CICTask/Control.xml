@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="Idle" x="292" y="280" initial_state="true" hierarchical="false" />
+      <state name="Counter" x="292" y="120" initial_state="false" hierarchical="false" />
+      <state name="PingPong" x="456" y="280" initial_state="false" hierarchical="false" />
+      <state name="CounterPingPong" x="456" y="120" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_0" src_state="Idle" dst_state="Counter" curve0_x="324" curve0_y="284" curve1_x="324" curve1_y="152">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_1" src_state="Idle" dst_state="PingPong" curve0_x="368" curve0_y="312" curve1_x="448" curve1_y="312">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_2" src_state="Counter" dst_state="CounterPingPong" curve0_x="376" curve0_y="96" curve1_x="444" curve1_y="104">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_3" src_state="CounterPingPong" dst_state="Counter" curve0_x="488" curve0_y="152" curve1_x="364" curve1_y="152">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_4" src_state="PingPong" dst_state="CounterPingPong" curve0_x="532" curve0_y="248" curve1_x="512" curve1_y="184">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_5" src_state="CounterPingPong" dst_state="PingPong" curve0_x="488" curve0_y="152" curve1_x="488" curve1_y="272">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_6" src_state="Idle" dst_state="CounterPingPong" curve0_x="404" curve0_y="224" curve1_x="460" curve1_y="180">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_7" src_state="Counter" dst_state="PingPong" curve0_x="344" curve0_y="208" curve1_x="408" curve1_y="280">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_8" src_state="PingPong" dst_state="Counter" curve0_x="436" curve0_y="228" curve1_x="384" curve1_y="188">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

@@ -1,0 +1,12 @@
+"./platform/iconImage/SoCBaseVirtualRS232.image"
+68 120
+Rectangle 4 12 56 96 16772846 true
+Rectangle 4 12 56 96 0 false
+Text 4 -5 11 0 "SoCBaseVirtualRS232"
+InArrowLine 0 24 2 0 0
+InArrowLine 0 36 2 0 0
+OutArrowLine 4 48 -2 0 0
+OutArrowLine 4 60 -2 0 0
+InArrowLine 0 72 2 0 0
+InArrowLine 0 84 2 0 0
+InArrowLine 0 96 2 0 0

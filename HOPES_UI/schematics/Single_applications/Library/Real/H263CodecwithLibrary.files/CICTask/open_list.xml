@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<document_list>
+  <document name="Task Graph" selected="false" />
+  <document name="Channels" selected="false" />
+  <document name="H263_Enc.cic" type="taskCodeEditor" selected="false" />
+  <document name="H263_Dec.cic" type="taskCodeEditor" selected="false" />
+  <document name="Display.cic" type="taskCodeEditor" selected="false" />
+  <document name="H263_Enc.cic" selected="true" />
+</document_list>
+

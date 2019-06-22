@@ -1,0 +1,7 @@
+"./platform/iconImage/DynsocAHB.image"
+101 20
+OutArrowLine 8 -2 0 1 -16777216
+OutArrowLine 20 -2 0 1 -16777216
+bus 1 2 100 16 -14336 true
+bus 1 2 100 16 -16777216 false
+Text 5 -3 11 -16777216 "DynsocAHB"

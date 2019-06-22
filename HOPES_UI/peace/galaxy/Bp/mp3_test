@@ -1,0 +1,9 @@
+Domain "BP"
+Target "<parent>"
+Run 10
+Parameter "nodename" string "mp3"
+Galaxy "./icon/mp3_task_CGC.icon" I0 160 52 0
+StarParameter 1 "period" int "-1"
+Galaxy "./icon/ReadFileGal.icon" I2 68 52 0
+StarParameter 5 "filename" string "torn.mp3" "size" int "4096" "period" int "1" "nodename" string "mp3read" "globalstate" stringArray "filename"
+Line I4 "" Star I2 "output" Star I0 "input" 1 120 84 160 84 

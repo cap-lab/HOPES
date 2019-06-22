@@ -1,0 +1,21 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "highpass" string "< $PEACE/lib/demo/qmf.highpass.filter"
+Parameter "lowpass" string "< $PEACE/lib/demo/qmf.lowpass.filter"
+Star "./icon/inport.icon" I0 16 72 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 260 24 0
+StarParameter 4 "name" string "hp" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Fork2.icon" I4 72 72 0
+Star "./icon/FIR.icon" I8 160 8 0
+StarParameter 4 "taps" FLOATARRAY "highpass" "decimation" INT "2" "decimationPhase" INT "1" "interpolation" INT "1"
+Star "./icon/FIR.icon" I11 160 96 0
+StarParameter 4 "taps" FLOATARRAY "lowpass" "decimation" INT "2" "decimationPhase" INT "1" "interpolation" INT "1"
+Star "./icon/outport.icon" I14 260 112 0
+StarParameter 4 "name" string "lp" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I16 "" Star I4 "output#2" Star I11 "signalIn" 1 125 96 160 128 
+Line I17 "" Star I4 "output#1" Star I8 "signalIn" 1 125 80 160 40 
+Line I18 "" Star I4 "input" Star I0 "output" 1 72 88 48 88 
+Line I19 "" Star I8 "signalOut" Star I2 "input" 1 216 40 260 40 
+Line I20 "" Star I14 "input" Star I11 "signalOut" 1 260 128 216 128 

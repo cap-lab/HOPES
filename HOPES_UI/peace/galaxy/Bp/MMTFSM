@@ -1,0 +1,103 @@
+Domain "FSM"
+Target "FSMTaskTarget"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "printStruct?" INT "NO"
+TargetParameter "display?" INT "NO"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "processorId" INT "0"
+TargetParameter "compileCommand" STRING "g++"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING ""
+Run 10
+Parameter "InputNames" string "start suspend stop conn text consid waitsid"
+Parameter "InputTypes" string "PURE PURE PURE PURE VALUE VALUE VALUE"
+Parameter "InputScopes" string "{0,1} {0,1} {0,1} {0,1} {0,4} {-1,100} {-1,100}"
+Parameter "OutputNames" string "connect "
+Parameter "OutputTypes" string "PURE"
+Parameter "OutputScopes" string "{0,1} "
+Parameter "InternalNames" string "tostart fsid connect_sig exitPhone exitMp3 exitDivx"
+Parameter "InternalTypes" string "PURE  VALUE PURE PURE PURE PURE"
+Parameter "InternalScopes" string "{0,1} {0,100} {0,1} {0,1} {0,1} {0,1}"
+Parameter "VariableNames" string "mode"
+Parameter "VariableTypes" string "VALUE"
+Parameter "VariableScopes" string "{0,4}"
+Parameter "VariableInits" string "0"
+Star "./icon/StateStar.icon" I0 336 168 0
+StarParameter 4 "name" STRING "START" "scripts" STRING "" "init" STRING "TRUE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I9 292 32 0
+StarParameter 4 "name" STRING "divx" "scripts" STRING "{deliver ui filename divxread file_name} {run divx}" "init" STRING "FALSE" "internalFSM" STRING "./schematic/Peace/galaxy/Bp/divxcontrol"
+Star "./icon/StateStar.icon" I18 468 272 0
+StarParameter 4 "name" STRING "mp3stop" "scripts" STRING "{stop mp3}" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I27 204 116 0
+StarParameter 4 "name" STRING "divxstop" "scripts" STRING "{stop divx}" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I36 488 148 0
+StarParameter 4 "name" STRING "mp3" "scripts" STRING "{deliver ui filename mp3read filename} {run mp3}" "init" STRING "FALSE" "internalFSM" STRING "./schematic/Peace/galaxy/Bp/mp3control"
+Star "./icon/StateStar.icon" I45 208 408 0
+StarParameter 4 "name" STRING "phone" "scripts" STRING "{set network sID fsid} {run phone}" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I54 324 288 0
+StarParameter 4 "name" STRING "connect" "scripts" STRING "{deliver ui filename connect ipaddr}" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I63 396 388 0
+StarParameter 4 "name" STRING "waitConnect" "scripts" STRING "" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I72 160 280 0
+StarParameter 4 "name" STRING "phonestop" "scripts" STRING "{stop phone}" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I81 284 352 0
+StarParameter 4 "name" STRING "acctConnect" "scripts" STRING "" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I90 328 472 0
+StarParameter 4 "name" STRING "waitphone" "scripts" STRING "" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I99 36 100 0
+StarParameter 4 "name" STRING "chExit" "scripts" STRING "{get phone exit exitPhone} {get mp3 exit exitMp3} {get divx exit exitDivx}" "init" STRING "TRUE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I108 416 4 0
+StarParameter 4 "name" STRING "self" "scripts" STRING "{set network sID -2} {run phone}" "init" STRING "FALSE" "internalFSM" STRING ""
+Star "./icon/StateStar.icon" I117 520 60 0
+StarParameter 4 "name" STRING "selfstop" "scripts" STRING "{stop phone}" "init" STRING "FALSE" "internalFSM" STRING ""
+Line I126  2 "condition" stringList "tostart==1" "actions" stringList " " Star I18 "input4" Star I0 "input3" 2 468 304 392 300 368 232 
+Line I127  2 "condition" stringList "text==2" "actions" stringList "mode=2" Star I0 "input1" Star I9 "input2" 2 368 168 392 112 356 64 
+Line I128  2 "condition" stringList "stop==1" "actions" stringList "tostart=1" Star I9 "input4" Star I27 "input1" 2 292 64 224 60 236 116 
+Line I129  2 "condition" stringList "tostart==1" "actions" stringList " " Star I27 "input3" Star I0 "input4" 2 236 180 272 228 336 200 
+Line I130  2 "condition" stringList "text==1" "actions" stringList "mode=1" Star I0 "input6" Star I36 "input4" 2 391 177 428 156 488 180 
+Line I131  2 "condition" stringList "stop==1" "actions" stringList "tostart=1" Star I36 "input7" Star I18 "input2" 2 543 203 576 244 532 304 
+Line I132  2 "condition" stringList "text==3" "actions" stringList "{mode=3} {connect_sig=1}" Star I0 "input3" Star I54 "input6" 2 368 232 340 272 379 297 
+Line I133  2 "condition" stringList "connect_sig==1" "actions" stringList "connect=1" Star I54 "input2" Star I63 "input1" 2 388 320 424 352 428 388 
+Line I134  2 "condition" stringList "stop==1" "actions" stringList "tostart=1" Star I45 "input4" Star I72 "input7" 2 208 440 136 388 215 335 
+Line I135  2 "condition" stringList "tostart==1" "actions" stringList " " Star I72 "input6" Star I0 "input8" 2 215 289 236 268 345 223 
+Line I136  2 "condition" stringList "consid>0" "actions" stringList "fsid=consid" Star I63 "input7" Star I90 "input2" 2 451 443 456 496 392 504 
+Line I137  2 "condition" stringList "fsid>0" "actions" stringList " " Star I90 "input4" Star I45 "input3" 2 328 504 280 536 240 472 
+Line I138  2 "condition" stringList "waitsid>0" "actions" stringList "fsid=waitsid" Star I0 "input8" Star I81 "input1" 2 345 223 288 284 316 352 
+Line I139  2 "condition" stringList "fsid>0" "actions" stringList " " Star I81 "input3" Star I45 "input7" 2 316 416 320 444 263 463 
+Line I140  2 "condition" stringList "consid<=0" "actions" stringList " " Star I63 "input6" Star I0 "input7" 2 451 397 484 328 391 223 
+Line I141  2 "condition" stringList "1" "actions" stringList " " Star I99 "input1" Star I99 "input6" 3 68 100 40 68 100 64 91 109 
+Line I142  2 "condition" stringList "exitPhone==1" "actions" stringList " " Star I45 "input1" Star I0 "input8" 2 240 408 264 296 345 223 
+Line I143  2 "condition" stringList "exitMp3==1" "actions" stringList " " Star I36 "input8" Star I0 "input2" 2 497 203 456 224 400 200 
+Line I144  2 "condition" stringList "exitDivx==1 " "actions" stringList " " Star I9 "input7" Star I0 "input1" 2 347 87 328 128 368 168 
+Line I145  2 "condition" stringList "text==4" "actions" stringList "mode=4" Star I0 "input1" Star I108 "input8" 2 368 168 388 80 425 59 
+Line I146  2 "condition" stringList "stop==1" "actions" stringList "tostart=1" Star I108 "input2" Star I117 "input5" 2 480 36 536 24 529 69 
+Line I147  2 "condition" stringList "tostart==1" "actions" stringList " " Star I117 "input8" Star I0 "input6" 2 529 115 456 116 391 177 
+Line I148  2 "condition" stringList "exitPhone==1" "actions" stringList " " Star I108 "input3" Star I0 "input1" 2 448 68 424 120 368 168 
+CommText 88 36 12 -16777216 "tostart==1/ "
+CommText 8 -76 12 -16777216 "stop==1/tostart=1"
+CommText -8 -56 12 -16777216 "text==2/mode=2"
+CommText 4 -36 12 -16777216 "text==1/mode=1"
+CommText 24 -64 12 -16777216 "stop==1/tostart=1"
+CommText -72 -4 12 -16777216 "tostart==1/ "
+CommText 48 -48 12 -16777216 "text==3/{mode=3} {connect_sig=1}"
+CommText -8 -44 12 -16777216 "connect_sig==1/connect=1"
+CommText -52 20 12 -16777216 "stop==1/tostart=1"
+CommText -44 28 12 -16777216 "tostart==1/ "
+CommText 88 -24 12 -16777216 "consid>0/fsid=consid"
+CommText -12 48 12 -16777216 "fsid>0/ "
+CommText 8 -72 12 -16777216 "waitfid>0/fsid=waitfid"
+CommText 32 -20 12 -16777216 "fsid>0/ "
+CommText 48 104 12 -16777216 "consid<=0/ "
+CommText 0 0 12 -16777216 "waitsid>0/fsid=waitsid"
+CommText 0 -16 12 -16777216 "1/ "
+CommText 0 0 12 -16777216 "exitPhone==1/ "
+CommText 48 12 12 -16777216 "exitMp3==1/ "
+CommText -12 -44 12 -16777216 "exitDivx==1 / "
+CommText 44 -52 12 -16777216 "stop==1/tostart==1/ "
+CommText 56 -76 12 -16777216 "tostart==1/ "
+CommText -4 0 12 -16777216 "text==4/mode=4"
+CommText 56 -80 12 -16777216 "exitPhone==1/ "
+CommText 32 -56 12 -16777216 "stop==1/tostart=1"

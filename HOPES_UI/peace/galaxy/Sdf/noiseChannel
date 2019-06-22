@@ -1,0 +1,22 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "topNoiseVariance" float "1.0"
+Star "./icon/inport.icon" I0 44 96 0
+StarParameter 4 "name" string "input" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 244 148 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/IIDGaussian.icon" I4 28 136 0
+StarParameter 4 "procId" INT "-1" "var" FLOAT "1.0" "mean" FLOAT "0.0" "seed" INT "1"
+Star "./icon/Mpy2.icon" I6 128 152 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add2.icon" I10 156 96 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/TkSlider.icon" I14 28 184 0
+StarParameter 5 "procId" INT "-1" "low" FLOAT "0.0" "high" FLOAT "topNoiseVariance" "value" FLOAT "0.0" "identifier" STRING "Noise control"
+Line I16 "" Star I0 "output" Star I10 "input#1" 1 76 112 156 112 
+Line I17 "" Star I10 "output" Star I2 "input" 1 212 112 244 164 
+Line I18 "" Star I6 "output" Star I10 "input#2" 2 184 168 184 168 183 140 
+Line I19 "" Star I4 "output" Star I6 "input#1" 1 84 168 128 168 
+Line I20 "" Star I14 "output" Star I6 "input#2" 1 84 216 155 196 
+CommText 32 12 20 -16777216 "A simple channel model with \nadditive Gaussian white noise"

@@ -1,0 +1,26 @@
+Domain "CGC"
+Target "<parent>"
+Run 10
+Parameter "highpass" floatArray "< $PEACE/src/domains/sdf/demo/recon.highpass.filter"
+Parameter "lowpass" floatArray "< $PEACE/src/domains/sdf/demo/recon.lowpass.filter"
+Star "./icon/FIR.icon" I0 120 96 0
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "highpass" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "2"
+Star "./icon/FIR.icon" I3 120 224 0
+StarParameter 5 "procId" INT "-1" "taps" FLOATARRAY "lowpass" "decimation" INT "1" "decimationPhase" INT "0" "interpolation" INT "2"
+Star "./icon/Add2.icon" I6 296 112 0
+StarParameter 1 "procId" INT "-1"
+Star "./library/Peace/Port/inport.icon" I10 56 112 0
+StarParameter 4 "name" string "hp" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/inport.icon" I12 56 240 0
+StarParameter 4 "name" string "lp" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./library/Peace/Port/outport.icon" I14 368 112 0
+StarParameter 4 "name" string "out" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I16 "" Star I10 "output" Star I0 "signalIn" 1 88 128 120 128 
+Line I17 "" Star I12 "output" Star I3 "signalIn" 1 88 256 120 256 
+Line I18 "" Star I0 "signalOut" Star I6 "input#1" 1 248 128 296 127 
+Line I19 "" Star I3 "signalOut" Star I6 "input#2" 1 248 256 323 155 
+Line I20 "" Star I6 "output" Star I14 "input" 1 352 127 368 128 
+CommText 104 32 16 -16777216 "Reconstruction Filter Pair"
+CommText 64 104 12 -16777216 "hp"
+CommText 72 232 12 -16777216 "lp"
+CommText 352 104 12 -16777216 "out"

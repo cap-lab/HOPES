@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="Menu" x="336" y="316" initial_state="true" hierarchical="false" />
+      <state name="VideoPlay" x="344" y="156" initial_state="false" hierarchical="false" />
+      <state name="VideoPhone" x="516" y="160" initial_state="false" hierarchical="false" />
+      <state name="MusicPlay" x="516" y="316" initial_state="false" hierarchical="false" />
+    </state_list>
+    <transition_list>
+      <transition name="transition_UItoVP" src_state="Menu" dst_state="VideoPlay" curve0_x="368" curve0_y="316" curve1_x="340" curve1_y="268">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_VPtoUI" src_state="VideoPlay" dst_state="Menu" curve0_x="408" curve0_y="264" curve1_x="388" curve1_y="312">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_UItoMP" src_state="Menu" dst_state="MusicPlay" curve0_x="404" curve0_y="336" curve1_x="456" curve1_y="296">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_MPtoUI" src_state="MusicPlay" dst_state="Menu" curve0_x="452" curve0_y="384" curve1_x="420" curve1_y="360">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_VPhtoMP" src_state="MusicPlay" dst_state="VideoPhone" curve0_x="572" curve0_y="264" curve1_x="564" curve1_y="244">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_MPtoVPh" src_state="VideoPhone" dst_state="MusicPlay" curve0_x="532" curve0_y="240" curve1_x="528" curve1_y="272">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_VPhtoVP" src_state="VideoPhone" dst_state="VideoPlay" curve0_x="468" curve0_y="140" curve1_x="420" curve1_y="160">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_VPtoVPh" src_state="VideoPlay" dst_state="VideoPhone" curve0_x="464" curve0_y="228" curve1_x="500" curve1_y="208">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_UItoVPh" src_state="Menu" dst_state="VideoPhone" curve0_x="424" curve0_y="320" curve1_x="516" curve1_y="252">
+        <condition_list />
+        <action_list />
+      </transition>
+      <transition name="transition_VPhtoUI" src_state="VideoPhone" dst_state="Menu" curve0_x="464" curve0_y="244" curve1_x="408" curve1_y="304">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

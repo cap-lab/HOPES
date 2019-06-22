@@ -1,0 +1,286 @@
+# Menu
+# Files
+hae.peace.file = "File"
+hae.peace.file.mnemonic = 'F'
+
+hae.peace.newProject = "New Project"
+hae.peace.newProject.mnemonic = 'P'
+hae.peace.newProject.tooltip = "create new project"
+
+hae.peace.new = "New"
+hae.peace.new.mnemonic = 'N'
+hae.peace.new.tooltip = "create new facet"
+
+hae.peace.open = "Open"
+hae.peace.open.mnemonic = 'O'
+hae.peace.open.tooltip ="open a project/facet"
+
+hae.peace.openRecent = "Open Recent"
+hae.peace.openRecent.filename = "config/haehistory"
+hae.peace.openRecent.tooltip ="open recent"
+hae.peace.openRecent.mnemonic = 'R'
+hae.peace.openRecent.datanum = "5"
+
+hae.peace.close = "Close"
+hae.peace.close.mnemonic = 'C'
+
+hae.peace.save = "Save"
+hae.peace.save.mnemonic = 'S'
+hae.peace.save.tooltip = "save the facet"
+
+hae.peace.saveProjectAs = "Save Project As ..."
+hae.peace.saveProjectAs.mnemonic = 'A'
+
+hae.peace.saveAll = "Save All"
+hae.peace.saveAll.mnemonic = 'l'
+
+hae.peace.import = "Import FNL"
+hae.peace.import.mnemonic = 'M'
+
+hae.peace.export = "Export FNL"
+hae.peace.export.mnemonic = 'E'
+
+hae.peace.printSetup = "Print Setup"
+hae.peace.printSetup.mnemonic = 'r'
+
+hae.peace.print = "Print"
+hae.peace.print.mnemonic = 't'
+
+hae.peace.exit = "Exit"
+hae.peace.exit.mnemonic = 'x'
+
+hae.peace.properties = "Properties"
+
+
+# Edit
+hae.peace.edit = "Edit"
+hae.peace.edit.mnemonic = 'E'
+
+hae.peace.editIcon = "Edit Icon"
+hae.peace.editIcon.mnemonic = 'I'
+
+hae.peace.editDataBase = "Edit DataBase"
+hae.peace.editDataBase.mnemonic = 'D'
+
+hae.peace.substitute = "Substitute Icon"
+hae.peace.substitute.mnemonic = 'S'
+
+hae.peace.undo = "Undo"
+hae.peace.undo.mnemonic = 'U'
+
+hae.peace.redo = "Redo"
+hae.peace.redo.mnemonic = 'R'
+
+hae.peace.cut = "Cut"
+hae.peace.cut.mnemonic = 'u'
+hae.peace.cut.tooltip = "cut selected objects"
+
+hae.peace.copy = "Copy"
+hae.peace.copy.mnemonic = 'C'
+hae.peace.copy.tooltip = "copy selected objects"
+
+hae.peace.paste = "Paste"
+hae.peace.paste.mnemonic = 'P'
+hae.peace.paste.tooltip = "paste copied objects"
+
+hae.peace.delete = "Delete"
+hae.peace.delete.mnemonic = 'D'
+
+# View
+hae.peace.view = "View"
+hae.peace.view.mnemonic = 'V'
+
+hae.peace.zoomIn = "Zoom In"
+hae.peace.zoomIn.mnemonic = 'I'
+
+hae.peace.zoomOut = "Zoom Out"
+hae.peace.zoomOut.mnemonic = 'O'
+
+hae.peace.zoomAuto = "Zoom Auto"
+hae.peace.zoomAuto.mnemonic = 'A'
+
+hae.peace.rotate = "Rotate"
+hae.peace.rotate.mnemonic = 'R'
+
+hae.peace.lookInside = "Look Inside"
+hae.peace.lookInside.mnemonic = 'I'
+
+hae.peace.viewParameter = "View Parameter"
+hae.peace.viewParameter.mnemonic = 'P'
+
+hae.peace.viewName = "Name"
+hae.peace.viewName.mnemonic = 'N'
+
+hae.peace.viewRate = "Rate"
+hae.peace.viewRate.mnemonic = 't'
+
+hae.peace.displayGanttChart = "Display Gantt Chart"
+hae.peace.displayGanttChart.mnemonic = 'n'
+
+hae.peace.manualSchedule = "Manual Schedule"
+hae.peace.manualSchedule.mnemonic = 'M'
+
+# Run
+hae.peace.run = "Run"
+hae.peace.run.mnemonic = 'R'
+
+hae.peace.runIt = "Run It!"
+hae.peace.runIt.mnemonic = 'R'
+hae.peace.runIt.tooltip = "run this facet"
+
+hae.peace.runCount = "Edit Run Count"
+hae.peace.runCount.mnemonic = 'C'
+
+hae.peace.architecture = "Set Architecture"
+hae.peace.architecture.mnemonic = 'A'
+
+hae.peace.resetPtcl = "Restart ptcl"
+hae.peace.resetPtcl.mnemonic = 'Q'
+hae.peace.resetPtcl.tooltip = "restart ptcl"
+
+# Tool
+hae.peace.project = "Project"
+hae.peace.project.mnemonic = 'P'
+
+hae.peace.createUStar = "Create User Star"
+hae.peace.createUStar.mnemonic = 'N'
+
+hae.peace.openUStar = "Open User Star"
+hae.peace.openUStar.mnemonic = 'O'
+
+hae.peace.compileUStar = "Compile User Star"
+hae.peace.compileUStar.mnemonic = 'C'
+
+hae.peace.makeGalaxy = "make Galaxy"
+hae.peace.makeGalaxy.mnemonic = 'M'
+
+hae.peace.registerGalaxy = "Register Galaxy"
+hae.peace.registerGalaxy.mnemonic = 'G'
+
+hae.peace.registerStar = "Register Star"
+hae.peace.registerStar.mnemonic = 'S'
+
+hae.peace.registerPlatformIP = "Register Platform IP"
+hae.peace.registerPlatformIP.mnemonic = 'P'
+
+hae.peace.registerStarsFromFile = "register Stars From File "
+hae.peace.registerStarsFromFile.mnemonic = 'S'
+
+hae.peace.linkStar = "Link Stars"
+hae.peace.linkStar.mnemonic = 'L'
+
+hae.peace.importStar = "Import Star"
+hae.peace.importStar.mnemonic = 'I'
+
+hae.peace.starEditor = "Star Editor"
+hae.peace.starEditor.mnemonic = 'E'
+
+hae.peace.platformWizard = "Platform Wizard"
+hae.peace.platformWizard.mnemonic = 'P'
+
+hae.peace.fsmTable = "FSM Table"
+hae.peace.fsmTable.mnemonic = 'T'
+
+# Library
+hae.peace.library = "Library"
+hae.peace.library.mnemonic = 'L'
+
+hae.peace.loadIcon = "Load Icon"
+hae.peace.loadIcon.mnemonic = 'I'
+hae.peace.loadIcon.tooltip = "load star/galaxy"
+
+hae.peace.line = "Line"
+hae.peace.line.mnemonic = 'L'
+hae.peace.line.tooltip = "connect line"
+
+hae.peace.busLine = "Bus Line"
+hae.peace.busLine.mnemonic = 'B'
+
+hae.peace.junction= "Junction"
+hae.peace.junction.mnemonic = 'J'
+
+
+# Option
+hae.peace.option = "Option"
+hae.peace.option.mnemonic = 'O'
+
+hae.peace.sensitiveLine = "Auto Line Connection"
+hae.peace.sensitiveLine.mnemonic = 'A'
+
+hae.peace.default = "Default"
+hae.peace.default.mnemonic = 'D'
+
+# Comment
+hae.peace.comment = "Comment"
+hae.peace.comment.mnemonic = 'C'
+
+hae.peace.rectangle = "Rectangle"
+hae.peace.rectangle.mnemonic = 'R'
+
+hae.peace.oval= "Oval"
+hae.peace.oval.mnemonic = 'O'
+
+hae.peace.line= "Line"
+hae.peace.line.mnemonic = 'L'
+
+hae.peace.polygon= "Polygon"
+hae.peace.polygon.mnemonic = 'P'
+
+hae.peace.gif= "Gif"
+hae.peace.gif.mnemonic = 'G'
+
+hae.peace.text= "Text"
+hae.peace.text.mnemonic = 'T'
+
+hae.peace.inArrow= "InArrow"
+hae.peace.inArrow.mnemonic = 'A'
+
+hae.peace.inMultiArrow= "InMultiArrow"
+hae.peace.inMultiArrow.mnemonic = 'M'
+
+hae.peace.outArrow= "OutArrow"
+hae.peace.outArrow.mnemonic = 'O'
+
+hae.peace.outMultiArrow= "OutMultiArrow"
+hae.peace.outMultiArrow.mnemonic = 'u'
+
+hae.peace.color= "Color"
+hae.peace.color.mnemonic = 'C'
+
+hae.peace.fill= "Fill"
+hae.peace.fill.mnemonic = 'i'
+
+hae.peace.moveToFront= "Move To Front"
+hae.peace.moveToFront.mnemonic = 'F'
+
+hae.peace.moveToBack= "Move To Back"
+hae.peace.moveToBack.mnemonic = 'B'
+
+# Report
+hae.peace.report= "Report"
+hae.peace.report.mnemonic = 'R'
+
+hae.peace.generateReport= "Generate Report"
+hae.peace.generateReport.mnemonic = 'G'
+
+hae.peace.userInput= "User Input"
+hae.peace.userInput.mnemonic = 'U'
+
+# Window
+hae.peace.window = "Window"
+hae.peace.window.mnemonic = 'W'
+
+hae.peace.window.undo = "Undo Window"
+hae.peace.window.undo.mnemonic = 'U'
+
+hae.peace.window.redo = "Redo Window"
+hae.peace.window.redo.mnemonic = 'R'
+
+# Help
+hae.peace.help= "Help"
+hae.peace.help.mnemonic = 'H'
+
+hae.peace.about= "About"
+hae.peace.about.mnemonic = 'A'
+
+

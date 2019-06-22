@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="MathwithLibrary">
+  <setting_list>
+    <setting cycle="5" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="input" type="Computational">
+      <config>
+        <location x="140" y="224" width="80" height="40" />
+        <parameter name="CICFile" value="input.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="calculate" type="Computational">
+      <config>
+        <location x="344" y="224" width="80" height="140" />
+        <parameter name="CICFile" value="calculate.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output_pow" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="output_exp" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="output_log" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="3" export="false" name="output_sin" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="4" export="false" name="output_cos" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="5" export="false" name="output_tan" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list>
+        <libraryPort id="0" export="false" name="math_1" type="math" />
+      </libraryPort_list>
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="output" type="Computational">
+      <config>
+        <location x="600" y="224" width="80" height="140" />
+        <parameter name="CICFile" value="output.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="-lm" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input_pow" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="input_exp" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="input_log" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="3" export="false" name="input_sin" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="4" export="false" name="input_cos" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="5" export="false" name="input_tan" type="fifo" sample_size="8" sample_rate="Fixed">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+  </task_list>
+  <library_list>
+    <library name="math">
+      <config>
+        <location x="340" y="404" width="40" height="40" />
+        <parameter name="LibraryType" value="math" />
+        <parameter name="LibraryFile" value="math.cicl" />
+        <parameter name="LibraryHeader" value="math.cicl.h" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="Language" value="C++" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="IsDependency" value="No" />
+      </config>
+      <inPort_list>
+        <inPort id="0" name="inPort_math" type="fifo" />
+      </inPort_list>
+      <outPort_list />
+      <function_list>
+        <function name="my_cos" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_pow" type="double">
+          <argument name="num_1" type="double" />
+          <argument name="num_2" type="double" />
+        </function>
+        <function name="my_sin" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_log" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_tan" type="double">
+          <argument name="num" type="double" />
+        </function>
+        <function name="my_exp" type="double">
+          <argument name="num" type="double" />
+        </function>
+      </function_list>
+      <extraSetting_list />
+    </library>
+  </library_list>
+  <channel_list>
+    <channel src_task="input" src_port="output" dst_task="calculate" dst_port="input" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="220" y="244" />
+        <edge id="1" x="344" y="244" />
+      </edge_list>
+    </channel>
+    <channel src_task="calculate" src_port="output_pow" dst_task="output" dst_port="input_pow" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="424" y="244" />
+        <edge id="1" x="600" y="244" />
+      </edge_list>
+    </channel>
+    <channel src_task="calculate" src_port="output_log" dst_task="output" dst_port="input_log" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="424" y="284" />
+        <edge id="1" x="600" y="284" />
+      </edge_list>
+    </channel>
+    <channel src_task="calculate" src_port="output_exp" dst_task="output" dst_port="input_exp" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="424" y="264" />
+        <edge id="1" x="600" y="264" />
+      </edge_list>
+    </channel>
+    <channel src_task="calculate" src_port="output_sin" dst_task="output" dst_port="input_sin" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="424" y="304" />
+        <edge id="1" x="600" y="304" />
+      </edge_list>
+    </channel>
+    <channel src_task="calculate" src_port="output_cos" dst_task="output" dst_port="input_cos" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="424" y="324" />
+        <edge id="1" x="600" y="324" />
+      </edge_list>
+    </channel>
+    <channel src_task="calculate" src_port="output_tan" dst_task="output" dst_port="input_tan" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="424" y="344" />
+        <edge id="1" x="600" y="344" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list>
+    <taskLibraryConnection src_task="calculate" src_port="math_1" dst_library="math" dst_port="inPort_math">
+      <edge_list>
+        <edge id="0" x="364" y="364" />
+        <edge id="1" x="360" y="404" />
+      </edge_list>
+    </taskLibraryConnection>
+  </taskLibraryConnection_list>
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+</cic_manual>
+

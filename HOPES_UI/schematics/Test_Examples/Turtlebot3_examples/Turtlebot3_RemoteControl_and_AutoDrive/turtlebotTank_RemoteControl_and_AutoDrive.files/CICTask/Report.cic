@@ -1,0 +1,109 @@
+/************************************
+ *
+ * File : Report.cic
+ * Date : Mar 18, 2019 5:19 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+//#include <opencv2/imgproc.hpp>
+#include <raspicam/raspicam_cv.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#define CAP_HEIGHT 320
+#define CAP_WIDTH 240
+#define CAP_CHANNEL 3
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image;
+STATIC int port_distance;
+STATIC int port_control;
+STATIC int port_out_display;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+typedef struct _SDistance3{
+    int left30;
+    int right30;
+    int front;
+} SDistance3; 
+
+typedef struct _SDisplayItem{
+    CapMatColor imageData; //230400
+    SDistance3 stDistance3; //12
+    int nControl; //4
+} SDisplayItem;
+
+static SDisplayItem stDisplayItem;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image = PORT_INITIALIZE(TASK_ID, "image");
+    port_distance = PORT_INITIALIZE(TASK_ID, "distance");
+    port_control = PORT_INITIALIZE(TASK_ID, "control");
+    port_out_display = PORT_INITIALIZE(TASK_ID, "out_display");
+// ##INIT_PORT_SECTION::END
+    memset(&(stDisplayItem.imageData), 0, sizeof(CapMatColor)); //zero initialize
+    stDisplayItem.stDistance3 = {-1,-1,-1};
+    stDisplayItem.nControl = 0;
+    
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    //int image = -1;
+        
+            
+    if (MQ_AVAILABLE(port_image)){
+        MQ_RECEIVE(port_image, (unsigned char *)&(stDisplayItem.imageData), sizeof(stDisplayItem.imageData));           
+    }
+    if (MQ_AVAILABLE(port_distance)){
+       MQ_RECEIVE(port_distance, (unsigned char *)&(stDisplayItem.stDistance3), sizeof(stDisplayItem.stDistance3));
+    } 
+    stDisplayItem.nControl = -1;
+    BUF_RECEIVE(port_control, (unsigned char *)&(stDisplayItem.nControl), sizeof(stDisplayItem.nControl));
+    
+    BUF_SEND(port_out_display, (unsigned char *)&stDisplayItem, sizeof(stDisplayItem));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

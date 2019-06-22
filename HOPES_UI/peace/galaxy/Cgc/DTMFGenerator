@@ -1,0 +1,40 @@
+Domain "CGC"
+Target "default-CGC"
+TargetParameter "host" STRING ""
+TargetParameter "directory" STRING "$HOME/PEACE_SYSTEMS/CGC"
+TargetParameter "file" STRING ""
+TargetParameter "Looping Level" STRING "ACYLOOP #choices are: DEF, CLUST, SJS, ACYLOOP"
+TargetParameter "display?" INT "YES"
+TargetParameter "compile?" INT "YES"
+TargetParameter "run?" INT "YES"
+TargetParameter "write schedule?" INT "NO"
+TargetParameter "staticBuffering" INT "YES"
+TargetParameter "funcName" STRING "main"
+TargetParameter "compileCommand" STRING "gcc"
+TargetParameter "compileOptions" STRING ""
+TargetParameter "linkOptions" STRING "-lm"
+TargetParameter "resources" STRINGARRAY "STDIO"
+TargetParameter "optLevel" INT "0"
+TargetParameter "processor" STRING "arm720T"
+Run 10
+Parameter "LowFrequency" int "697"
+Parameter "HighFrequency" int "1209"
+Parameter "SamplingRate" int "8000"
+Parameter "ToneAmplitude" int "1.0"
+Galaxy "./icon/singen.icon" I0 16 32 0
+StarParameter 3 "sample_rate" float "SamplingRate" "frequency" float "LowFrequency" "phase_in_radians" float "0.0"
+Galaxy "./icon/singen.icon" I2 16 160 0
+StarParameter 3 "sample_rate" float "SamplingRate" "frequency" float "HighFrequency" "phase_in_radians" float "0.0"
+Star "./icon/Add2.icon" I4 144 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Mpy2.icon" I8 256 48 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Rect.icon" I12 184 168 0
+StarParameter 4 "procId" INT "-1" "height" FLOAT "0.5" "width" INT "SamplingRate/20" "period" INT "SamplingRate/10"
+Star "./icon/outport.icon" I14 344 48 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I16 "" Star I0 "output" Star I4 "input#1" 1 112 64 144 63 
+Line I17 "" Star I2 "output" Star I4 "input#2" 2 112 192 168 192 171 91 
+Line I18 "" Star I4 "output" Star I8 "input#1" 1 200 63 256 63 
+Line I19 "" Star I12 "output" Star I8 "input#2" 1 280 200 283 91 
+Line I20 "" Star I8 "output" Star I14 "input" 1 312 63 344 64 

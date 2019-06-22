@@ -1,0 +1,103 @@
+/************************************
+ *
+ * File : UserInput.cic
+ * Date : Oct 19, 2012 4:37 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+//#include <termios.h>
+//#include <unistd.h>
+//#include <fcntl.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    printf("************* Toy Example ****************\n");
+    printf(" p: PingPong\n");
+    printf("   (1~4: Speed control)\n"); 
+    printf(" c: Counter\n");
+    printf(" b: Counter & PingPong\n");
+    printf(" q: Quit\n");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+//static struct termios oldt, newt;
+//static int oldf;
+static char key[2] = {'p', 'c'};
+static int var;
+TASK_GO
+{
+    // TODO: task main code
+    /*
+        char input;
+        tcgetattr( STDIN_FILENO, &oldt );
+        newt = oldt;
+  
+        if(input != 'q'){
+            newt.c_cc[VMIN] = 0;
+            newt.c_cc[VTIME] = 1;
+            newt.c_lflag &= ~( ICANON | ECHO );
+            oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+            fcntl(STDIN_FILENO, F_SETFL,O_NDELAY);
+            tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+
+            while((input = getchar())) {
+                if(input == 'q' || input == 'c' || input == 'p' || input == 'b' 
+                        || input == '1' || input == '2' || input == '3' || input == '4')    break;
+            }
+
+            tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+            fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+            printf("UserInput: Sensing a key signal %c\n", input);
+            MQ_SEND(port_output, (unsigned char*)&input, sizeof(char));
+        }
+    */
+    MQ_SEND(port_output, (unsigned char*)&key[var%2], sizeof(char));
+    var++;
+    SLEEP(3);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+   // tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+   // fcntl(STDIN_FILENO, F_SETFL, oldf);
+}
+
+TASK_CODE_END

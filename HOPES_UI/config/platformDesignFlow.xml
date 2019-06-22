@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<codesign type='general'>
+	<version>0.2</version>
+
+	<step> 
+		<name>sim</name>
+		<tooltip>Function Simulation</tooltip>
+		<title>sim</title>
+		<order>0</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>default-BP</name>
+				</target>
+				<target type='candidate'> 
+					<name>HostSimul</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+	<step>
+		<name>platform</name>
+		<tooltip>Architecture</tooltip>
+		<title>platform</title>
+		<order>1</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>Archi</name>
+				<target type='default'> 
+					<name>platform</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+	<step>
+		<name>estimation</name>
+		<tooltip>Performance Estimation</tooltip>
+		<title>estimation</title>
+		<order>2</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'>
+				<name>BP</name>
+				<target type='default'> 
+					<name>Estimation</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+	<step> 
+		<name>graphgen</name>
+		<tooltip>Graph Analysis</tooltip>
+		<title>graphgen</title>
+		<order>3</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>GraphGenTarget</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+	<step>
+		<name>partition</name>
+		<tooltip>Partition</tooltip>
+		<title>partition</title>
+		<order>4</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>Cosynthesis</name>
+				</target>
+				<target type='candidate'> 
+					<name>CosynthesisExternalTarget</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+	<step>
+		<name>cosim</name>
+		<tooltip>Cosimulation</tooltip>
+		<title>cosim</title>
+		<order>5</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>Cosimulation</name>
+				</target>
+				<target type='candidate'> 
+					<name>Dynsoc</name>
+				</target>
+				<target type='candidate'> 
+					<name>SeamlessCVE</name>
+				</target>
+				<target type='candidate'> 
+					<name>SoCBase</name>
+				</target>
+				<target type='candidate'> 
+					<name>SoCBase_SC</name>
+				</target>
+				<target type='candidate'> 
+					<name>SystemC</name>
+				</target>
+				<target type='candidate'> 
+					<name>TLM</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+	<step>
+		<name>cosyn</name>
+		<tooltip>Cosynthesis</tooltip>
+		<title>cosyn</title>
+		<order>6</order>
+		<candidate allow='listed'>
+			<domain type='default' allow='listed'> 
+				<name>BP</name>
+				<target type='default'> 
+					<name>Versatile-board</name>
+				</target>
+				<target type='candidate'> 
+					<name>Huins-Board</name>
+				</target>
+				<target type='candidate'> 
+					<name>IPInterface</name>
+				</target>
+			</domain>
+		</candidate>
+	</step>
+
+</codesign>

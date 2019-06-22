@@ -1,0 +1,147 @@
+/************************************
+ *
+ * File : f.cic
+ * Date : Oct 30, 2018 2:40 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+#include "blas.h"
+#include "cuda.h"
+
+// ##DEFINE_SECTION::START
+#define BATCH 10
+
+#define IN_WIDTH        112
+#define IN_HEIGHT       112
+#define IN_CHANNEL      64
+
+#define OUT_WIDTH       56
+#define OUT_HEIGHT      56
+#define OUT_CHANNEL     64
+
+#define KERNEL_WIDTH    2
+#define KERNEL_HEIGHT   2
+#define STRIDE          2
+#define PADDING_WIDTH   0
+#define PADDING_HEIGHT  0
+
+#define PRINTopt 0
+// ##DEFINE_SECTION::END
+
+static float *pfPrevData;
+static float *pfData;
+
+static float *pfPrevDataGPU;
+static float *pfDataGPU;
+
+static cudnnTensorDescriptor_t srcTensorDesc;
+static cudnnTensorDescriptor_t dstTensorDesc;
+static cudnnPoolingDescriptor_t poolDesc;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_layer_idx;
+STATIC int port_input;
+STATIC int port_out_layer_idx;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+static void cudnn_pool_setup() {
+    cudnnSetTensor4dDescriptor(srcTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, BATCH, IN_CHANNEL, IN_HEIGHT,
+                               IN_WIDTH);
+    cudnnSetTensor4dDescriptor(dstTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, BATCH, OUT_CHANNEL, OUT_HEIGHT,
+                               OUT_WIDTH);
+    int pool_type = CUDNN_POOLING_MAX;
+    cudnnSetPooling2dDescriptor(poolDesc, (cudnnPoolingMode_t)pool_type, CUDNN_NOT_PROPAGATE_NAN,
+                                KERNEL_HEIGHT, KERNEL_WIDTH, PADDING_HEIGHT, PADDING_WIDTH,
+                                STRIDE, STRIDE);
+}
+
+TASK_INIT
+{
+	if(PRINTopt == 1)
+		printf("first_pool) start init\n");
+// ##INIT_PORT_SECTION::START
+    port_in_layer_idx = PORT_INITIALIZE(TASK_ID, "in_layer_index");
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_out_layer_idx = PORT_INITIALIZE(TASK_ID, "out_layer_index");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    int nInSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+    int nOutSize = OUT_WIDTH * OUT_HEIGHT * OUT_CHANNEL;
+
+    pfPrevData = (float *)calloc((BATCH * nInSize), sizeof(float));
+    pfData = (float *)calloc((BATCH * nOutSize), sizeof(float));
+    pfPrevDataGPU = cuda_make_array((float *)NULL, BATCH * nInSize);
+    pfDataGPU = cuda_make_array((float *)NULL, BATCH * nOutSize);
+
+    cudnnCreateTensorDescriptor(&srcTensorDesc);
+    cudnnCreateTensorDescriptor(&dstTensorDesc);
+    cudnnCreatePoolingDescriptor(&poolDesc);
+    cudnn_pool_setup();
+	if(PRINTopt == 1)
+		printf("first_pool) end init\n");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static int iter = 0;
+const float one = 1;
+const float zero = 0;
+TASK_GO
+{
+	if(PRINTopt == 1)
+		printf("first_pool) start\n");
+    // TODO: task main code
+	int i, j, k;
+    int nInSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
+    int nOutSize = OUT_WIDTH * OUT_HEIGHT * OUT_CHANNEL;
+    
+    MQ_RECEIVE(port_input, (unsigned char*)pfPrevDataGPU, sizeof(float) * nInSize * BATCH);
+	if(PRINTopt == 1)
+		printf("first_pool) receive end\n");
+    
+    cudnnPoolingForward(cudnn_handle(), poolDesc, &one, srcTensorDesc,
+                        pfPrevDataGPU, &zero, dstTensorDesc, pfDataGPU);
+
+    MQ_SEND(port_output, (unsigned char*)pfDataGPU, sizeof(float) * nOutSize * BATCH);
+	if(PRINTopt == 1)
+		printf("first_pool) iter : %d send end\n",iter);
+	iter++;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    cudaFree(pfPrevDataGPU);
+    cudaFree(pfDataGPU);
+}
+
+TASK_CODE_END

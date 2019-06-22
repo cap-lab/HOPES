@@ -1,0 +1,8 @@
+Platform
+Bus
+"VRep_SharedBus"
+101 36
+"./platform/iconImage/VRep_SharedBus.image"
+"" ""
+"" ""
+lineport "VRep_SharedBus" "VRep_SharedBus"

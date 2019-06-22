@@ -1,0 +1,106 @@
+/************************************
+ *
+ * File : Check.cic
+ * Date : Jul 24, 2018 10:37 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#define SIZE_OF_TRAIN_EX 40000
+#define SIZE_OF_TEST_EX 10000
+
+#define ANSWER_CORRECT 1
+#define ANSWER_WRONG 0
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_result;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_result = PORT_INITIALIZE(TASK_ID, "in_result");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int result[SIZE_OF_TRAIN_EX];
+    int i;
+    int num_correct = 0;
+    int nCurrent = 0; 
+    double err_rate = 0;
+    
+    MQ_RECEIVE(port_in_result, (unsigned char*)result, sizeof(int)*SIZE_OF_TRAIN_EX);
+    
+    for(i = 0; i < SIZE_OF_TRAIN_EX; i++)
+    {
+        if(result[i] == ANSWER_CORRECT)
+        {
+            num_correct++;    
+        }
+    }
+    
+    err_rate = ((double)(SIZE_OF_TRAIN_EX-num_correct)/SIZE_OF_TRAIN_EX);
+    printf("Check: num_correct: %d\tnum_wrong: %d\t error_rate: %.5f\n", num_correct, (SIZE_OF_TRAIN_EX-num_correct), ((double)(SIZE_OF_TRAIN_EX-num_correct)/SIZE_OF_TRAIN_EX));
+
+    UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &nCurrent);
+    printf("//////////////////////////////////////////////\n");
+    printf("Cur : %d\n",nCurrent);
+    printf("//////////////////////////////////////////////\n");
+    
+    if(err_rate < 0.03){
+        printf("//////////////////////////////////////////////\n");
+        printf("err : %lf\n",err_rate);
+        printf("Stop Next Iteration\n");
+        printf("//////////////////////////////////////////////\n");
+        UFLoop_StopNextIteration(THIS_TASK_ID);
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

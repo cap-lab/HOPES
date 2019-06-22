@@ -1,0 +1,130 @@
+/************************************
+ *
+ * File : Delta.cic
+ * Date : Oct 30, 2018 2:54 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+#include <float.h>
+
+#include "blas.h"
+#include "cuda.h"
+
+// ##DEFINE_SECTION::START
+#define BATCH 1
+
+#define NUM_CLASSES 1000
+#define TEST_ITER   1000
+#define LAST_DATA_SIZE 1000
+
+#define PRINTopt 0
+// ##DEFINE_SECTION::END
+
+static float test_Logits[LAST_DATA_SIZE * BATCH];
+static int test_Labels[BATCH];
+static int tmpLabel;
+static int result[BATCH];
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input_logits;
+STATIC int port_input_labels;
+STATIC int port_input_chunkindex;
+STATIC int port_output_result;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input_logits = PORT_INITIALIZE(TASK_ID, "input_logits");
+    port_input_labels = PORT_INITIALIZE(TASK_ID, "input_labels");
+    port_input_chunkindex = PORT_INITIALIZE(TASK_ID, "input_chunkindex");
+    port_output_result = PORT_INITIALIZE(TASK_ID, "output_result");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static int iter = 0;
+static int num_right = 0, num_wrong = 0;
+TASK_GO
+{
+	if(PRINTopt == 1)
+		printf("#^#^####DELTA start\n");
+    // TODO: task main code
+    int j, k;
+    int answer = -1, guess = -1;
+    float max = -FLT_MAX;
+    float predict;
+    int nChunkindex;
+    
+    MQ_RECEIVE(port_input_logits, (unsigned char*)test_Logits, sizeof(float) * LAST_DATA_SIZE * BATCH);
+    MQ_RECEIVE(port_input_labels, (unsigned char*)&test_Labels, sizeof(int) * BATCH);
+    MQ_RECEIVE(port_input_chunkindex, (unsigned char*)&nChunkindex, sizeof(int));
+	if(PRINTopt == 1)
+		printf("#^#^####DELTA receive finish\n");
+    
+    for (j = 0; j < BATCH; j++) {
+        answer = test_Labels[j];
+        guess = -1;
+        max = -FLT_MAX;
+        for (k = 0; k < NUM_CLASSES; k++) {
+            if (max < test_Logits[j * NUM_CLASSES + k]) {
+                max = test_Logits[j * NUM_CLASSES + k];
+                guess = k;
+            }
+        }
+        if (guess == answer){
+			result[j] = 1;
+            num_right++;
+		}
+        else{
+			result[j] = 0;
+            num_wrong++;
+		}
+    }
+
+    iter++;
+
+    predict = ((float)num_right) / (num_right + num_wrong) * 100; 
+    printf("[ TEST | %d / %d] Prediction Accuracy : %.2f(%d of %d)\r", iter, TEST_ITER, predict, num_right, num_wrong + num_right);
+	if(iter == NUM_CLASSES / BATCH){
+    	printf("[ TEST | %d / %d] Prediction Accuracy : %.2f(%d of %d)\n", iter, TEST_ITER, predict, num_right, num_wrong + num_right);
+	}
+    
+    AC_SEND(port_output_result, (unsigned char*)result, sizeof(int) * BATCH, nChunkindex);
+	if(PRINTopt == 1)
+		printf("#^#^####DELTA AC SEND finish\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

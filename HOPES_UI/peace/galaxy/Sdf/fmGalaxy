@@ -1,0 +1,37 @@
+Domain "<parent>"
+Target "<parent>"
+Run 10
+Parameter "Nc" float "1.0"
+Parameter "Nm" float "1.0"
+Star "./icon/inport.icon" I0 12 96 0
+StarParameter 4 "name" string "index" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/outport.icon" I2 536 40 0
+StarParameter 4 "name" string "output" "direction" string "out" "multi?" boolean "false" "type" string "ANYTYPE"
+Star "./icon/Mpy2.icon" I4 64 96 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Add2.icon" I8 320 104 0
+StarParameter 1 "procId" INT "-1"
+Star "./icon/Gain.icon" I12 152 168 3
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "Nm"
+Galaxy "./icon/oscillator.icon" I15 168 88 0
+Star "./icon/Gain.icon" I19 332 164 3
+StarParameter 2 "procId" INT "-1" "gain" FLOAT "Nc"
+Star "./icon/Fork2.icon" I22 232 232 3
+StarParameter 1 "procId" INT "-1"
+Star "./icon/inport.icon" I26 200 312 0
+StarParameter 4 "name" string "ptich" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Galaxy "./icon/oscillator.icon" I28 376 16 0
+Star "./icon/inport.icon" I32 280 24 0
+StarParameter 4 "name" string "amp" "direction" string "in" "multi?" boolean "false" "type" string "ANYTYPE"
+Line I34 "" Star I15 "amp" Star I12 "output" 1 168 128 168 168 
+Line I35 "" Star I15 "freq" Star I4 "output" 1 168 112 120 112 
+Line I36 "" Star I12 "output" Star I4 "input#2" 2 168 168 104 168 91 140 
+Line I37 "" Star I0 "output" Star I4 "input#1" 1 44 112 64 112 
+Line I38 "" Star I15 "output" Star I8 "input#1" 1 224 120 320 120 
+Line I39 "" Star I8 "input#2" Star I19 "output" 1 347 148 348 164 
+Line I40 "" Star I22 "output#2" Star I19 "input" 1 256 232 348 220 
+Line I41 "" Star I22 "output#1" Star I12 "input" 1 240 232 168 224 
+Line I42 "" Star I22 "input" Star I26 "output" 1 248 285 232 328 
+Line I43 "" Star I28 "freq" Star I32 "output" 1 376 40 312 40 
+Line I44 "" Star I28 "amp" Star I8 "output" 1 376 56 376 120 
+Line I45 "" Star I2 "input" Star I28 "output" 1 536 56 432 48 

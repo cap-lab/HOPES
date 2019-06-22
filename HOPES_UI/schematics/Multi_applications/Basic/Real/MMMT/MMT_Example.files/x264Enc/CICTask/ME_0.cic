@@ -1,0 +1,3118 @@
+/************************************
+ *
+ * File : ME_0.cic
+ * Date : Jul 23, 2009 10:53 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_p101;
+STATIC int port_p102;
+STATIC int port_p105;
+// ##DEFINE_PORT_SECTION::END
+
+/* Define macro for prototyping functions on ANSI & non-ANSI compilers */
+#ifndef ARGS
+#if defined(__STDC__) || defined(__cplusplus)
+#define ARGS(args) args
+#else
+#define ARGS(args) ()
+#endif
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include "x264.h"
+#include <string.h>
+#include "ME.h"
+typedef struct
+{
+    int i_type;
+    int i_first_mb;
+    int i_last_mb;		
+    int i_frame_num;		
+    int i_idr_pic_id;
+    int i_poc_lsb;		
+    int b_num_ref_idx_override;		
+    int i_qp;
+    int i_qp_delta;		
+    int i_disable_deblocking_filter_idc;		
+} SliceHeader;
+
+
+typedef struct{
+    int output[99];
+    int o_intFrameType;
+    SliceHeader o_msgSliceHeader;
+    init_info i_s_info;
+} InitMEPacket;
+
+typedef struct {
+   int output[99];
+   int o_intFrameType;
+   SliceHeader o_msgSliceHeader;
+   encoder_send_info e_s_info;
+   deblock_send_info d_s_info;
+   init_info i_info;
+} MEEncPacket;
+
+/* Define constants TRUE and FALSE for portability */
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+/* Define a complex data type if one has not been defined */
+#if !defined(COMPLEX_DATA)
+#define COMPLEX_DATA 1
+typedef struct complex_data { double real; double imag; } complex;
+#endif
+
+#define CGC_MOD(a,b) ((a)>=(b) ? (a-b):(a))
+#ifndef __CIC__
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
+#define QP_CONSTANT 26
+#define QP_CONSTANT_I 23
+/* lambda = pow(2,qp/6-2) */
+STATIC const int i_qp0_cost_table[52] = 
+{
+    1, 1, 1, 1, 1, 1, 1, 1,  /*  0-7 */
+    1, 1, 1, 1,              /*  8-11 */
+    1, 1, 1, 1, 2, 2, 2, 2,  /* 12-19 */
+    3, 3, 3, 4, 4, 4, 5, 6,  /* 20-27 */
+    6, 7, 8, 9,10,11,13,14,  /* 28-35 */
+    16,18,20,23,25,29,32,36,  /* 36-43 */
+    40,45,51,57,64,72,81,91   /* 44-51 */
+};
+#define QUANT_ONE( coef, mf ) \
+{ \
+    if( (coef) > 0 ) \
+    (coef) = ( f + (coef) * (mf) ) >> i_qbits; \
+    else \
+    (coef) = - ( ( f - (coef) * (mf) ) >> i_qbits ); \
+}
+#define ZIG(i,y,x) level[i] = dct[y][x];
+#define DEQUANT_SHL( x ) \
+    dct[y][x] = ( dct[y][x] * dequant4_mf[0][i_mf][y][x] ) << i_qbits
+
+#define DEQUANT_SHR( x ) \
+    dct[y][x] = ( dct[y][x] * dequant4_mf[0][i_mf][y][x] + f ) >> (-i_qbits)
+#define X264_SCAN8_SIZE 48 
+#define X264_SCAN8_0 12
+#define MAX_ME_RANGE 16
+#define SUBPIXEL_ME_P          5
+
+#define COST_MV_INT( mx, my, bd, d ) \
+{ \
+    int cost = x264_pixel_cmp[i_pixel]( src_block, 16,     \
+            &SAM[(my+16)*48+(mx+16)], 48 ) \
+    + p_cost_mvx[ (mx)<<2 ]  \
+    + p_cost_mvy[ (my)<<2 ]; \
+    if( cost < bcost ) \
+    {                  \
+        bcost = cost;  \
+        bmx = mx;      \
+        bmy = my;      \
+        if( bd ) \
+        dir = d; \
+    } \
+}
+#define COST_MV_SAD( mx, my, dir ) \
+    if( b_refine_qpel || (dir^1) != odir ) \
+{ \
+    int stride = 16; \
+    get_ref( ME_ref, 48, pix, stride, mx, my, bw, bh ); \
+    int cost = x264_pixel_cmp[i_pixel]( src_block, 16, pix, stride ) + p_cost_mvx[ mx ] + p_cost_mvy[ my ]; \
+    if( cost < bcost ) \
+    {                  \
+        bcost = cost;  \
+        bmx = mx;      \
+        bmy = my;      \
+        bdir = dir;    \
+    } \
+}
+#define COST_MV_SATD( mx, my, dir ) \
+    if( b_refine_qpel || (dir^1) != odir ) \
+{ \
+    int stride = 16; \
+    get_ref( ME_ref, 48, pix, stride, mx, my, bw, bh ); \
+    int cost = x264_pixel_cmp[i_pixel]( src_block, 16, pix, stride ) \
+    + p_cost_mvx[ mx ] + p_cost_mvy[ my ]; \
+    if( ( i_pixel <= PIXEL_8x8 ) && ( cost < bcost ) ) \
+    { \
+        motion_compensation_chroma_new( ME_ref_chroma[0], 24, pix, 8, mx, my, bw/2, bh/2 ); \
+        cost += x264_pixel_cmp[i_pixel+3]( src_block_U, 8, pix, 8 ); \
+        if( cost < bcost ) \
+        { \
+            motion_compensation_chroma_new( ME_ref_chroma[1], 24, pix, 8, mx, my, bw/2, bh/2 ); \
+            cost += x264_pixel_cmp[i_pixel+3]( src_block_V, 8, pix, 8 ); \
+        } \
+    } \
+    if( cost < bcost ) \
+    {                  \
+        bcost = cost;  \
+        bmx = mx;      \
+        bmy = my;      \
+        bdir = dir;    \
+    } \
+}
+#define PIXEL_SAD_C( name, lx, ly ) \
+    STATIC int name( uint8_t *pix1, int i_stride_pix1,  \
+            uint8_t *pix2, int i_stride_pix2 ) \
+{                                                   \
+    int i_sum = 0;                                  \
+    int x, y;                                       \
+    for( y = 0; y < ly; y++ )                       \
+    {                                               \
+        for( x = 0; x < lx; x++ )                   \
+        {                                           \
+            i_sum += abs( pix1[x] - pix2[x] );      \
+        }                                           \
+        pix1 += i_stride_pix1;                      \
+        pix2 += i_stride_pix2;                      \
+    }                                               \
+    return i_sum;                                   \
+}
+#define SPS_MB_WIDTH ((176+15)/16)
+#define SPS_MB_HEIGHT ((144+15)/16)
+
+
+struct IntArr4 predict_mode_703;
+int i_max_704;
+int i_predict16x16_705;
+int i_sad_i16x16_706;
+int do_it_1030;
+struct IntArr9 predict_mode_707;
+int i_max_708;
+int do_it_1031;
+int i_predict4x4_709;
+int i_sad_i4x4_710;
+struct Uint8_tArr16 best_4x4_block_711;
+int do_it_1032;
+int src_block_1034_phase;
+int recon_block_4_1036;
+struct Uint8_tArr16 src_block_4_712;
+struct preddata4 preddata4_713;
+int i_neighbour4_714;
+struct Uint8_tArr256 recon_block_16_715[2];
+int recon_block_16_1037;
+int recon_block_16_1037_phase;
+int do_it_out_716;
+int do_it_1039;
+int i_sad_i4x4_723;
+int i_sad_i4x4_1041_phase;
+struct IntBlock4x4 i_predict4x4_724;
+int i_predict4x4_1042_phase;
+int do_it_1043;
+struct Int16_tBlock4x4 dct4x4_725;
+int output_726[16];
+int do_it_1045;
+struct Int16_tBlock4x4 dct4x4_out_727;
+int do_it_1048;
+int do_it_1049;
+struct Int16_tBlock4x4 dct4x4_out_731;
+int do_it_1051;
+struct Uint8_tArr16 dst_block_732[16];
+int dst_block_1052;
+int output_749[32];
+int output_1053;
+struct IntArr4x2 mv8x8_753;
+int i_cost8x8_754;
+struct IntArr4 i_cost8x8_sub_755;
+struct IntArr4 cost_mv_756;
+struct mv_mb mv_mb_757;
+struct IntArr2 mv_758;
+int cost_759;
+struct ref_mb ref_mb_760;
+struct IntArr4x4x2 mv4x4_767;
+struct IntArr4x2x2 mv8x4_768;
+struct IntArr4x2x2 mv4x8_769;
+struct IntArr4 i_cost4x4_770;
+struct IntArr4 i_cost8x4_771;
+struct IntArr4 i_cost4x8_772;
+struct IntArr4x4 i_cost4x4_sub_773;
+struct IntArr4x2 i_cost8x4_sub_774;
+struct IntArr4x2 i_cost4x8_sub_775;
+int i_cost8x8_776;
+struct mv_mb mv_mb_777;
+struct IntArr2x2 mv16x8_778;
+struct IntArr2x2 mv8x16_779;
+int i_cost16x8_780;
+int i_cost8x16_781;
+struct IntArr2 i_cost16x8_sub_782;
+struct IntArr2 i_cost8x16_sub_783;
+struct mv_mb mv_mb_784;
+struct ref_mb ref_mb_785;
+int do_it_out_792;
+int i_type_799;
+int i_cost_804;
+struct IntArr4x4x2 mv_805;
+int do_it_out_816;
+struct mv_mb mv_mb_817;
+struct IntArr4 predict_mode_848;
+int i_max_849;
+int i_predict16x16_850;
+int i_sad_i16x16_851;
+struct IntArr9 predict_mode_852;
+int i_max_853;
+int i_predict4x4_854;
+int i_sad_i4x4_855;
+struct Uint8_tArr16 best_4x4_block_856;
+int src_block_1091_phase;
+int recon_block_4_1093;
+struct Uint8_tArr16 src_block_4_857;
+struct preddata4 preddata4_858;
+int i_neighbour4_859;
+struct Uint8_tArr256 recon_block_16_860;
+int recon_block_16_1094_phase;
+int do_it_out_861;
+int i_sad_i4x4_868;
+int i_sad_i4x4_1100_phase;
+struct IntBlock4x4 i_predict4x4_869;
+int i_predict4x4_1101_phase;
+struct Int16_tBlock4x4 dct4x4_870;
+int output_871[16];
+struct Int16_tBlock4x4 dct4x4_out_872;
+struct Int16_tBlock4x4 dct4x4_out_876;
+struct Uint8_tArr16 dst_block_877[16];
+int dst_block_1111;
+int output_894;
+int output_895[16];
+int i_sad_i8x8chroma_898;
+int i_chroma_pred_mode_899;
+struct Uint8_tArr64 dst_block_U_900;
+struct Uint8_tArr64 dst_block_V_901;
+int i_cost_903;
+int do_it_out_904;
+int i_sad_i8x8chroma_912;
+int i_chroma_pred_mode_913;
+struct Uint8_tArr64 dst_block_U_914;
+struct Uint8_tArr64 dst_block_V_915;
+int recon_block_4x4I_1129;
+struct IntBlock4x4 i_pred4x4_918;
+struct Uint8_tArr256 recon_block_4x4_919;
+int output_995;
+
+/* new global declaration */
+//int fid_5000;//
+//int fid_5001;//
+//int fid_5002;//
+//int fid_5005;//
+//int fid_5006;//
+//int fid_5007;//
+//int fid_5008;//
+//int fid_5009;//
+
+
+init_info i_info;
+neighbour_info n_info;
+STATIC int MB_index_ME;
+deblock_send_info d_s_info;
+encoder_send_info e_s_info;
+
+STATIC int phase_16;
+
+
+
+
+STATIC int predict_16x16_mode_available(unsigned int i_neighbour, int mode[4]) {
+    int ret;    
+
+    if( i_neighbour & MB_TOPLEFT )
+    {
+        /* top and left avaible */
+        *mode++ = I_PRED_16x16_V;
+        *mode++ = I_PRED_16x16_H;
+        *mode++ = I_PRED_16x16_DC;
+        *mode++ = I_PRED_16x16_P;
+        ret = 4;
+    }
+    else if( i_neighbour & MB_LEFT )
+    {
+        /* left available*/
+        *mode++ = I_PRED_16x16_DC_LEFT;
+        *mode++ = I_PRED_16x16_H;
+        ret = 2;
+    }
+    else if( i_neighbour & MB_TOP )
+    {
+        /* top available*/
+        *mode++ = I_PRED_16x16_DC_TOP;
+        *mode++ = I_PRED_16x16_V;
+        ret = 2;
+    }
+    else
+    {
+        /* none avaible */
+        *mode = I_PRED_16x16_DC_128;
+        ret = 1;
+    }
+
+    return ret;
+}
+STATIC inline int clip_uint8( int a )
+{
+    if (a&(~255))
+        return (-a)>>31;
+    else
+        return a;
+}
+STATIC void predict_16x16_v_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+    int i;
+    for( i = 0; i < 16; i++ )
+        memcpy(&src[i*16], &preddata[0][1], 16*sizeof(uint8_t));
+}
+STATIC void predict_16x16_h_new( uint8_t *src, uint8_t preddata[2][21])
+{
+    int i;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], preddata[1][i+1], 16);
+}
+STATIC void predict_16x16_dc_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+
+    int dc = 0;
+    int i;
+
+    /* calculate DC value */
+    for( i = 0; i < 16; i++ )
+    {
+        dc += preddata[0][i+1];
+        dc += preddata[1][i+1];
+    }
+    dc = ( dc + 16 ) >> 5;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], dc, 16);
+}
+STATIC void predict_16x16_p_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+    int x, y, i;
+    int a, b, c;
+    int H = 0;
+    int V = 0;
+    int i00;
+
+    /* calcule H and V */
+    for( i = 0; i <= 7; i++ )
+    {
+        H += ( i + 1 ) * ( preddata[0][9 + i] - preddata[0][7 -i] );
+        V += ( i + 1 ) * ( preddata[1][9 + i] - preddata[1][7 -i] );
+    }
+
+    a = 16 * ( preddata[1][16] + preddata[0][16] );
+    b = ( 5 * H + 32 ) >> 6;
+    c = ( 5 * V + 32 ) >> 6;
+
+    i00 = a - b * 7 - c * 7 + 16;
+
+    for( y = 0; y < 16; y++ )
+    {
+        for( x = 0; x < 16; x++ )
+        {
+            int pix;
+
+            pix = (i00+b*x)>>5;
+
+            src[y* 16 + x] = clip_uint8( pix );
+        }
+        i00 += c;
+    }
+}
+STATIC void predict_16x16_dc_left_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+    int dc = 0;
+    int i;
+
+    for( i = 0; i < 16; i++ )
+    {
+        dc += preddata[1][i+1];
+    }
+    dc = ( dc + 8 ) >> 4;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], dc, 16);
+}
+STATIC void predict_16x16_dc_top_new( uint8_t *src, uint8_t preddata[2][21] )
+{           
+    int dc = 0;
+    int i;
+
+    for( i = 0; i < 16; i++ )
+    {
+        dc += preddata[0][i + 1];
+    }
+    dc = ( dc + 8 ) >> 4;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], dc, 16);
+}
+STATIC void predict_16x16_dc_128_new( uint8_t *src, uint8_t preddata[2][21] )
+{           
+    int i;
+
+    for( i = 0; i < 16; i++ )
+        memset((void *)&src[i*16], 128, 16);
+}
+STATIC inline void pixel_sub_wxh( int16_t *diff, int i_size,
+        uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 )
+{
+    int y, x;
+    for( y = 0; y < i_size; y++ )
+    {
+        for( x = 0; x < i_size; x++ )
+        {
+            diff[x + y*i_size] = pix1[x] - pix2[x];
+        }
+        pix1 += i_pix1;
+        pix2 += i_pix2;
+    }
+}
+STATIC int pixel_satd_wxh( uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2, int i_width, int i_height )
+{
+    int16_t tmp[4][4];
+    int16_t diff[4][4];
+    int x, y;
+    int i_satd = 0;
+
+    for( y = 0; y < i_height; y += 4 )
+    {
+        for( x = 0; x < i_width; x += 4 )
+        {
+            int d;
+
+            pixel_sub_wxh( (int16_t*)diff, 4, &pix1[x], i_pix1, &pix2[x], i_pix2 );
+
+            for( d = 0; d < 4; d++ )
+            {
+                int s01, s23;
+                int d01, d23;
+
+                s01 = diff[d][0] + diff[d][1]; s23 = diff[d][2] + diff[d][3];
+                d01 = diff[d][0] - diff[d][1]; d23 = diff[d][2] - diff[d][3];
+
+                tmp[d][0] = s01 + s23;
+                tmp[d][1] = s01 - s23;
+                tmp[d][2] = d01 - d23;
+                tmp[d][3] = d01 + d23;
+            }
+            for( d = 0; d < 4; d++ )
+            {
+                int s01, s23;
+                int d01, d23;
+
+                s01 = tmp[0][d] + tmp[1][d]; s23 = tmp[2][d] + tmp[3][d];
+                d01 = tmp[0][d] - tmp[1][d]; d23 = tmp[2][d] - tmp[3][d];
+
+                i_satd += abs( s01 + s23 ) + abs( s01 - s23 ) + abs( d01 - d23 ) + abs( d01 + d23 );
+            }
+
+        }
+        pix1 += 4 * i_pix1;
+        pix2 += 4 * i_pix2;
+    }
+
+    return i_satd / 2;
+}
+STATIC void predict_16x16(int i_max, int mode[4], uint8_t src_block[16*16], uint8_t preddata16[2][21], int *i_predict16x16, int *i_sad_i16x16) {
+
+    int i_mode, i, i_sad;
+    uint8_t dst_block[16*16];
+
+    *i_sad_i16x16 = COST_MAX;
+
+    for (i = 0 ; i < i_max ; i++) {
+        i_mode = mode[i];
+        switch(i_mode)
+        {
+            case I_PRED_16x16_V :
+                predict_16x16_v_new( dst_block, preddata16 );
+                break;
+            case I_PRED_16x16_H :
+                predict_16x16_h_new( dst_block, preddata16 );
+                break;
+            case I_PRED_16x16_DC :
+                predict_16x16_dc_new( dst_block, preddata16 );
+                break;
+            case I_PRED_16x16_P :
+                predict_16x16_p_new( dst_block, preddata16 );
+                break;
+            case I_PRED_16x16_DC_LEFT :
+                predict_16x16_dc_left_new( dst_block, preddata16  );
+                break;
+            case I_PRED_16x16_DC_TOP :
+                predict_16x16_dc_top_new( dst_block, preddata16  );
+                break;
+            case I_PRED_16x16_DC_128 :
+                predict_16x16_dc_128_new( dst_block, preddata16  );
+                break;
+        }
+
+        i_sad = pixel_satd_wxh(dst_block, 16, src_block, 16, 16, 16);
+        if (*i_sad_i16x16 > i_sad) {
+            *i_predict16x16 = i_mode;
+            *i_sad_i16x16 = i_sad;
+        }
+    }
+}
+STATIC int predict_4x4_mode_available(unsigned int i_neighbour, int mode[9]);
+
+STATIC int predict_4x4_mode_available(unsigned int i_neighbour, int mode[9]) {
+    int ret;    
+
+    int b_l = i_neighbour & MB_LEFT;
+    int b_t = i_neighbour & MB_TOP;
+
+    if( b_l && b_t )
+    {
+        *mode++ = I_PRED_4x4_DC;
+        *mode++ = I_PRED_4x4_H;
+        *mode++ = I_PRED_4x4_V;
+        *mode++ = I_PRED_4x4_DDL;
+        *mode++ = I_PRED_4x4_DDR;
+        *mode++ = I_PRED_4x4_VR;
+        *mode++ = I_PRED_4x4_HD;
+        *mode++ = I_PRED_4x4_VL;
+        *mode++ = I_PRED_4x4_HU;
+        ret = 9;
+    }
+    else if( b_l )
+    {
+        *mode++ = I_PRED_4x4_DC_LEFT;
+        *mode++ = I_PRED_4x4_H;
+        *mode++ = I_PRED_4x4_HU;
+        ret = 3;
+    }
+    else if( b_t )
+    {
+        *mode++ = I_PRED_4x4_DC_TOP;
+        *mode++ = I_PRED_4x4_V;
+        *mode++ = I_PRED_4x4_DDL;
+        *mode++ = I_PRED_4x4_VL;
+        ret = 4;
+    }
+    else
+    {
+        *mode++ = I_PRED_4x4_DC_128;
+        ret = 1;
+    }
+
+    return ret;
+}
+STATIC void predict_4x4_v_new( uint8_t *src, uint8_t preddata[13] )
+{
+    int i,j;
+
+    for( i = 0; i < 4; i++ )
+    {
+        for( j = 0; j < 4; j++ )
+        {
+            src[i*4 +j] = preddata[j+1];
+        }
+    }
+}
+STATIC void predict_4x4_h_new( uint8_t *src, uint8_t preddata[13] )
+{
+    int i,j;
+
+    for( i = 0; i < 4; i++ )
+    {
+        for( j = 0; j < 4; j++ )
+        {
+            src[i*4 + j] = preddata[9+i];
+        }
+    }
+}
+STATIC void predict_4x4_dc_new( uint8_t *src, uint8_t preddata[13] )
+{
+    int x,y;
+    int dc = ( preddata[9] + preddata[10]+
+            preddata[11] + preddata[12] +
+            preddata[1]  + preddata[2] +
+            preddata[3]  + preddata[4] + 4 ) >> 3;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[y * 4 + x] = dc;
+        }
+    }
+}
+STATIC void predict_4x4_ddl_new( uint8_t *src, uint8_t preddata[13] )
+{
+    uint8_t t0 = preddata[1];
+    uint8_t t1 = preddata[2];
+    uint8_t t2 = preddata[3];
+    uint8_t t3 = preddata[4];
+    uint8_t t4 = preddata[5];
+    uint8_t t5 = preddata[6];
+    uint8_t t6 = preddata[7];
+    uint8_t t7 = preddata[8];   
+
+    src[0*4+0] = ( t0 + 2*t1+ t2 + 2 ) >> 2;
+
+    src[0*4+1] =
+        src[1*4+0] = ( t1 + 2*t2+ t3 + 2 ) >> 2;
+
+    src[0*4+2] =
+        src[1*4+1] =
+        src[2*4+0] = ( t2 + 2*t3+ t4 + 2 ) >> 2;
+
+    src[0*4+3] =
+        src[1*4+2] =
+        src[2*4+1] =
+        src[3*4+0] = ( t3 + 2*t4+ t5 + 2 ) >> 2;
+
+    src[1*4+3] =
+        src[2*4+2] =
+        src[3*4+1] = ( t4 + 2*t5+ t6 + 2 ) >> 2;
+
+    src[2*4+3] =
+        src[3*4+2] = ( t5 + 2*t6+ t7 + 2 ) >> 2;
+
+    src[3*4+3] = ( t6 + 3 * t7 + 2 ) >> 2;
+}
+STATIC void predict_4x4_ddr_new( uint8_t *src, uint8_t preddata[13] )
+{
+    const int lt = preddata[0];
+    uint8_t l0 = preddata[9];
+    uint8_t l1 = preddata[10];
+    uint8_t l2 = preddata[11];  
+    uint8_t l3 = preddata[12];
+    uint8_t t0 = preddata[1];
+    uint8_t t1 = preddata[2];
+    uint8_t t2 = preddata[3];
+    uint8_t t3 = preddata[4];
+
+    src[0*4+0] =
+        src[1*4+1] =
+        src[2*4+2] =
+        src[3*4+3] = ( t0 + 2*lt +l0 + 2 ) >> 2;
+
+    src[0*4+1] =
+        src[1*4+2] =
+        src[2*4+3] = ( lt + 2 * t0 + t1 + 2 ) >> 2;
+
+    src[0*4+2] =
+        src[1*4+3] = ( t0 + 2 * t1 + t2 + 2 ) >> 2;
+
+    src[0*4+3] = ( t1 + 2 * t2 + t3 + 2 ) >> 2;
+
+    src[1*4+0] =
+        src[2*4+1] =
+        src[3*4+2] = ( lt + 2 * l0 + l1 + 2 ) >> 2;
+
+    src[2*4+0] =
+        src[3*4+1] = ( l0 + 2 * l1 + l2 + 2 ) >> 2;
+
+    src[3*4+0] = ( l1 + 2 * l2 + l3 + 2 ) >> 2;
+}
+STATIC void predict_4x4_vr_new( uint8_t *src, uint8_t preddata[13])
+{
+    const int lt = preddata[0];
+    uint8_t l0 = preddata[9];
+    uint8_t l1 = preddata[10];
+    uint8_t l2 = preddata[11];  
+    uint8_t l3 = preddata[12];
+    uint8_t t0 = preddata[1];
+    uint8_t t1 = preddata[2];
+    uint8_t t2 = preddata[3];
+    uint8_t t3 = preddata[4];
+
+    /* produce warning as l3 is unused */
+
+    src[0*4+0]=
+        src[2*4+1]= ( lt + t0 + 1 ) >> 1;
+
+    src[0*4+1]=
+        src[2*4+2]= ( t0 + t1 + 1 ) >> 1;
+
+    src[0*4+2]=
+        src[2*4+3]= ( t1 + t2 + 1 ) >> 1;
+
+    src[0*4+3]= ( t2 + t3 + 1 ) >> 1;
+
+    src[1*4+0]=
+        src[3*4+1]= ( l0 + 2 * lt + t0 + 2 ) >> 2;
+
+    src[1*4+1]=
+        src[3*4+2]= ( lt + 2 * t0 + t1 + 2 ) >> 2;
+
+    src[1*4+2]=
+        src[3*4+3]= ( t0 + 2 * t1 + t2 + 2) >> 2;
+
+    src[1*4+3]= ( t1 + 2 * t2 + t3 + 2 ) >> 2;
+    src[2*4+0]= ( lt + 2 * l0 + l1 + 2 ) >> 2;
+    src[3*4+0]= ( l0 + 2 * l1 + l2 + 2 ) >> 2;
+}
+STATIC void predict_4x4_hd_new( uint8_t *src, uint8_t preddata[13]  )
+{
+    const int lt = preddata[0];
+    uint8_t l0 = preddata[9];
+    uint8_t l1 = preddata[10];
+    uint8_t l2 = preddata[11];  
+    uint8_t l3 = preddata[12];
+    uint8_t t0 = preddata[1];
+    uint8_t t1 = preddata[2];
+    uint8_t t2 = preddata[3];
+    /* produce warning as t3 is unused */
+
+    src[0*4+0]=
+        src[1*4+2]= ( lt + l0 + 1 ) >> 1;
+    src[0*4+1]=
+        src[1*4+3]= ( l0 + 2 * lt + t0 + 2 ) >> 2;
+    src[0*4+2]= ( lt + 2 * t0 + t1 + 2 ) >> 2;
+    src[0*4+3]= ( t0 + 2 * t1 + t2 + 2 ) >> 2;
+    src[1*4+0]=
+        src[2*4+2]= ( l0 + l1 + 1 ) >> 1;
+    src[1*4+1]=
+        src[2*4+3]= ( lt + 2 * l0 + l1 + 2 ) >> 2;
+    src[2*4+0]=
+        src[3*4+2]= ( l1 + l2+ 1 ) >> 1;
+    src[2*4+1]=
+        src[3*4+3]= ( l0 + 2 * l1 + l2 + 2 ) >> 2;
+    src[3*4+0]= ( l2 + l3 + 1 ) >> 1;
+    src[3*4+1]= ( l1 + 2 * l2 + l3 + 2 ) >> 2;
+}
+STATIC void predict_4x4_vl_new( uint8_t *src, uint8_t preddata[13]  )
+{
+    uint8_t t0 = preddata[1];
+    uint8_t t1 = preddata[2];
+    uint8_t t2 = preddata[3];
+    uint8_t t3 = preddata[4];
+    uint8_t t4 = preddata[5];
+    uint8_t t5 = preddata[6];
+    uint8_t t6 = preddata[7];
+    /* produce warning as t7 is unused */
+
+    src[0*4+0]= ( t0 + t1 + 1 ) >> 1;
+    src[0*4+1]=
+        src[2*4+0]= ( t1 + t2 + 1 ) >> 1;
+    src[0*4+2]=
+        src[2*4+1]= ( t2 + t3 + 1 ) >> 1;
+    src[0*4+3]=
+        src[2*4+2]= ( t3 + t4+ 1 ) >> 1;
+    src[2*4+3]= ( t4 + t5+ 1 ) >> 1;
+    src[1*4+0]= ( t0 + 2 * t1 + t2 + 2 ) >> 2;
+    src[1*4+1]=
+        src[3*4+0]= ( t1 + 2 * t2 + t3 + 2 ) >> 2;
+    src[1*4+2]=
+        src[3*4+1]= ( t2 + 2 * t3 + t4 + 2 ) >> 2;
+    src[1*4+3]=
+        src[3*4+2]= ( t3 + 2 * t4 + t5 + 2 ) >> 2;
+    src[3*4+3]= ( t4 + 2 * t5 + t6 + 2 ) >> 2;
+}
+STATIC void predict_4x4_hu_new( uint8_t *src, uint8_t preddata[13]  )
+{
+    uint8_t l0 = preddata[9];
+    uint8_t l1 = preddata[10];
+    uint8_t l2 = preddata[11];  
+    uint8_t l3 = preddata[12];
+
+    src[0*4+0]= ( l0 + l1 + 1 ) >> 1;
+    src[0*4+1]= ( l0 + 2 * l1 + l2 + 2 ) >> 2;
+
+    src[0*4+2]=
+        src[1*4+0]= ( l1 + l2 + 1 ) >> 1;
+
+    src[0*4+3]=
+        src[1*4+1]= ( l1 + 2*l2 + l3 + 2 ) >> 2;
+
+    src[1*4+2]=
+        src[2*4+0]= ( l2 + l3 + 1 ) >> 1;
+
+    src[1*4+3]=
+        src[2*4+1]= ( l2 + 2 * l3 + l3 + 2 ) >> 2;
+
+    src[2*4+3]=
+        src[3*4+1]=
+        src[3*4+0]=
+        src[2*4+2]=
+        src[3*4+2]=
+        src[3*4+3]= l3;
+}
+STATIC void predict_4x4_dc_left_new( uint8_t *src, uint8_t preddata[13] )
+{       
+    int x,y;
+    int dc = ( preddata[9] + preddata[10]+
+            preddata[11] + preddata[12] + 2 ) >> 2;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[y*4 + x] = dc;
+        }
+    }
+}
+STATIC void predict_4x4_dc_top_new( uint8_t *src, uint8_t preddata[13] )
+{           
+    int x,y;
+    int dc = ( preddata[1] + preddata[2] +
+            preddata[3] + preddata[4] + 2 ) >> 2;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[y*4 + x] = dc;
+        }
+    }
+}
+STATIC void predict_4x4_dc_128_new( uint8_t *src, uint8_t preddata[13] )
+{       
+    int x,y;
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[y*4 + x] = 128;
+        }
+    }
+}   
+STATIC void predict_4x4(int i_max, int mode[9], uint8_t src_block[4*4], uint8_t preddata4[13], int *i_predict4x4, int *i_sad_i4x4, uint8_t best_block[4*4]) {
+
+    int i_mode, i, i_sad;
+    uint8_t dst_block[4*4];
+
+    *i_sad_i4x4= COST_MAX;
+
+    for (i = 0 ; i < i_max ; i++) {
+        i_mode = mode[i];
+        switch(i_mode)
+        {
+            case I_PRED_4x4_V :
+                predict_4x4_v_new( dst_block, preddata4 );
+                //predict_4x4_v( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_H :
+                predict_4x4_h_new( dst_block, preddata4 );
+                //predict_4x4_h( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_DC :
+                predict_4x4_dc_new( dst_block, preddata4 );
+                //predict_4x4_dc( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_DDL :
+                predict_4x4_ddl_new( dst_block, preddata4 );
+                //predict_4x4_ddl( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_DDR :
+                predict_4x4_ddr_new( dst_block, preddata4 );
+                //predict_4x4_ddr( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_VR :
+                predict_4x4_vr_new( dst_block, preddata4 );
+                //predict_4x4_vr( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_HD :
+                predict_4x4_hd_new( dst_block, preddata4 );
+                //predict_4x4_hd( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_VL :
+                predict_4x4_vl_new( dst_block, preddata4 );
+                //predict_4x4_vl( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_HU :
+                predict_4x4_hu_new( dst_block, preddata4 );
+                //predict_4x4_hu( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_DC_LEFT :
+                predict_4x4_dc_left_new( dst_block, preddata4 );
+                //predict_4x4_dc_left( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_DC_TOP :
+                predict_4x4_dc_top_new( dst_block, preddata4 );
+                //predict_4x4_dc_top( p_dst_by, i_stride );
+                break;
+            case I_PRED_4x4_DC_128 :
+                predict_4x4_dc_128_new( dst_block, preddata4 );
+                //predict_4x4_dc_128( p_dst_by, i_stride );
+                break; 
+        }
+
+        i_sad = pixel_satd_wxh(dst_block, 4, src_block, 4, 4, 4);
+        if (*i_sad_i4x4 > i_sad) {
+            *i_predict4x4 = i_mode;
+            *i_sad_i4x4 = i_sad;
+            memcpy(best_block, dst_block, sizeof(uint8_t)*16);
+        }
+    }
+}
+STATIC void x264_prepred4x4(int i_neighbour, uint8_t recon_block_16[16*16], uint8_t preddata16[2][21], uint8_t recon_block_4[4*4], uint8_t src_block_4[4*4], uint8_t preddata4[13], int *p_neighbour4, int idx)
+{
+    int x, y, i;
+    int x1, y1;
+    int i_neighbour4[16];
+
+    x = block_idx_x[idx];
+    y = block_idx_y[idx];
+
+    if (idx) {
+        x1 = block_idx_x[idx-1];
+        y1 = block_idx_y[idx-1];
+
+        for (i = 0 ; i < 4 ; i++)
+            memcpy(&recon_block_16[(y1*4)*16 + i*16 + (x1*4)], &recon_block_4[i*4], sizeof(uint8_t)*4);
+    }
+
+    i_neighbour4[0] = (i_neighbour & (MB_TOP|MB_LEFT|MB_TOPLEFT))
+        | ((i_neighbour & MB_TOP) ? MB_TOPRIGHT : 0);
+    i_neighbour4[4] =
+        i_neighbour4[1] = MB_LEFT | ((i_neighbour & MB_TOP) ? (MB_TOP|MB_TOPLEFT|MB_TOPRIGHT) : 0);
+    i_neighbour4[2] =
+        i_neighbour4[8] =
+        i_neighbour4[10] = MB_TOP|MB_TOPRIGHT | ((i_neighbour & MB_LEFT) ? (MB_LEFT|MB_TOPLEFT) : 0);
+    i_neighbour4[3] =
+        i_neighbour4[7] =
+        i_neighbour4[11] =
+        i_neighbour4[13] =
+        i_neighbour4[15] = MB_LEFT|MB_TOP|MB_TOPLEFT;
+    i_neighbour4[5] = MB_LEFT | (i_neighbour & MB_TOPRIGHT)
+        | ((i_neighbour & MB_TOP) ? MB_TOP|MB_TOPLEFT : 0);
+    i_neighbour4[6] =
+        i_neighbour4[9] =
+        i_neighbour4[12] =
+        i_neighbour4[14] = MB_LEFT|MB_TOP|MB_TOPLEFT|MB_TOPRIGHT;
+
+
+    if (i_neighbour4[idx] & MB_TOP) {
+        if (y == 0) 
+            for (i = 0 ; i < 5 ; i++)
+                preddata4[i] = preddata16[0][x*4 + i];
+        else 
+            for (i = 0 ; i < 5 ; i++)
+                preddata4[i] = recon_block_16[(4*y-1)*16 + (4*x-1) + i];
+        if (x == 0)
+            preddata4[0] = preddata16[1][y*4];
+    }
+
+    if (i_neighbour4[idx] & MB_TOPRIGHT) {
+        if (y == 0) 
+            for (i = 5 ; i < 9 ; i++)
+                preddata4[i] = preddata16[0][x*4+i];
+        else 
+            if (x != 3)
+                for (i = 5 ; i < 9 ; i++)
+                    preddata4[i] = recon_block_16[(4*y-1)*16 + (4*x-1) + i];
+            else
+                for (i = 5 ; i < 9 ; i++)
+                    preddata4[i] = recon_block_16[(4*y-1)*16 + 15];
+    }
+    else {
+        if (y == 0) 
+            for (i = 5 ; i < 9 ; i++)
+                preddata4[i] = preddata16[0][x*4+4];
+        else 
+            for (i = 5 ; i < 9 ; i++)
+                preddata4[i] = recon_block_16[(4*y-1)*16 + (4*x)+ 3];
+    }
+
+    if (i_neighbour4[idx] & MB_LEFT){
+        if (x == 0) 
+            for (i = 9 ; i < 13 ; i++)
+                preddata4[i] = preddata16[1][(4*y) + (i-9) + 1];
+        else 
+            for (i = 9 ; i < 13 ; i++)
+                preddata4[i] = recon_block_16[(4*y)*16 + (i-9)*16 + (4*x) - 1];
+    }
+
+    *p_neighbour4 = i_neighbour4[idx];
+    for (i = 0 ; i < 4 ; i++)
+        memcpy(&src_block_4[i*4], &recon_block_16[(y*4)*16 + i*16 + (x*4)], sizeof(uint8_t)*4);
+}
+STATIC int x264_pred4x4_cond( int b_fast_intra, int i_sad_i16x16, int i_cost_inter)
+{
+    if (b_fast_intra && (i_sad_i16x16 > 2*i_cost_inter))
+        return 0;
+    else 
+        return 1;
+}
+STATIC void  x264_postpred4x4( int i_sad_i4x4_sub, int i_predict4x4_sub, int *i_sad_i4x4, int i_predict4x4[4][4], int idx)
+{
+    int x = block_idx_x[idx];
+    int y = block_idx_y[idx];
+
+    if(!idx)
+        *i_sad_i4x4 = 0;
+
+    i_predict4x4[x][y] = i_predict4x4_sub;
+    *i_sad_i4x4 += i_sad_i4x4_sub;
+}
+STATIC void sub4x4_dct( int16_t dct[4][4], uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 )
+{
+    int16_t d[4][4];
+    int16_t tmp[4][4];
+    int i;
+
+    pixel_sub_wxh( *d, 4, pix1, i_pix1, pix2, i_pix2 );
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s03 = d[i][0] + d[i][3];
+        const int s12 = d[i][1] + d[i][2];
+        const int d03 = d[i][0] - d[i][3];
+        const int d12 = d[i][1] - d[i][2];
+
+        tmp[0][i] =   s03 +   s12;
+        tmp[1][i] = 2*d03 +   d12;
+        tmp[2][i] =   s03 -   s12;
+        tmp[3][i] =   d03 - 2*d12;
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s03 = tmp[i][0] + tmp[i][3];
+        const int s12 = tmp[i][1] + tmp[i][2];
+        const int d03 = tmp[i][0] - tmp[i][3];
+        const int d12 = tmp[i][1] - tmp[i][2];
+
+        dct[0][i] =   s03 +   s12;
+        dct[1][i] = 2*d03 +   d12;
+        dct[2][i] =   s03 -   s12;
+        dct[3][i] =   d03 - 2*d12;
+    }
+}
+STATIC void quant_4x4_core( int16_t dct[4][4], int i_mf, int i_qbits, int f )
+{
+    int i;
+    for( i = 0; i < 16; i++ )
+        QUANT_ONE( dct[0][i], quant4_mf[0][i_mf][0][i] );
+}
+STATIC void quant_4x4(int16_t dct[4][4], int i_qscale, int b_intra )
+{
+    const int i_qbits = 15 + i_qscale / 6;
+    const int i_mf = i_qscale % 6;
+    const int f = ( 1 << i_qbits ) / ( b_intra ? 3 : 6 );
+    quant_4x4_core( dct, i_mf, i_qbits, f );
+}
+STATIC void scan_zigzag_4x4full( int level[16], int16_t dct[4][4] );
+
+STATIC void scan_zigzag_4x4full( int level[16], int16_t dct[4][4] )
+{
+    ZIG( 0,0,0) ZIG( 1,0,1) ZIG( 2,1,0) ZIG( 3,2,0)
+        ZIG( 4,1,1) ZIG( 5,0,2) ZIG( 6,0,3) ZIG( 7,1,2)
+        ZIG( 8,2,1) ZIG( 9,3,0) ZIG(10,3,1) ZIG(11,2,2)
+        ZIG(12,1,3) ZIG(13,2,3) ZIG(14,3,2) ZIG(15,3,3)
+}
+STATIC void dequant_4x4( int16_t dct[4][4],  int i_qp )
+{
+    const int i_mf = i_qp%6;
+    const int i_qbits = i_qp/6 - 4;
+    int y;
+
+    if( i_qbits >= 0 )
+    {
+        for( y = 0; y < 4; y++ )
+        {
+            DEQUANT_SHL( 0 );
+            DEQUANT_SHL( 1 );
+            DEQUANT_SHL( 2 );
+            DEQUANT_SHL( 3 );
+        }
+    }
+    else
+    {
+        const int f = 1 << (-i_qbits-1);
+        for( y = 0; y < 4; y++ )
+        {
+            DEQUANT_SHR( 0 );
+            DEQUANT_SHR( 1 );
+            DEQUANT_SHR( 2 );
+            DEQUANT_SHR( 3 );
+        }
+    }
+}
+STATIC void add4x4_idct( uint8_t *p_dst, int i_dst, int16_t dct[4][4] )
+{
+    int16_t d[4][4];
+    int16_t tmp[4][4];
+    int x, y;
+    int i;
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s02 =  dct[i][0]     +  dct[i][2];
+        const int d02 =  dct[i][0]     -  dct[i][2];
+        const int s13 =  dct[i][1]     + (dct[i][3]>>1);
+        const int d13 = (dct[i][1]>>1) -  dct[i][3];
+
+        tmp[i][0] = s02 + s13;
+        tmp[i][1] = d02 + d13;
+        tmp[i][2] = d02 - d13;
+        tmp[i][3] = s02 - s13;
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s02 =  tmp[0][i]     +  tmp[2][i];
+        const int d02 =  tmp[0][i]     -  tmp[2][i];
+        const int s13 =  tmp[1][i]     + (tmp[3][i]>>1);
+        const int d13 = (tmp[1][i]>>1) -   tmp[3][i];
+
+        d[0][i] = ( s02 + s13 + 32 ) >> 6;
+        d[1][i] = ( d02 + d13 + 32 ) >> 6;
+        d[2][i] = ( d02 - d13 + 32 ) >> 6;
+        d[3][i] = ( s02 - s13 + 32 ) >> 6;
+    }
+
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            p_dst[x] = clip_uint8( p_dst[x] + d[y][x] );
+        }
+        p_dst += i_dst;
+    }
+}
+STATIC inline int bs_size_ue( unsigned int val )
+{
+    STATIC const int i_size0_254[255] =
+    {
+        1, 3, 3, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7,
+        9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+        11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,
+        11,11,11,11,11,11,11,11,11,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+        13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+        13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,
+        13,13,13,13,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+        15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+        15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+        15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+        15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+        15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15
+    };
+
+    if( val < 255 )
+    {
+        return i_size0_254[val];
+    }
+    else
+    {
+        int i_size = 0;
+
+        val++;
+
+        if( val >= 0x10000 )
+        {
+            i_size += 32;
+            val = (val >> 16) - 1;
+        }
+        if( val >= 0x100 )
+        {
+            i_size += 16;
+            val = (val >> 8) - 1;
+        }
+        return i_size0_254[val] + i_size;
+    }
+}
+STATIC inline int bs_size_te( int x, int val )
+{
+    if( x == 1 )
+    {
+        return 1;
+    }
+    else if( x > 1 )
+    {
+        return bs_size_ue( val );
+    }
+    return 0;
+}
+STATIC inline int x264_median( int a, int b, int c )
+{
+    int min = a, max =a;
+    if( b < min )
+        min = b;
+    else
+        max = b;    /* no need to do 'b > max' (more consuming than always doing affectation) */
+
+    if( c < min )
+        min = c;
+    else if( c > max )
+        max = c;
+
+    return a + b + c - min - max;
+}
+    PIXEL_SAD_C( pixel_sad_16x16, 16, 16 )
+    PIXEL_SAD_C( pixel_sad_16x8,  16,  8 )
+    PIXEL_SAD_C( pixel_sad_8x16,   8, 16 )
+    PIXEL_SAD_C( pixel_sad_8x8,    8,  8 )
+    PIXEL_SAD_C( pixel_sad_8x4,    8,  4 )
+    PIXEL_SAD_C( pixel_sad_4x8,    4,  8 )
+    PIXEL_SAD_C( pixel_sad_4x4,    4,  4 )
+STATIC inline void pixel_avg( uint8_t *dst,  int i_dst_stride,
+        uint8_t *src1, int i_src1_stride,
+        uint8_t *src2, int i_src2_stride,
+        int i_width, int i_height )
+{
+    int x, y;
+    for( y = 0; y < i_height; y++ )
+    {
+        for( x = 0; x < i_width; x++ )
+        {
+            dst[x] = ( src1[x] + src2[x] + 1 ) >> 1;
+        }
+        dst  += i_dst_stride;
+        src1 += i_src1_stride;
+        src2 += i_src2_stride;
+    }
+}
+STATIC void get_ref( uint8_t src[4][48*48], int i_src_stride,
+        uint8_t *dst,    int i_dst_stride,
+        int mvx,int mvy,
+        int i_width, int i_height )
+{
+    uint8_t *src1, *src2;
+
+    int correction = (mvx&1) && (mvy&1) && ((mvx&2) ^ (mvy&2));
+    int hpel1x = mvx>>1;
+    int hpel1y = (mvy+1-correction)>>1;
+    int shpel1x = hpel1x >> 1;
+    int shpel1y = hpel1y >> 1;
+    int filter1 = (hpel1x & 1) + ( (hpel1y & 1) << 1 );
+
+    src1 = src[filter1] + (shpel1y+16) * i_src_stride + (shpel1x+16);
+
+    if ( (mvx|mvy) & 1 ) /* qpel interpolation needed */
+    {
+        int hpel2x = (mvx+1)>>1;
+        int hpel2y = (mvy+correction)>>1;
+        int shpel2x = hpel2x >> 1;
+        int shpel2y = hpel2y >> 1;
+        int filter2 = (hpel2x & 1) + ( (hpel2y & 1) <<1 );
+
+        src2 = src[filter2] + (shpel2y+16) * i_src_stride + (shpel2x+16);
+
+        pixel_avg( dst, i_dst_stride, src1, i_src_stride,
+                src2, i_src_stride, i_width, i_height );
+    }
+    else
+    {
+        //*i_dst_stride = i_src_stride;
+        //return src1;
+        int i;
+        for (i = 0 ; i < 16 ; i++) 
+            memcpy(&dst[i*16], &src1[i*48], sizeof(uint8_t)*16);
+
+    }
+}
+
+STATIC void motion_compensation_chroma_new( uint8_t *src, int i_src_stride,
+        uint8_t *dst, int i_dst_stride,
+        int mvx, int mvy,
+        int i_width, int i_height )
+{
+    uint8_t *srcp;
+    int x, y;
+
+    const int d8x = mvx&0x07;
+    const int d8y = mvy&0x07;
+
+    const int cA = (8-d8x)*(8-d8y);
+    const int cB = d8x    *(8-d8y);
+    const int cC = (8-d8x)*d8y;
+    const int cD = d8x    *d8y;
+
+    src  += ((mvy >> 3)+8) * i_src_stride + ((mvx >> 3)+8);
+    srcp = &src[i_src_stride];
+
+    for( y = 0; y < i_height; y++ )
+    {
+        for( x = 0; x < i_width; x++ )
+        {
+            dst[x] = ( cA*src[x]  + cB*src[x+1] +
+                    cC*srcp[x] + cD*srcp[x+1] + 32 ) >> 6;
+        }
+        dst  += i_dst_stride;
+
+        src   = srcp;
+        srcp += i_src_stride;
+    }
+}        
+STATIC void x264_mb_predict_mv(int16_t mv[2][48][2], int8_t ref[2][48], int i_list, int idx, int i_width, int mvp[2], int i_partition)
+{
+    const int i8 = x264_scan8[idx];
+    const int i_ref= ref[i_list][i8];
+    int     i_refa = ref[i_list][i8 - 1];
+    int16_t *mv_a  = mv[i_list][i8 - 1];
+    int     i_refb = ref[i_list][i8 - 8];
+    int16_t *mv_b  = mv[i_list][i8 - 8];
+    int     i_refc = ref[i_list][i8 - 8 + i_width ];
+    int16_t *mv_c  = mv[i_list][i8 - 8 + i_width];
+    int i_count;
+
+    if( (idx&0x03) == 3 || ( i_width == 2 && (idx&0x3) == 2 )|| i_refc == -2 )
+    {
+        i_refc = ref[i_list][i8 - 8 - 1];
+        mv_c   = mv[i_list][i8 - 8 - 1];
+    }
+
+    if( i_partition == D_16x8 )
+    {
+        if( idx == 0 && i_refb == i_ref )
+        {
+            mvp[0] = mv_b[0];
+            mvp[1] = mv_b[1];
+            return;
+        }
+        else if( idx != 0 && i_refa == i_ref )
+        {
+            mvp[0] = mv_a[0];
+            mvp[1] = mv_a[1];
+            return;
+        }
+    }
+    else if( i_partition == D_8x16 )
+    {
+        if( idx == 0 && i_refa == i_ref )
+        {
+            mvp[0] = mv_a[0];
+            mvp[1] = mv_a[1];
+            return;
+        }
+        else if( idx != 0 && i_refc == i_ref )
+        {
+            mvp[0] = mv_c[0];
+            mvp[1] = mv_c[1];
+            return;
+        }
+    }
+
+    i_count = 0;
+    if( i_refa == i_ref ) i_count++;
+    if( i_refb == i_ref ) i_count++;
+    if( i_refc == i_ref ) i_count++;
+
+    if( i_count > 1 )
+    {
+        mvp[0] = x264_median( mv_a[0], mv_b[0], mv_c[0] );
+        mvp[1] = x264_median( mv_a[1], mv_b[1], mv_c[1] );
+    }
+    else if( i_count == 1 )
+    {
+        if( i_refa == i_ref )
+        {
+            mvp[0] = mv_a[0];
+            mvp[1] = mv_a[1];
+        }
+        else if( i_refb == i_ref )
+        {
+            mvp[0] = mv_b[0];
+            mvp[1] = mv_b[1];
+        }
+        else
+        {
+            mvp[0] = mv_c[0];
+            mvp[1] = mv_c[1];
+        }
+    }
+    else if( i_refb == -2 && i_refc == -2 && i_refa != -2 )
+    {
+        mvp[0] = mv_a[0];
+        mvp[1] = mv_a[1];
+    }
+    else
+    {
+        mvp[0] = x264_median( mv_a[0], mv_b[0], mv_c[0] );
+        mvp[1] = x264_median( mv_a[1], mv_b[1], mv_c[1] );
+    }
+}
+STATIC void x264_me_search_ref( int mvp[2], uint8_t SAM[48*48], uint8_t *src_block, int i_pixel, int mv[2], int *cost )        
+{
+    int bmx = 0, bmy = 0, bcost;
+    int omx, omy, pmx, pmy;
+    int i;
+    int dir;
+    int m_cost_mv;
+
+    const int16_t *p_cost_mvx = p_cost_mv - mvp[0];
+    const int16_t *p_cost_mvy = p_cost_mv - mvp[1];
+    int (*x264_pixel_cmp[7]) (uint8_t *, int, uint8_t *, int);
+
+    x264_pixel_cmp[PIXEL_16x16] = pixel_sad_16x16;
+    x264_pixel_cmp[PIXEL_16x8]  = pixel_sad_16x8;
+    x264_pixel_cmp[PIXEL_8x16]  = pixel_sad_8x16;
+    x264_pixel_cmp[PIXEL_8x8]   = pixel_sad_8x8;
+    x264_pixel_cmp[PIXEL_8x4]   = pixel_sad_8x4;
+    x264_pixel_cmp[PIXEL_4x8]   = pixel_sad_4x8;
+    x264_pixel_cmp[PIXEL_4x4]   = pixel_sad_4x4;
+
+    bcost = COST_MAX;
+    // I do not know why this helps 
+    bcost -= p_cost_mvx[ bmx<<2 ] + p_cost_mvy[ bmy<<2 ];
+
+    COST_MV_INT( 0, 0, 0, 0 );
+
+    // hexagon search, radius 2 
+    // equivalent to the above, but eliminates duplicate candidates 
+    dir = -1;
+    omx = bmx = 0; omy = bmy = 0;
+    COST_MV_INT( omx-2, omy,  1, 0 );
+    COST_MV_INT( omx-1, omy+2, 1, 1 );
+    COST_MV_INT( omx+1, omy+2, 1, 2 );
+    COST_MV_INT( omx+2, omy,  1, 3 );
+    COST_MV_INT( omx+1, omy-2, 1, 4 );
+    COST_MV_INT( omx-1, omy-2, 1, 5 );
+
+    if( dir != -1 )
+    {
+        for( i = 1; i < MAX_ME_RANGE/2 - 1; i++ )
+        {
+            STATIC const int hex2[8][2] = {{-1,-2}, {-2,0}, {-1,2}, {1,2}, {2,0}, {1,-2}, {-1,-2}, {-2,0}};
+            STATIC const int mod6[8] = {5,0,1,2,3,4,5,0};
+            const int odir = mod6[dir+1];
+            omx = bmx; omy = bmy;
+            COST_MV_INT( omx + hex2[odir+0][0], omy + hex2[odir+0][1], 1, odir-1 );
+            COST_MV_INT( omx + hex2[odir+1][0], omy + hex2[odir+1][1], 1, odir   );
+            COST_MV_INT( omx + hex2[odir+2][0], omy + hex2[odir+2][1], 1, odir+1 );
+            if( bmx == omx && bmy == omy )
+                break;
+        }
+    }
+    // square refine 
+    // DIA1_ITER( bmx, bmy );
+    omx = bmx; omy = bmy;    
+    COST_MV_INT( omx  , omy-1, 0, 0 );
+    COST_MV_INT( omx  , omy+1, 0, 0 );
+    COST_MV_INT( omx-1, omy, 0, 0   );
+    COST_MV_INT( omx+1, omy, 0, 0   );
+    COST_MV_INT( omx-1, omy-1, 0, 0 );
+    COST_MV_INT( omx-1, omy+1, 0, 0 );
+    COST_MV_INT( omx+1, omy-1, 0, 0 );
+    COST_MV_INT( omx+1, omy+1, 0, 0 );
+
+    if (bmx < -16 || bmx > 16) printf("ASSERTION FAILURE!! bmx : %d\n", bmx);
+    if (bmy < -16 || bmy > 16) printf("ASSERTION FAILURE!! bmy : %d\n", bmy);	
+
+    // -> qpel mv 
+    mv[0] = bmx << 2;
+    mv[1] = bmy << 2;
+
+    // compute the real cost 
+    m_cost_mv = p_cost_mvx[ mv[0] ] + p_cost_mvy[ mv[1] ];
+    *cost = bcost;
+    if( bmx == pmx && bmy == pmy )
+        *cost += m_cost_mv;
+}
+STATIC void x264_refine_subpel(int hpel_iters, int qpel_iters, int i_pixel, int cost_in, int mvp[2], int mv_in[2], uint8_t *src_block, uint8_t *src_block_U, uint8_t *src_block_V, uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], int b_refine_qpel, int *cost, int *cost_mv, int mv[2])
+{
+    const int bw = x264_pixel_size[i_pixel][0];
+    const int bh = x264_pixel_size[i_pixel][1];
+    const int16_t *p_cost_mvx = p_cost_mv - mvp[0];
+    const int16_t *p_cost_mvy = p_cost_mv - mvp[1];	
+#ifdef USE_DECLARE_ALIGNED
+    DECLARE_ALIGNED( uint8_t, pix[16*16], 16 );
+#else
+    uint8_t pix[16*16];
+#endif
+    int omx, omy;
+    int i;
+
+    int bmx = mv_in[0];
+    int bmy = mv_in[1];
+    int bcost = cost_in;
+    int odir = -1, bdir;
+
+    int (*x264_pixel_cmp[7]) (uint8_t *, int, uint8_t *, int);
+
+    x264_pixel_cmp[PIXEL_16x16] = pixel_sad_16x16;
+    x264_pixel_cmp[PIXEL_16x8]  = pixel_sad_16x8;
+    x264_pixel_cmp[PIXEL_8x16]  = pixel_sad_8x16;
+    x264_pixel_cmp[PIXEL_8x8]   = pixel_sad_8x8;
+    x264_pixel_cmp[PIXEL_8x4]   = pixel_sad_8x4;
+    x264_pixel_cmp[PIXEL_4x8]   = pixel_sad_4x8;
+    x264_pixel_cmp[PIXEL_4x4]   = pixel_sad_4x4;
+
+    /* hpel search */
+    bdir = -1;
+    for( i = hpel_iters; i > 0; i-- )
+    {
+        odir = bdir;
+        omx = bmx;
+        omy = bmy;
+        COST_MV_SAD( omx, omy - 2, 0 );
+        COST_MV_SAD( omx, omy + 2, 1 );
+        COST_MV_SAD( omx - 2, omy, 2 );
+        COST_MV_SAD( omx + 2, omy, 3 );
+        if( bmx == omx && bmy == omy )
+            break;
+    }
+
+    if( !b_refine_qpel )
+    {
+        bcost = COST_MAX;
+        COST_MV_SATD( bmx, bmy, -1 );
+    }
+
+    /* early termination when examining multiple reference frames */
+
+    /* qpel search */
+    bdir = -1;
+    for( i = qpel_iters; i > 0; i-- )
+    {
+        odir = bdir;
+        omx = bmx;
+        omy = bmy;
+        COST_MV_SATD( omx, omy - 1, 0 );
+        COST_MV_SATD( omx, omy + 1, 1 );
+        COST_MV_SATD( omx - 1, omy, 2 );
+        COST_MV_SATD( omx + 1, omy, 3 );
+        if( bmx == omx && bmy == omy )
+            break;
+    }
+
+    *cost = bcost;
+    mv[0] = bmx;
+    mv[1] = bmy;
+    *cost_mv = p_cost_mvx[ bmx ] + p_cost_mvy[ bmy ];
+
+}
+STATIC void x264_macroblock_cache_mv(int16_t mv_mb[2][48][2], int x, int y, int width, int height, int i_list, int mvx, int mvy )
+{
+    int dy, dx;
+    for( dy = 0; dy < height; dy++ )
+    {
+        for( dx = 0; dx < width; dx++ )
+        {
+            mv_mb[i_list][X264_SCAN8_0+x+dx+8*(y+dy)][0] = mvx;
+            mv_mb[i_list][X264_SCAN8_0+x+dx+8*(y+dy)][1] = mvy;
+        }
+    }
+}
+STATIC void x264_mb_analyse_inter_p8x8(int i_lambda, int16_t mv_mb_in[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv8x8[4][2], int *i_cost8x8, int i_cost8x8_sub[4], int cost_mv[4], int16_t mv_mb[2][48][2])
+{
+    const int i_ref_cost = (i_lambda * bs_size_te(0, 0));
+    int i;
+    *i_cost8x8 = 0;
+
+    memcpy(&mv_mb[0][0][0], &mv_mb_in[0][0][0], sizeof(int16_t)*2*48*2);
+    for (i = 0 ; i < 4 ; i++)
+    {
+        const int i_sub_mb_p_cost_table[4] = { 5, 3, 3, 1 };
+        const int x8 = i % 2;
+        const int y8 = i / 2;
+
+        int i_pixel = PIXEL_8x8;
+        int mvp[2];
+        int sub_cost_mv;
+        int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+        int qpel = subpel_iterations[SUBPIXEL_ME_P][3];
+
+        uint8_t *p_src_block = src_block + 8*x8 + 8*y8*16;
+        uint8_t *p_src_block_U = src_block_U + 4*x8 + 4*y8*8;
+        uint8_t *p_src_block_V = src_block_V + 4*x8 + 4*y8*8;		
+
+        x264_mb_predict_mv(mv_mb, ref_mb_in, 0, 4*i, 2, mvp, D_8x8);
+        x264_me_search_ref(mvp, ME_ref[0], p_src_block, i_pixel, mv8x8[i], &i_cost8x8_sub[i]);
+        x264_refine_subpel(hpel, qpel, i_pixel, i_cost8x8_sub[i], mvp, mv8x8[i], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 0, &i_cost8x8_sub[i], &sub_cost_mv, mv8x8[i]);
+        i_cost8x8_sub[i] += i_ref_cost;
+        i_cost8x8_sub[i] += i_lambda * i_sub_mb_p_cost_table[D_L0_8x8];
+        cost_mv[i] = sub_cost_mv;
+        *i_cost8x8 += i_cost8x8_sub[i];
+
+        x264_macroblock_cache_mv(mv_mb, 2*x8, 2*y8, 2, 2, 0, mv8x8[i][0], mv8x8[i][1]);
+    }
+
+    *i_cost8x8 = *i_cost8x8 - (i_lambda * bs_size_te(0, 0));
+}
+STATIC void x264_mb_predict_mv_16x16(int16_t mv[2][48][2], int8_t ref[2][48], int mvp[2])
+{
+    int     i_refa = ref[0][X264_SCAN8_0 - 1];
+    int16_t *mv_a  = mv[0][X264_SCAN8_0 - 1];
+    int     i_refb = ref[0][X264_SCAN8_0 - 8];
+    int16_t *mv_b  = mv[0][X264_SCAN8_0 - 8];
+    int     i_refc = ref[0][X264_SCAN8_0 - 8 + 4];
+    int16_t *mv_c  = mv[0][X264_SCAN8_0 - 8 + 4];
+
+    int i_count;
+    int i_ref = 0;
+
+    if( i_refc == -2 )
+    {
+        i_refc = ref[0][X264_SCAN8_0 - 8 - 1];
+        mv_c   = mv[0][X264_SCAN8_0 - 8 - 1];
+    }
+
+    i_count = 0;
+    if( i_refa == 0 ) i_count++;
+    if( i_refb == 0 ) i_count++;
+    if( i_refc == 0 ) i_count++;
+
+    if( i_count > 1 )
+    {
+        mvp[0] = x264_median( mv_a[0], mv_b[0], mv_c[0] );
+        mvp[1] = x264_median( mv_a[1], mv_b[1], mv_c[1] );
+    }
+    else if( i_count == 1 )
+    {
+        if( i_refa == i_ref )
+        {
+            mvp[0] = mv_a[0];
+            mvp[1] = mv_a[1];
+        }
+        else if( i_refb == i_ref )
+        {
+            mvp[0] = mv_b[0];
+            mvp[1] = mv_b[1];
+        }
+        else
+        {
+            mvp[0] = mv_c[0];
+            mvp[1] = mv_c[1];
+        }
+    }
+    else if( i_refb == -2 && i_refc == -2 && i_refa != -2 )
+    {
+        mvp[0] = mv_a[0];
+        mvp[1] = mv_a[1];
+    }
+    else
+    {
+        mvp[0] = x264_median( mv_a[0], mv_b[0], mv_c[0] );
+        mvp[1] = x264_median( mv_a[1], mv_b[1], mv_c[1] );
+    }
+}
+STATIC void x264_macroblock_cache_ref(int8_t ref_mb[2][48], int x, int y, int width, int height, int i_list, int ref )
+{
+    int dy, dx;
+    for( dy = 0; dy < height; dy++ )
+    {
+        for( dx = 0; dx < width; dx++ )
+        {
+            ref_mb[i_list][X264_SCAN8_0+x+dx+8*(y+dy)] = ref;
+        }
+    }
+}
+STATIC void x264_mb_analyse_inter_p16x16(int i_lambda, int16_t mv_mb_in[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv[2], int *cost, int8_t ref_mb[2][48])
+{
+    int i_pixel = PIXEL_16x16;
+    const int i_ref_cost = (i_lambda * bs_size_te(0, 0));
+
+    int mvp[2];
+    int cost_mv;
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][3];
+
+    *cost = 0;
+
+    x264_mb_predict_mv_16x16(mv_mb_in, ref_mb_in, mvp);
+    x264_me_search_ref(mvp, ME_ref[0], src_block, i_pixel, mv, cost);
+    x264_refine_subpel(hpel, qpel, i_pixel, *cost, mvp, mv, src_block, src_block_U, src_block_V, ME_ref, ME_ref_chroma, 0, cost, &cost_mv, mv);	
+
+    *cost += i_ref_cost;
+
+    memcpy(&ref_mb[0][0], &ref_mb_in[0][0], sizeof(int8_t)*2*48);
+    x264_macroblock_cache_ref(ref_mb, 0, 0, 4, 4, 0, 0);
+}
+STATIC inline void x264_mb_cache_mv_p8x8(int i, int16_t mv_mb[2][48][2], int sub_partition[4], int mv4x4[4][4][2], int mv8x4[4][2][2], int mv4x8[4][2][2], int mv8x8[4][2])
+{
+    const int x = 2*(i%2);
+    const int y = 2*(i/2);
+
+    switch( sub_partition[i] )
+    {
+        case D_L0_8x8:
+            x264_macroblock_cache_mv(mv_mb, x, y, 2, 2, 0, mv8x8[i][0], mv8x8[i][1]);
+            break;
+        case D_L0_8x4:
+            x264_macroblock_cache_mv(mv_mb, x, y+0, 2, 1, 0, mv8x4[i][0][0], mv8x4[i][0][1]);
+            x264_macroblock_cache_mv(mv_mb, x, y+1, 2, 1, 0, mv8x4[i][1][0], mv8x4[i][1][1]);		 
+            break;
+        case D_L0_4x8:
+            x264_macroblock_cache_mv(mv_mb, x+0, y, 1, 2, 0, mv4x8[i][0][0], mv4x8[i][0][1] );
+            x264_macroblock_cache_mv(mv_mb, x+1, y, 1, 2, 0, mv4x8[i][1][0], mv4x8[i][1][1] );
+            break;
+        case D_L0_4x4:
+            x264_macroblock_cache_mv( mv_mb, x+0, y+0, 1, 1, 0, mv4x4[i][0][0], mv4x4[i][0][1] );
+            x264_macroblock_cache_mv( mv_mb, x+1, y+0, 1, 1, 0, mv4x4[i][1][0], mv4x4[i][1][1] );
+            x264_macroblock_cache_mv( mv_mb, x+0, y+1, 1, 1, 0, mv4x4[i][2][0], mv4x4[i][2][1] );
+            x264_macroblock_cache_mv( mv_mb, x+1, y+1, 1, 1, 0, mv4x4[i][3][0], mv4x4[i][3][1] );
+            break;
+        default:
+            //x264_log( h, "internal error\n" );
+            break;
+    }
+}
+STATIC int x264_mb_analyse_inter_p4x4_chroma(uint8_t ME_ref_chroma[2][24*24], uint8_t src_block_U[64], uint8_t src_block_V[64], int (*mv)[2], int i8x8, int i_pixel)
+{
+    uint8_t pix1[8*8], pix2[8*8];
+    const int off = 4*(i8x8&1) + 2*(i8x8&2)*24;
+    int (*x264_pixel_cmp[7]) (uint8_t *, int, uint8_t *, int);
+
+    x264_pixel_cmp[PIXEL_16x16] = pixel_sad_16x16;
+    x264_pixel_cmp[PIXEL_16x8]  = pixel_sad_16x8;
+    x264_pixel_cmp[PIXEL_8x16]  = pixel_sad_8x16;
+    x264_pixel_cmp[PIXEL_8x8]   = pixel_sad_8x8;
+    x264_pixel_cmp[PIXEL_8x4]   = pixel_sad_8x4;
+    x264_pixel_cmp[PIXEL_4x8]   = pixel_sad_4x8;
+    x264_pixel_cmp[PIXEL_4x4]   = pixel_sad_4x4;
+
+#define CHROMA4x4MC( width, height, mvxy, x, y ) \
+    motion_compensation_chroma_new( &(ME_ref_chroma[0][off+x+y*24]), 24, &pix1[x+y*8], 8, mvxy[0], mvxy[1], width, height ); \
+    motion_compensation_chroma_new( &(ME_ref_chroma[1][off+x+y*24]), 24, &pix2[x+y*8], 8, mvxy[0], mvxy[1], width, height );
+
+    if( i_pixel == PIXEL_4x4 )
+    {
+        CHROMA4x4MC( 2,2, mv[0], 0,0 );
+        CHROMA4x4MC( 2,2, mv[1], 0,2 );
+        CHROMA4x4MC( 2,2, mv[2], 2,0 );
+        CHROMA4x4MC( 2,2, mv[3], 2,2 );
+    }
+    else if( i_pixel == PIXEL_8x4 )
+    {
+        CHROMA4x4MC( 4,2, mv[0], 0,0 );
+        CHROMA4x4MC( 4,2, mv[1], 0,2 );
+    }
+    else
+    {
+        CHROMA4x4MC( 2,4, mv[0], 0,0 );
+        CHROMA4x4MC( 2,4, mv[1], 2,0 );
+    }
+
+    return x264_pixel_cmp[PIXEL_4x4]( src_block_U, 8, pix1, 8 )
+        + x264_pixel_cmp[PIXEL_4x4]( src_block_V, 8, pix2, 8 );	
+}
+STATIC void x264_mb_analyse_inter_p4x4(int i8x8, int i_lambda, int16_t mv_mb[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv4x4[4][4][2], int i_cost4x4[4], int i_cost4x4_sub[4][4])
+{
+    int i4x4;
+
+    i_cost4x4[i8x8] = 0;
+    int i_pixel = PIXEL_4x4;
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][3];		
+
+    for (i4x4 = 0 ; i4x4 < 4 ; i4x4++)
+    {
+        const int idx = 4 *i8x8 + i4x4;
+        const int x4 = block_idx_x[idx];
+        const int y4 = block_idx_y[idx];
+        int mvp[2];
+
+        int cost4x4;
+        int sub_cost_mv;
+
+        uint8_t *p_src_block = src_block + 4*x4 + 4*y4*16;
+        uint8_t *p_src_block_U = src_block_U + ((4*x4) >> 1) + ((4*y4)>>1)*8;
+        uint8_t *p_src_block_V = src_block_V + ((4*x4) >> 1) + ((4*y4)>>1)*8;	
+
+        x264_mb_predict_mv(mv_mb, ref_mb_in, 0, idx, 1, mvp, D_8x8);
+        x264_me_search_ref(mvp, ME_ref[0], p_src_block, i_pixel, mv4x4[i8x8][i4x4], &cost4x4);
+        x264_refine_subpel(hpel, qpel, i_pixel, cost4x4, mvp, mv4x4[i8x8][i4x4], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 0, &cost4x4, &sub_cost_mv, mv4x4[i8x8][i4x4]);	
+        x264_macroblock_cache_mv(mv_mb, x4, y4, 1, 1, 0, mv4x4[i8x8][i4x4][0], mv4x4[i8x8][i4x4][1]);
+
+        i_cost4x4_sub[i8x8][i4x4] = cost4x4;
+        i_cost4x4[i8x8] += cost4x4;
+    }
+
+    i_cost4x4[i8x8] = i_cost4x4[i8x8] + (i_lambda * bs_size_te(0, 0)) + (i_lambda * i_sub_mb_p_cost_table[D_L0_4x4]);
+    i_cost4x4[i8x8] += x264_mb_analyse_inter_p4x4_chroma(ME_ref_chroma, src_block_U, src_block_V, mv4x4[i8x8], i8x8, i_pixel);
+}
+STATIC void x264_mb_analyse_inter_p8x4(int i8x8, int i_lambda, int16_t mv_mb[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv8x4[4][2][2], int i_cost8x4[4], int i_cost8x4_sub[4][2])
+{
+    int i8x4;
+
+    i_cost8x4[i8x8] = 0;
+    int i_pixel = PIXEL_8x4;
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][3];		
+
+    for (i8x4 = 0 ; i8x4 < 2 ; i8x4++)
+    {
+        const int idx = 4 *i8x8 + 2*i8x4;
+        const int x4 = block_idx_x[idx];
+        const int y4 = block_idx_y[idx];
+        const int i_mvc = (i8x4 == 0);
+        int mvp[2];
+
+        int cost8x4;
+        int sub_cost_mv;
+
+        uint8_t *p_src_block = src_block + 4*x4 + 4*y4*16;
+        uint8_t *p_src_block_U = src_block_U + ((4*x4) >> 1) + ((4*y4)>>1)*8;
+        uint8_t *p_src_block_V = src_block_V + ((4*x4) >> 1) + ((4*y4)>>1)*8;	
+
+        x264_mb_predict_mv(mv_mb, ref_mb_in, 0, idx, 2, mvp, D_8x8);
+        x264_me_search_ref(mvp, ME_ref[0], p_src_block, i_pixel, mv8x4[i8x8][i8x4], &cost8x4);
+        x264_refine_subpel(hpel, qpel, i_pixel, cost8x4, mvp, mv8x4[i8x8][i8x4], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 0, &cost8x4, &sub_cost_mv, mv8x4[i8x8][i8x4]);	
+        x264_macroblock_cache_mv(mv_mb, x4, y4, 2, 1, 0, mv8x4[i8x8][i8x4][0], mv8x4[i8x8][i8x4][1]);
+
+        i_cost8x4_sub[i8x8][i8x4] = cost8x4;
+        i_cost8x4[i8x8] += cost8x4;
+    }
+
+    i_cost8x4[i8x8] = i_cost8x4[i8x8] + (i_lambda * bs_size_te(0, 0)) + (i_lambda * i_sub_mb_p_cost_table[D_L0_8x4]);
+    i_cost8x4[i8x8] += x264_mb_analyse_inter_p4x4_chroma(ME_ref_chroma, src_block_U, src_block_V, mv8x4[i8x8], i8x8, i_pixel);
+}
+STATIC void x264_mb_analyse_inter_p4x8(int i8x8, int i_lambda, int16_t mv_mb[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv4x8[4][2][2], int i_cost4x8[4], int i_cost4x8_sub[4][2])
+{
+    int i4x8;
+
+    i_cost4x8[i8x8] = 0;
+    int i_pixel = PIXEL_4x8;
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][3];	
+
+    for (i4x8 = 0 ; i4x8 < 2 ; i4x8++)
+    {
+        const int idx = 4 *i8x8 + i4x8;
+        const int x4 = block_idx_x[idx];
+        const int y4 = block_idx_y[idx];
+        const int i_mvc = (i4x8 == 0);
+        int mvp[2];
+
+        int cost4x8;
+        int sub_cost_mv;
+
+        uint8_t *p_src_block = src_block + 4*x4 + 4*y4*16;
+        uint8_t *p_src_block_U = src_block_U + ((4*x4) >> 1) + ((4*y4)>>1)*8;
+        uint8_t *p_src_block_V = src_block_V + ((4*x4) >> 1) + ((4*y4)>>1)*8;	
+
+        x264_mb_predict_mv(mv_mb, ref_mb_in, 0, idx, 1, mvp, D_8x8);
+        x264_me_search_ref(mvp, ME_ref[0], p_src_block, i_pixel, mv4x8[i8x8][i4x8], &cost4x8);
+        x264_refine_subpel(hpel, qpel, i_pixel, cost4x8, mvp, mv4x8[i8x8][i4x8], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 0, &cost4x8, &sub_cost_mv, mv4x8[i8x8][i4x8]);	
+        x264_macroblock_cache_mv(mv_mb, x4, y4, 1, 2, 0, mv4x8[i8x8][i4x8][0], mv4x8[i8x8][i4x8][1]);
+
+        i_cost4x8_sub[i8x8][i4x8] = cost4x8;
+        i_cost4x8[i8x8] += cost4x8;
+    }
+
+    i_cost4x8[i8x8] = i_cost4x8[i8x8] + (i_lambda * bs_size_te(0, 0)) + (i_lambda * i_sub_mb_p_cost_table[D_L0_4x8]);
+    i_cost4x8[i8x8] += x264_mb_analyse_inter_p4x4_chroma(ME_ref_chroma, src_block_U, src_block_V, mv4x8[i8x8], i8x8, i_pixel);
+}
+STATIC void x264_mb_analyse_inter_p8x8_sub(int i_lambda, int16_t mv_mb_in[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int i_cost8x8_in, int i_cost8x8_sub[4], int mv8x8[4][2], int mv4x4[4][4][2], int mv8x4[4][2][2], 
+        int mv4x8[4][2][2], int i_cost4x4[4], int i_cost8x4[4], int i_cost4x8[4], int i_cost4x4_sub[4][4], int i_cost8x4_sub[4][2], int i_cost4x8_sub[4][2], int16_t mv_mb[2][48][2], int *i_cost8x8)
+{
+    int i;
+
+    int i_type = P_8x8;
+    int i_partition = D_8x8;
+    int i_sub_partition[4] = {D_L0_8x8, D_L0_8x8, D_L0_8x8, D_L0_8x8};
+
+    int b_sub8x8 = 0;
+    *i_cost8x8 = i_cost8x8_in;
+
+    memcpy(&mv_mb[0][0][0], &mv_mb_in[0][0][0], sizeof(int16_t)*2*48*2);	
+    for (i = 0 ; i < 4 ; i++)
+    {
+        x264_mb_analyse_inter_p4x4(i, i_lambda, mv_mb, ref_mb_in, ME_ref, ME_ref_chroma, src_block, src_block_U, src_block_V, mv4x4, i_cost4x4, i_cost4x4_sub);
+        if (i_cost4x4[i] < i_cost8x8_sub[i])
+        {
+            int i_cost8x8_new = i_cost4x4[i];
+            i_sub_partition[i] = D_L0_4x4;
+
+            x264_mb_analyse_inter_p8x4(i, i_lambda, mv_mb, ref_mb_in, ME_ref, ME_ref_chroma, src_block, src_block_U, src_block_V, mv8x4, i_cost8x4, i_cost8x4_sub);
+            if (i_cost8x4[i]< i_cost8x8_new) 
+            {
+                i_sub_partition[i] = D_L0_8x4;
+                i_cost8x8_new = i_cost8x4[i];
+            }
+
+            x264_mb_analyse_inter_p4x8(i, i_lambda, mv_mb, ref_mb_in, ME_ref, ME_ref_chroma, src_block, src_block_U, src_block_V, mv4x8, i_cost4x8, i_cost4x8_sub);
+            if (i_cost4x8[i] < i_cost8x8_new)
+            {
+                i_sub_partition[i] = D_L0_4x8;
+                i_cost8x8_new = i_cost4x8[i];
+            }
+
+            *i_cost8x8 += i_cost8x8_new - i_cost8x8_sub[i];
+            b_sub8x8 = 1;
+        }
+        x264_mb_cache_mv_p8x8(i, mv_mb, i_sub_partition, mv4x4, mv8x4, mv4x8, mv8x8);
+    }	
+
+    /*
+       if( b_sub8x8 )
+       {
+     *i_cost8x8 = x264_rd_cost_mb( h, analysis.i_lambda2 );
+     if( i_cost8x8 > i_cost_bak )
+     {
+     i_cost = i_cost_bak;
+     h->mb.i_sub_partition[0] = h->mb.i_sub_partition[1] =
+     h->mb.i_sub_partition[2] = h->mb.i_sub_partition[3] = D_L0_8x8;
+     }
+     }
+     */
+}	
+STATIC void x264_mb_analyse_inter_p8x16(int i_lambda, int16_t mv_mb[2][48][2], int8_t ref_mb[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv8x16[2][2], int i_cost8x16_sub[2], int *i_cost8x16)
+{
+    int i, j;
+    int i_pixel = PIXEL_8x16;
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][3];	
+
+    *i_cost8x16 = 0;
+
+    for (i = 0 ; i < 2 ; i++) {
+        const int i_ref_cost = i_lambda * bs_size_te(0, 0);
+        int mvp[2];
+        int cost;
+        int cost_mv;
+
+        uint8_t *p_src_block = src_block + 8*i;
+        uint8_t *p_src_block_U = src_block_U + ((8*i) >>1);
+        uint8_t *p_src_block_V = src_block_V + ((8*i) >>1);			
+
+        x264_macroblock_cache_ref(ref_mb, 2*i, 0, 2, 4, 0, 0);
+        x264_mb_predict_mv(mv_mb, ref_mb, 0, 4*i, 2, mvp, D_8x16);
+        x264_me_search_ref(mvp, ME_ref[0], p_src_block, i_pixel, mv8x16[i], &cost);
+        x264_refine_subpel(hpel, qpel, i_pixel, cost, mvp, mv8x16[i], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 0, &cost, &cost_mv, mv8x16[i]);	
+
+        cost += i_ref_cost;
+        i_cost8x16_sub[i] = cost;
+        *i_cost8x16 += cost;
+
+        x264_macroblock_cache_mv(mv_mb, 2*i, 0, 2, 4, 0, mv8x16[i][0], mv8x16[i][1]);
+        x264_macroblock_cache_ref(ref_mb, 2*i, 0, 2, 4, 0, 0);
+    }
+}
+STATIC void x264_mb_analyse_inter_p16x8(int i_lambda, int16_t mv_mb[2][48][2], int8_t ref_mb[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], int mv16x8[2][2], int i_cost16x8_sub[2],  int *i_cost16x8)
+{
+    int i, j;
+    int i_pixel = PIXEL_16x8;
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][2];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][3];	
+
+    *i_cost16x8 = 0;
+
+    for (i = 0 ; i < 2 ; i++) {
+        const int i_ref_cost = i_lambda * bs_size_te(0, 0);
+        int mvp[2];
+        int cost;
+        int cost_mv;
+
+        uint8_t *p_src_block = src_block + 8*i*16;
+        uint8_t *p_src_block_U = src_block_U + ((8*i) >>1)*8;
+        uint8_t *p_src_block_V = src_block_V + ((8*i) >>1)*8;			
+
+        x264_macroblock_cache_ref(ref_mb, 0, 2*i, 4, 2, 0, 0);
+        x264_mb_predict_mv(mv_mb, ref_mb, 0, 8*i, 4, mvp, D_16x8);
+        x264_me_search_ref(mvp, ME_ref[0], p_src_block, i_pixel, mv16x8[i], &cost);
+        x264_refine_subpel(hpel, qpel, i_pixel, cost, mvp, mv16x8[i], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 0, &cost, &cost_mv, mv16x8[i]);	
+
+        cost += i_ref_cost;
+        i_cost16x8_sub[i] = cost;
+        *i_cost16x8 += cost;
+
+        x264_macroblock_cache_mv(mv_mb, 0, 2*i, 4, 2, 0, mv16x8[i][0], mv16x8[i][1]);
+        x264_macroblock_cache_ref(ref_mb, 0, 2*i, 4, 2, 0, 0);
+    }
+}
+STATIC void x264_mb_analyse_inter_p16x16_sub(int i_lambda, int16_t mv_mb_in[2][48][2], int8_t ref_mb_in[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64],  
+        int mv16x8[2][2], int mv8x16[2][2], int *i_cost16x8, int *i_cost8x16, int i_cost16x8_sub[2], int i_cost8x16_sub[2], int16_t mv_mb[2][48][2], int8_t ref_mb[2][48])
+{
+    memcpy(ref_mb, ref_mb_in, sizeof(int8_t)*2*48);
+    memcpy(mv_mb, mv_mb_in, sizeof(int16_t)*2*48*2);
+    x264_mb_analyse_inter_p16x8(i_lambda, mv_mb, ref_mb, ME_ref, ME_ref_chroma, src_block, src_block_U, src_block_V, mv16x8, i_cost16x8_sub, i_cost16x8);
+    x264_mb_analyse_inter_p8x16(i_lambda, mv_mb, ref_mb, ME_ref, ME_ref_chroma, src_block, src_block_U, src_block_V, mv8x16, i_cost8x16_sub, i_cost8x16);
+}	
+STATIC int x264_sub8x8_cond( int i_cost8x8, int i_cost16x16)
+{
+    if (i_cost8x8 < i_cost16x16)
+        return 1;
+    else 
+        return 0;
+}
+STATIC void x264_sel_partition(int i_cost16x16, int i_cost16x8, int i_cost8x16, int i_cost8x8, 
+        int i_cost8x8_sub[4], int i_cost8x4[4], int i_cost4x8[4], int i_cost4x4[4], 
+        int *i_type, int *i_partition, int i_sub_partition[4])
+{
+    int i;
+    int i_cost = COST_MAX;
+
+    if (i_cost16x16 < i_cost) {
+        *i_type = P_L0;
+        *i_partition = D_16x16;
+        i_cost = i_cost16x16;
+    }
+
+    if(i_cost16x8 < i_cost) {
+        *i_type = P_L0;
+        *i_partition = D_16x8;
+        i_cost = i_cost16x8;
+    }
+
+    if(i_cost8x16 < i_cost) {
+        *i_type = P_L0;
+        *i_partition = D_8x16;
+        i_cost = i_cost8x16;
+    }
+
+    if(i_cost8x8 < i_cost) {
+        *i_type = P_8x8;
+        *i_partition = D_8x8;
+        i_cost = i_cost8x8;
+
+        for (i = 0 ; i < 4 ; i++) {
+            int i_sub_cost = i_cost8x8_sub[i];
+            i_sub_partition[i] = D_L0_8x8;
+
+            if (i_cost8x4[i] < i_sub_cost) {
+                i_sub_partition[i] = D_L0_8x4;
+                i_sub_cost = i_cost8x4[i];
+            }
+            if (i_cost4x8[i] < i_sub_cost) {
+                i_sub_partition[i] = D_L0_4x8;
+                i_sub_cost = i_cost4x8[i];
+            }
+            if (i_cost4x4[i] < i_sub_cost) {
+                i_sub_partition[i] = D_L0_4x4;
+                i_sub_cost = i_cost4x4[i];
+            }
+        }
+    }
+}
+STATIC void refine_qpel(int i_partition, int i_sub_partition[4], int16_t mv_mb[2][48][2], int8_t ref_mb[2][48], uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        uint8_t src_block[256], uint8_t src_block_U[64], uint8_t src_block_V[64], 
+        int mv16x16[2], int mv16x8[2][2], int mv8x16[2][2], int mv8x8[4][2], int mv8x4[4][2][2], int mv4x8[4][2][2], int mv4x4[4][4][2], 
+        int i_cost16x16, int i_cost16x8_sub[2], int i_cost8x16_sub[2], int i_cost8x8_sub[4], int i_cost8x4_sub[4][2], int i_cost4x8_sub[4][2], int i_cost4x4_sub[4][4], 
+        int *i_cost, int mv[4][4][2])
+{
+    int mvp[2];
+    int hpel = subpel_iterations[SUBPIXEL_ME_P][0];
+    int qpel = subpel_iterations[SUBPIXEL_ME_P][1];	 
+    int cost_mv;
+
+    *i_cost = 0;
+
+    if( i_partition == D_16x16 )
+    {
+        x264_mb_predict_mv_16x16(mv_mb, ref_mb, mvp);
+        x264_refine_subpel(hpel, qpel, PIXEL_16x16, i_cost16x16, mvp, mv16x16, src_block, src_block_U, src_block_V, ME_ref, ME_ref_chroma, 1, i_cost, &cost_mv, mv[0][0]);
+        //x264_me_refine_qpel( h, &analysis.l0.me16x16 );
+    }
+    else if( i_partition == D_16x8 )
+    {
+        int i = 0;
+        for (i = 0 ; i < 2 ; i++) {
+            uint8_t *p_src_block = src_block + 8*i*16;
+            uint8_t *p_src_block_U = src_block_U + ((8*i) >>1)*8;
+            uint8_t *p_src_block_V = src_block_V + ((8*i) >>1)*8;	
+
+            x264_mb_predict_mv(mv_mb, ref_mb, 0, 4*i, 2, mvp, i_partition);
+            x264_refine_subpel(hpel, qpel, PIXEL_16x8, i_cost16x8_sub[i], mvp, mv16x8[i], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 1, &i_cost16x8_sub[i], &cost_mv, mv[i][0]);
+            *i_cost += i_cost16x8_sub[i];
+        }
+        //x264_me_refine_qpel( h, &analysis.l0.me16x8[0] );
+        //x264_me_refine_qpel( h, &analysis.l0.me16x8[1] );
+    }
+    else if( i_partition == D_8x16 )
+    {
+        int i;
+        for (i = 0 ; i < 2 ; i++) {
+            uint8_t *p_src_block = src_block + 8*i;
+            uint8_t *p_src_block_U = src_block_U + ((8*i) >>1);
+            uint8_t *p_src_block_V = src_block_V + ((8*i) >>1);
+
+            x264_mb_predict_mv(mv_mb, ref_mb, 0, 8*i, 4, mvp, i_partition);
+            x264_refine_subpel(hpel, qpel, PIXEL_8x16, i_cost8x16_sub[i], mvp, mv8x16[i], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 1, &i_cost8x16_sub[i], &cost_mv, mv[i][0]);
+            *i_cost += i_cost8x16_sub[i];
+        }	         
+        //x264_me_refine_qpel( h, &analysis.l0.me8x16[0] );
+        //x264_me_refine_qpel( h, &analysis.l0.me8x16[1] );
+    }
+    else if( i_partition == D_8x8 )
+    {
+        int i8x8;
+        for( i8x8 = 0; i8x8 < 4; i8x8++ )
+        {
+            switch(i_sub_partition[i8x8] )
+            {
+                case D_L0_8x8: 
+                    {
+                        const int x8 = i8x8 % 2;
+                        const int y8 = i8x8 / 2;			
+
+                        uint8_t *p_src_block = src_block + 8*x8 + 8*y8*16;
+                        uint8_t *p_src_block_U = src_block_U + ((8*x8) >> 1) + ((8*y8)>>1)*8;
+                        uint8_t *p_src_block_V = src_block_V + ((8*x8) >> 1) + ((8*y8)>>1)*8;	
+
+                        x264_mb_predict_mv(mv_mb, ref_mb, 0, 4*i8x8, 2, mvp, i_partition);
+                        x264_refine_subpel(hpel, qpel, PIXEL_8x8, i_cost8x8_sub[i8x8], mvp, mv8x8[i8x8], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 1, &i_cost8x8_sub[i8x8], &cost_mv, mv[i8x8][0]);
+                        *i_cost += i_cost8x8_sub[i8x8];					  
+                        //x264_me_refine_qpel( h, &analysis.l0.me8x8[i8x8] );
+                        break;
+                    }
+                case D_L0_8x4:
+                    {
+                        int i8x4;
+
+                        for (i8x4 = 0 ; i8x4 < 2 ; i8x4++)
+                        {
+                            const int idx = 4 *i8x8 + 2*i8x4;
+                            const int x4 = block_idx_x[idx];
+                            const int y4 = block_idx_y[idx];
+
+                            uint8_t *p_src_block = src_block + 4*x4 + 4*y4*16;
+                            uint8_t *p_src_block_U = src_block_U + ((4*x4) >> 1) + ((4*y4)>>1)*8;
+                            uint8_t *p_src_block_V = src_block_V + ((4*x4) >> 1) + ((4*y4)>>1)*8;	
+
+                            x264_mb_predict_mv(mv_mb, ref_mb, 0, idx, 2, mvp, i_partition);
+                            x264_refine_subpel(hpel, qpel, PIXEL_8x4, i_cost8x4_sub[i8x8][i8x4], mvp, mv8x4[i8x8][i8x4], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 1, &i_cost8x4_sub[i8x8][i8x4], &cost_mv, mv[i8x8][i8x4]);	
+
+                            *i_cost += i_cost8x4_sub[i8x8][i8x4];
+                        }					
+
+                        //x264_me_refine_qpel( h, &analysis.l0.me8x4[i8x8][0] );
+                        //x264_me_refine_qpel( h, &analysis.l0.me8x4[i8x8][1] );
+                        break;
+                    }
+                case D_L0_4x8:
+                    {
+                        int i4x8;
+
+                        for (i4x8 = 0 ; i4x8 < 2 ; i4x8++)
+                        {
+                            const int idx = 4 *i8x8 + i4x8;
+                            const int x4 = block_idx_x[idx];
+                            const int y4 = block_idx_y[idx];
+
+                            uint8_t *p_src_block = src_block + 4*x4 + 4*y4*16;
+                            uint8_t *p_src_block_U = src_block_U + ((4*x4) >> 1) + ((4*y4)>>1)*8;
+                            uint8_t *p_src_block_V = src_block_V + ((4*x4) >> 1) + ((4*y4)>>1)*8;	
+
+                            x264_mb_predict_mv(mv_mb, ref_mb, 0, idx, 1, mvp, i_partition);
+                            x264_refine_subpel(hpel, qpel, PIXEL_4x8, i_cost4x8_sub[i8x8][i4x8], mvp, mv4x8[i8x8][i4x8], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 1, &i_cost4x8_sub[i8x8][i4x8], &cost_mv, mv[i8x8][i4x8]);	
+
+                            *i_cost += i_cost4x8_sub[i8x8][i4x8];
+                        }			
+
+                        //x264_me_refine_qpel( h, &analysis.l0.me4x8[i8x8][0] );
+                        //x264_me_refine_qpel( h, &analysis.l0.me4x8[i8x8][1] );
+                        break;
+                    }
+                case D_L0_4x4:
+                    {
+                        int i4x4;	
+
+                        for (i4x4 = 0 ; i4x4 < 4 ; i4x4++)
+                        {
+                            const int idx = 4 *i8x8 + i4x4;
+                            const int x4 = block_idx_x[idx];
+                            const int y4 = block_idx_y[idx];
+
+                            uint8_t *p_src_block = src_block + 4*x4 + 4*y4*16;
+                            uint8_t *p_src_block_U = src_block_U + ((4*x4) >> 1) + ((4*y4)>>1)*8;
+                            uint8_t *p_src_block_V = src_block_V + ((4*x4) >> 1) + ((4*y4)>>1)*8;	
+
+                            x264_mb_predict_mv(mv_mb, ref_mb, 0, idx, 1, mvp, i_partition);
+                            x264_refine_subpel(hpel, qpel, PIXEL_4x4, i_cost4x4_sub[i8x8][i4x4], mvp, mv4x4[i8x8][i4x4], p_src_block, p_src_block_U, p_src_block_V, ME_ref, ME_ref_chroma, 1, &i_cost4x4_sub[i8x8][i4x4], &cost_mv, mv[i8x8][i4x4]);	
+
+                            *i_cost += i_cost4x4_sub[i8x8][i4x4];
+                        }
+
+                        //x264_me_refine_qpel( h, &analysis.l0.me4x4[i8x8][0] );
+                        //x264_me_refine_qpel( h, &analysis.l0.me4x4[i8x8][1] );
+                        //x264_me_refine_qpel( h, &analysis.l0.me4x4[i8x8][2] );
+                        //x264_me_refine_qpel( h, &analysis.l0.me4x4[i8x8][3] );
+                        break;
+                    }
+                default:
+                    //x264_log( h, "internal error (!8x8 && !4x4)\n" );
+                    break;
+            }
+        }
+    }
+}	
+STATIC int x264_sub16x16_cond( int i_cost8x8, int i_cost16x16, int i_costmv8x8[4], 
+        int16_t mv_mb_8x8[2][48][2], int16_t mv_mb_sub8x8[2][48][2], int16_t mv_mb[2][48][2])
+{
+    int i_thresh16x8 = i_costmv8x8[1] + i_costmv8x8[2];
+    if (i_cost8x8 < i_cost16x16)
+        memcpy(&mv_mb[0][0][0], &mv_mb_sub8x8[0][0][0], sizeof(int16_t)*2*48*2);
+    else
+        memcpy(&mv_mb[0][0][0], &mv_mb_8x8[0][0][0], sizeof(int16_t)*2*48*2);		 	
+
+    if (i_cost8x8 < i_cost16x16 + i_thresh16x8) 
+        return 1;
+    else 
+        return 0;
+}
+STATIC int x264_selmvref( int do_it_sub8x8, int do_it_sub16x16, int16_t mv_mb_8x8[2][48][2], int16_t mv_mb_sub8x8[2][48][2], int16_t mv_mb_sub16x16[2][48][2],
+        int8_t ref_mb_16x16[2][48], int8_t ref_mb_sub16x16[2][48], int16_t mv_mb[2][48][2], int8_t ref_mb[2][48])
+{
+    if(do_it_sub16x16) {
+        memcpy(&mv_mb[0][0][0], &mv_mb_sub16x16[0][0][0], sizeof(int16_t)*2*48*2);
+        memcpy(&ref_mb[0][0], &ref_mb_sub16x16[0][0], sizeof(int8_t)*2*48);
+    }
+    else if (do_it_sub8x8) {
+        memcpy(&mv_mb[0][0][0], &mv_mb_sub8x8[0][0][0], sizeof(int16_t)*2*48*2);
+        memcpy(&ref_mb[0][0], &ref_mb_16x16[0][0], sizeof(int8_t)*2*48);
+    }
+    else {
+        memcpy(&mv_mb[0][0][0], &mv_mb_8x8[0][0][0], sizeof(int16_t)*2*48*2);
+        memcpy(&ref_mb[0][0], &ref_mb_16x16[0][0], sizeof(int8_t)*2*48);
+    }	
+}
+STATIC inline void x264_mb_cache_mv_p8x8_post( int16_t mv_mb[2][48][2], int i, int i_sub_partition[4], int mv[4][4][2] )
+{
+    const int x = 2*(i%2);
+    const int y = 2*(i/2);
+
+    switch(i_sub_partition[i] )
+    {
+        case D_L0_8x8:
+            x264_macroblock_cache_mv( mv_mb, x, y, 2, 2, 0, mv[i][0][0], mv[i][0][1] );
+            break;
+        case D_L0_8x4:
+            x264_macroblock_cache_mv( mv_mb, x, y+0, 2, 1, 0, mv[i][0][0], mv[i][0][1] );
+            x264_macroblock_cache_mv( mv_mb, x, y+1, 2, 1, 0, mv[i][1][0], mv[i][1][1] );
+            break;
+        case D_L0_4x8:
+            x264_macroblock_cache_mv( mv_mb, x+0, y, 1, 2, 0, mv[i][0][0], mv[i][0][1] );
+            x264_macroblock_cache_mv( mv_mb, x+1, y, 1, 2, 0, mv[i][1][0], mv[i][1][1] );
+            break;
+        case D_L0_4x4:
+            x264_macroblock_cache_mv( mv_mb, x+0, y+0, 1, 1, 0, mv[i][0][0], mv[i][0][1] );
+            x264_macroblock_cache_mv( mv_mb, x+1, y+0, 1, 1, 0, mv[i][1][0], mv[i][1][1] );
+            x264_macroblock_cache_mv( mv_mb, x+0, y+1, 1, 1, 0, mv[i][2][0], mv[i][2][1] );
+            x264_macroblock_cache_mv( mv_mb, x+1, y+1, 1, 1, 0, mv[i][3][0], mv[i][3][1] );
+            break;
+    }
+}
+STATIC void x264_update_cache( int i_type, int i_partition, int i_sub_partition[4],  int mv[4][4][2], int16_t mv_mb[2][48][2], int8_t ref_mb[2][48] )
+{
+    int i;
+
+    switch(i_type )
+    {
+        case P_L0:
+            switch( i_partition )
+            {
+                case D_16x16:
+                    x264_macroblock_cache_ref( ref_mb, 0, 0, 4, 4, 0, 0 );
+                    x264_macroblock_cache_mv ( mv_mb, 0, 0, 4, 4, 0, mv[0][0][0], mv[0][0][1] );
+                    break;
+
+                case D_16x8:
+                    x264_macroblock_cache_ref( ref_mb, 0, 0, 4, 2, 0, 0 );
+                    x264_macroblock_cache_ref( ref_mb, 0, 2, 4, 2, 0, 0 );
+                    x264_macroblock_cache_mv ( mv_mb, 0, 0, 4, 2, 0, mv[0][0][0], mv[0][0][1] );
+                    x264_macroblock_cache_mv ( mv_mb, 0, 2, 4, 2, 0, mv[1][0][0], mv[1][0][1] );
+                    break;
+
+                case D_8x16:
+                    x264_macroblock_cache_ref( ref_mb, 0, 0, 2, 4, 0, 0 );
+                    x264_macroblock_cache_ref( ref_mb, 2, 0, 2, 4, 0, 0 );
+                    x264_macroblock_cache_mv ( mv_mb, 0, 0, 2, 4, 0, mv[0][0][0], mv[0][0][1] );
+                    x264_macroblock_cache_mv ( mv_mb, 2, 0, 2, 4, 0, mv[1][0][0], mv[1][0][1] );
+                    break;
+            }
+            break;
+        case P_8x8:
+            x264_macroblock_cache_ref( ref_mb, 0, 0, 2, 2, 0, 0 );
+            x264_macroblock_cache_ref( ref_mb, 2, 0, 2, 2, 0, 0 );
+            x264_macroblock_cache_ref( ref_mb, 0, 2, 2, 2, 0, 0 );
+            x264_macroblock_cache_ref( ref_mb, 2, 2, 2, 2, 0, 0 );
+            for( i = 0; i < 4; i++ )
+                x264_mb_cache_mv_p8x8_post( mv_mb, i, i_sub_partition, mv);
+            break;
+    }
+}
+
+STATIC void predict_8x8c_dc( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+    int s0 = 0, s1 = 0, s2 = 0, s3 = 0;
+    int dc0, dc1, dc2, dc3;
+    int i;
+
+    /* First do :
+       s0 s1
+       s2
+       s3
+       */
+    for( i = 0; i < 4; i++ )
+    {
+        s0 += preddata8[0][i + 1];
+        s1 += preddata8[0][i + 5];
+        s2 += preddata8[1][i + 1];
+        s3 += preddata8[1][i + 5];
+    }
+    /* now calculate
+       dc0 dc1
+       dc2 dc3
+       */
+    dc0 = ( s0 + s2 + 4 ) >> 3;
+    dc1 = ( s1 + 2 ) >> 2;
+    dc2 = ( s3 + 2 ) >> 2;
+    dc3 = ( s1 + s3 + 4 ) >> 3;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[             x    ] = dc0;
+            src[             x + 4] = dc1;
+            src[4*8 + x    ] = dc2;
+            src[4*8 + x + 4] = dc3;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8c_h( uint8_t *src, uint8_t preddata8[2][9] )
+{	
+    int i,j;
+
+    for( i = 0; i < 8; i++ )
+    {
+        uint8_t v;
+
+        v = preddata8[1][i+1];
+
+        for( j = 0; j < 8; j++ )
+        {
+            src[j] = v;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8c_v( uint8_t *src, uint8_t preddata8[2][9] )
+{			
+    int i,j;
+
+    for( i = 0; i < 8; i++ )
+    {
+        for( j = 0; j < 8; j++ )
+        {
+            src[i * 8 +j] = preddata8[0][j + 1];
+        }
+    }
+}
+STATIC void predict_8x8c_p( uint8_t *src, uint8_t preddata8[2][9] )
+{
+    int i;
+    int x,y;
+    int a, b, c;
+    int H = 0;
+    int V = 0;
+    int i00;
+
+    for( i = 0; i < 4; i++ )
+    {
+        H += ( i + 1 ) * ( preddata8[0][5+i] - preddata8[0][3-i]);
+        V += ( i + 1 ) * ( preddata8[1][5+i] - preddata8[1][3-i]);
+    }
+
+    a = 16 * ( preddata8[0][8] + preddata8[1][8] );
+    b = ( 17 * H + 16 ) >> 5;
+    c = ( 17 * V + 16 ) >> 5;
+    i00 = a -3*b -3*c + 16;
+
+    for( y = 0; y < 8; y++ )
+    {
+        for( x = 0; x < 8; x++ )
+        {
+            int pix;
+
+            pix = (i00 +b*x) >> 5;
+            src[x] = clip_uint8( pix );
+        }
+        src += 8;
+        i00 += c;
+    }
+}
+STATIC void predict_8x8c_dc_left( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+    int dc0 = 0, dc1 = 0;
+
+    for( y = 0; y < 4; y++ )
+    {
+        dc0 += preddata8[1][y+1];
+        dc1 += preddata8[1][y+5];
+    }
+    dc0 = ( dc0 + 2 ) >> 2;
+    dc1 = ( dc1 + 2 ) >> 2;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 8; x++ )
+        {
+            src[           x] = dc0;
+            src[4*8+x] = dc1;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8c_dc_top( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+    int dc0 = 0, dc1 = 0;
+
+    for( x = 0; x < 4; x++ )
+    {
+        dc0 += preddata8[0][x+1];
+        dc1 += preddata8[0][x+5];
+    }
+    dc0 = ( dc0 + 2 ) >> 2;
+    dc1 = ( dc1 + 2 ) >> 2;
+
+    for( y = 0; y < 8; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[x    ] = dc0;
+            src[x + 4] = dc1;
+        }
+        src += 8;
+    }	
+}	
+STATIC void predict_8x8c_dc_128( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+
+    for( y = 0; y < 8; y++ )
+    {
+        for( x = 0; x < 8; x++ )
+        {
+            src[x] = 128;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8chroma_mode_available( unsigned int i_neighbour, int *mode, int *pi_count )
+{
+    if( i_neighbour & MB_TOPLEFT )
+    {
+        /* top and left avaible */
+        *mode++ = I_PRED_CHROMA_V;
+        *mode++ = I_PRED_CHROMA_H;
+        *mode++ = I_PRED_CHROMA_DC;
+        *mode++ = I_PRED_CHROMA_P;
+        *pi_count = 4;
+    }
+    else if( i_neighbour & MB_LEFT )
+    {
+        /* left available*/
+        *mode++ = I_PRED_CHROMA_DC_LEFT;
+        *mode++ = I_PRED_CHROMA_H;
+        *pi_count = 2;
+    }
+    else if( i_neighbour & MB_TOP )
+    {
+        /* top available*/
+        *mode++ = I_PRED_CHROMA_DC_TOP;
+        *mode++ = I_PRED_CHROMA_V;
+        *pi_count = 2;
+    }
+    else
+    {
+        /* none avaible */
+        *mode = I_PRED_CHROMA_DC_128;
+        *pi_count = 1;
+    }
+}
+
+STATIC void x264_mb_analyse_intra_chroma(int i_lambda, int i_neighbour, uint8_t src_block_U[64], uint8_t src_block_V[64], uint8_t dst_block_U[64], uint8_t dst_block_V[64],
+        uint8_t preddata8_U[2][9], uint8_t preddata8_V[2][9], int *i_sad_i8x8chroma, int *i_chroma_pred_mode) {
+
+    int i;
+    int i_max;
+    int predict_mode[9];
+    int i_predict8x8chroma;
+
+    *i_sad_i8x8chroma = COST_MAX;
+    predict_8x8chroma_mode_available(i_neighbour, predict_mode, &i_max);
+
+    for( i = 0; i < i_max; i++ )
+    {
+        int i_sad;
+        int i_mode;
+
+        i_mode = predict_mode[i];
+
+        /* we do the prediction */
+        switch (i_mode)
+        {
+            case I_PRED_CHROMA_DC :
+                predict_8x8c_dc( dst_block_U, preddata8_U);
+                predict_8x8c_dc( dst_block_V, preddata8_V );
+                break;
+            case I_PRED_CHROMA_H :
+                predict_8x8c_h( dst_block_U, preddata8_U );
+                predict_8x8c_h( dst_block_V, preddata8_V );
+                break;
+            case I_PRED_CHROMA_V :
+                predict_8x8c_v( dst_block_U, preddata8_U );
+                predict_8x8c_v( dst_block_V, preddata8_V );
+                break;
+            case I_PRED_CHROMA_P :
+                predict_8x8c_p( dst_block_U, preddata8_U );
+                predict_8x8c_p( dst_block_V, preddata8_V );
+                break;
+            case I_PRED_CHROMA_DC_LEFT :
+                predict_8x8c_dc_left( dst_block_U, preddata8_U );
+                predict_8x8c_dc_left( dst_block_V, preddata8_V );
+                break;
+            case I_PRED_CHROMA_DC_TOP :
+                predict_8x8c_dc_top( dst_block_U, preddata8_U );
+                predict_8x8c_dc_top( dst_block_V, preddata8_V );
+                break;
+            case I_PRED_CHROMA_DC_128 :
+                predict_8x8c_dc_128( dst_block_U, preddata8_U );
+                predict_8x8c_dc_128( dst_block_V, preddata8_V );
+                break;
+        }
+
+        /* we calculate the cost */
+        i_sad = pixel_satd_wxh( dst_block_U, 8, src_block_U, 8, 8, 8) +
+            pixel_satd_wxh( dst_block_V, 8, src_block_V, 8, 8, 8) +
+            i_lambda * bs_size_ue( x264_mb_pred_mode8x8c_fix[i_mode] );
+
+        /* if i_score is lower it is better */
+        if( *i_sad_i8x8chroma > i_sad )
+        {
+            i_predict8x8chroma = i_mode;
+            *i_sad_i8x8chroma   = i_sad;
+        }
+    }
+
+    *i_chroma_pred_mode = i_predict8x8chroma;   
+}
+STATIC void x264_select_mb_type(int i_sad_i16x16, int i_sad_i4x4, int i_sad_i8x8chroma, int i_cost_inter, int i_type_inter, int *i_type, int *i_cost)
+{
+    int i_intra_type;
+    int i_intra_cost;
+
+    if (i_sad_i4x4 < i_sad_i16x16) {
+        i_intra_type = I_4x4;
+        i_intra_cost = i_sad_i4x4 + i_sad_i8x8chroma;
+    } else {
+        i_intra_type = I_16x16;
+        i_intra_cost = i_sad_i16x16 + i_sad_i8x8chroma;
+    }
+
+    if (i_intra_cost < i_cost_inter) {
+        *i_type = i_intra_type;
+        *i_cost = i_intra_cost;
+    } else {
+        *i_type = i_type_inter;
+        *i_cost = i_cost_inter;
+    }	
+}
+STATIC int x264_intrachroma_cond( int i_sad_i16x16, int i_sad_i4x4, int i_cost)
+{
+    if ( (i_sad_i16x16 < i_cost) || ( i_sad_i4x4 < i_cost) )
+        return 1;
+    else 
+        return 0;
+}
+
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_p101 = PORT_INITIALIZE(TASK_ID, "p101");
+    port_p102 = PORT_INITIALIZE(TASK_ID, "p102");
+    port_p105 = PORT_INITIALIZE(TASK_ID, "p105");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+    i_max_704 = 0;
+    i_predict16x16_705 = 0;
+    i_sad_i16x16_706 = 0;
+    do_it_1030 = 0;
+    i_max_708 = 0;
+    do_it_1031 = 0;
+    i_predict4x4_709 = 0;
+    i_sad_i4x4_710 = 0;
+    do_it_1032 = 0;
+    src_block_1034_phase = 0;
+    recon_block_4_1036 = 15;
+    i_neighbour4_714 = 0;
+    recon_block_16_1037_phase = 0;
+    recon_block_16_1037 = 0;
+    do_it_out_716 = 0;
+    do_it_1039 = 0;
+    i_sad_i4x4_723 = 0;
+    i_sad_i4x4_1041_phase = 0;
+    i_predict4x4_1042_phase = 0;
+    do_it_1043 = 0;
+    {int i; for(i=0;i<16;i++) output_726[i] = 0;}
+    do_it_1045 = 0;
+    do_it_1048 = 0;
+    do_it_1049 = 0;
+    do_it_1051 = 0;
+    dst_block_1052 = 0;
+    {int i; for(i=0;i<32;i++) output_749[i] = 0;}
+    output_1053 = 15;
+    i_cost8x8_754 = 0;
+    cost_759 = 0;
+    i_cost8x8_776 = 0;
+    i_cost16x8_780 = 0;
+    i_cost8x16_781 = 0;
+    do_it_out_792 = 0;
+    i_type_799 = 0;
+    i_cost_804 = 0;
+    do_it_out_816 = 0;
+    i_max_849 = 0;
+    i_predict16x16_850= 0;
+    i_sad_i16x16_851= 0;
+    i_max_853 = 0;
+    i_predict4x4_854 = 0;
+    i_sad_i4x4_855 = 0;
+    src_block_1091_phase = 0;
+    recon_block_4_1093 = 15;
+    i_neighbour4_859 = 0;
+    recon_block_16_1094_phase = 0;
+    do_it_out_861 = 0;
+    i_sad_i4x4_868 = 0;
+    i_sad_i4x4_1100_phase = 0;
+    i_predict4x4_1101_phase = 0;
+    {int i; for(i=0;i<16;i++) output_871[i] = 0;}
+    dst_block_1111 = 0;
+    output_894 = 0;
+    {int i; for(i=0;i<16;i++) output_895[i] = 0;}
+    i_sad_i8x8chroma_898 = 0;
+    i_chroma_pred_mode_899 = 0;
+    i_cost_903 = 0;
+    do_it_out_904 = 0;
+    i_sad_i8x8chroma_912 = 0;
+    i_chroma_pred_mode_913 = 0;
+    recon_block_4x4I_1129 = 15;
+    output_995 = 0;
+
+    MB_index_ME = 0 ;
+    phase_16 = 0 ;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+TASK_GO
+{
+    InitMEPacket t;
+    // TODO: task main code
+    MQ_RECEIVE( port_p101 , (unsigned char *)&t, sizeof(InitMEPacket)); // 
+    MQ_RECEIVE( port_p102 , (unsigned char *)&n_info,sizeof(neighbour_info)); //
+    memcpy(&i_info, &t.i_s_info, sizeof(init_info));
+
+     if (i_info.inter_do_it) 
+     {
+         i_max_849 = predict_16x16_mode_available(n_info.i_neighbour, predict_mode_848.data); 
+         predict_16x16(i_max_849, predict_mode_848.data, i_info.src_block_Y.data, n_info.preddata16_Y.data, &i_predict16x16_850, &i_sad_i16x16_851);
+         x264_mb_analyse_inter_p16x16(i_info.i_lambda, n_info.mv_mb.data, n_info.ref_mb.data, n_info.ME_ref.data, n_info.ME_ref_chroma.data, 
+                 i_info.src_block_Y.data, i_info.src_block_U.data, i_info.src_block_V.data, mv_758.data, &cost_759, ref_mb_760.data);
+         x264_mb_analyse_inter_p8x8(i_info.i_lambda, n_info.mv_mb.data, ref_mb_760.data, n_info.ME_ref.data, n_info.ME_ref_chroma.data, 
+                 i_info.src_block_Y.data, i_info.src_block_U.data, i_info.src_block_V.data, mv8x8_753.data, &i_cost8x8_754, i_cost8x8_sub_755.data, cost_mv_756.data, mv_mb_757.data);
+     }
+     if (i_info.intra_do_it)
+     {
+         i_max_704 = predict_16x16_mode_available(n_info.i_neighbour, predict_mode_703.data); 
+         predict_16x16(i_max_704, predict_mode_703.data, i_info.src_block_Y.data, n_info.preddata16_Y.data, &i_predict16x16_705, &i_sad_i16x16_706);
+     }
+
+     if (i_info.inter_do_it) 
+         do_it_out_792 = x264_sub8x8_cond(i_cost8x8_754, cost_759);
+     else
+         do_it_out_792 = 0;
+
+     if (do_it_out_792) 
+         x264_mb_analyse_inter_p8x8_sub(i_info.i_lambda, mv_mb_757.data, ref_mb_760.data, n_info.ME_ref.data, n_info.ME_ref_chroma.data, 
+                 i_info.src_block_Y.data, i_info.src_block_U.data, i_info.src_block_V.data, i_cost8x8_754, i_cost8x8_sub_755.data, mv8x8_753.data, mv4x4_767.data, mv8x4_768.data, 
+                 mv4x8_769.data, i_cost4x4_770.data, i_cost8x4_771.data, i_cost4x8_772.data, i_cost4x4_sub_773.data, i_cost8x4_sub_774.data, i_cost4x8_sub_775.data, mv_mb_777.data, &i_cost8x8_776);
+     else {
+         int i, j;
+         for (i = 0 ; i < 4 ; i++) {
+             for (j = 0 ; j < 2 ; j++) {
+                 i_cost4x4_sub_773.data[i][j] = i_cost4x4_sub_773.data[i][j+2] = COST_MAX;
+                 i_cost8x4_sub_774.data[i][j] = i_cost4x8_sub_775.data[i][j] = COST_MAX;
+             }
+             i_cost4x4_770.data[i] = COST_MAX;
+             i_cost8x4_771.data[i] = COST_MAX;
+             i_cost4x8_772.data[i] = COST_MAX;
+         }
+         i_cost8x8_776 = i_cost8x8_754;
+     }
+
+     if (i_info.inter_do_it) 
+         do_it_out_816 = x264_sub16x16_cond(i_cost8x8_754, cost_759, cost_mv_756.data, 
+                 mv_mb_757.data, mv_mb_777.data, mv_mb_817.data);
+     else
+         do_it_out_816 = 0;
+
+     {  /*  (class CGCXMEsub16x16) */
+         if (do_it_out_816) 
+             x264_mb_analyse_inter_p16x16_sub(i_info.i_lambda, mv_mb_817.data, ref_mb_760.data, n_info.ME_ref.data, n_info.ME_ref_chroma.data, 
+                     i_info.src_block_Y.data, i_info.src_block_U.data, i_info.src_block_V.data,  
+                     mv16x8_778.data, mv8x16_779.data, &i_cost16x8_780, &i_cost8x16_781, i_cost16x8_sub_782.data, i_cost8x16_sub_783.data, mv_mb_784.data, ref_mb_785.data);
+         else {
+             i_cost16x8_780 = i_cost8x16_781 = COST_MAX;
+             i_cost16x8_sub_782.data[0] = i_cost16x8_sub_782.data[1] = COST_MAX;
+             i_cost8x16_sub_783.data[0] = i_cost8x16_sub_783.data[1] = COST_MAX;
+            }
+        }
+
+        {  /*  (class CGCXMESelMvRef) */
+            if (i_info.inter_do_it) 
+            {
+                x264_selmvref(do_it_out_792, do_it_out_816, mv_mb_757.data, mv_mb_777.data, mv_mb_784.data, 
+                        ref_mb_760.data, ref_mb_785.data, e_s_info.mv_mb.data, e_s_info.ref_mb.data);
+                x264_sel_partition(cost_759, i_cost16x8_780, i_cost8x16_781, i_cost8x8_776, 
+                        i_cost8x8_sub_755.data, i_cost8x4_771.data, i_cost4x8_772.data, i_cost4x4_770.data, 
+                        &i_type_799, &e_s_info.i_partition, e_s_info.i_sub_partition.data);
+                refine_qpel(e_s_info.i_partition, e_s_info.i_sub_partition.data, e_s_info.mv_mb.data, e_s_info.ref_mb.data, n_info.ME_ref.data, n_info.ME_ref_chroma.data,
+                        i_info.src_block_Y.data, i_info.src_block_U.data, i_info.src_block_V.data, 
+                        mv_758.data, mv16x8_778.data, mv8x16_779.data, mv8x8_753.data, mv8x4_768.data, mv4x8_769.data, mv4x4_767.data,
+                        cost_759, i_cost16x8_sub_782.data, i_cost8x16_sub_783.data, i_cost8x8_sub_755.data, i_cost8x4_sub_774.data, i_cost4x8_sub_775.data, i_cost4x4_sub_773.data, 
+                        &i_cost_804, mv_805.data);
+            }
+        }
+
+        {  /* (class CGCXpred4x4Cond) */
+            if (i_info.intra_do_it) 
+                do_it_out_716 = x264_pred4x4_cond(n_info.b_fast_intra, i_sad_i16x16_706, 268435456.0);
+            else
+                do_it_out_716 = 0;
+        }
+        {  /*  (class CGCXpred4x4Cond) */
+            if (i_info.inter_do_it) 
+                do_it_out_861 = x264_pred4x4_cond(n_info.b_fast_intra, i_sad_i16x16_851, i_cost_804);
+            else
+                do_it_out_861 = 0;
+        }
+
+        {  /*  Inter.intra (class CGCRepeat) */
+            output_894 = do_it_out_861;
+        }
+
+        {  /*  (class CGCRepeat) */
+            {
+                int i;
+                for ( i = 0 ; i < 16 ;i++)
+                {
+                    output_749[(output_1053-(i))] = do_it_out_716;
+                }
+            }
+            output_1053 += 16;
+            if (output_1053 >= 32)
+                output_1053 -= 32;
+        }
+
+        {  /*  (class CGCXMEPost) */
+            if (i_info.inter_do_it) 
+                x264_update_cache(i_type_799, e_s_info.i_partition, e_s_info.i_sub_partition.data, mv_805.data, e_s_info.mv_mb.data, e_s_info.ref_mb.data);
+        }
+        if (i_info.intra_do_it) 
+            x264_mb_analyse_intra_chroma(i_info.i_lambda, n_info.i_neighbour, i_info.src_block_U.data, i_info.src_block_V.data, dst_block_U_914.data, dst_block_V_915.data,
+                    n_info.preddata8_U.data, n_info.preddata8_V.data, &i_sad_i8x8chroma_912, &i_chroma_pred_mode_913);
+        { 
+            int sdfLoopCounter_117;
+            for (sdfLoopCounter_117 = 0; sdfLoopCounter_117 < 16; sdfLoopCounter_117++) {
+
+                {  /* (class CGCXprepred4x4) */ // Inter.Intra
+                    if (do_it_out_861) {
+                        if (!src_block_1091_phase)			
+                            memcpy(recon_block_16_860.data, i_info.src_block_Y.data, sizeof(uint8_t)*16*16);
+                        x264_prepred4x4(n_info.i_neighbour, recon_block_16_860.data, n_info.preddata16_Y.data, 
+                                dst_block_877[recon_block_4_1093].data, src_block_4_857.data, preddata4_858.data, &i_neighbour4_859, src_block_1091_phase);
+                    }
+
+                    src_block_1091_phase = (src_block_1091_phase+1)%16;
+                    recon_block_16_1094_phase = (recon_block_16_1094_phase+1)%16;
+                    recon_block_4_1093 += 1;
+                    if (recon_block_4_1093 >= 16)
+                        recon_block_4_1093 -= 16;
+                }
+
+                {  /* (class CGCXprepred4x4) */
+                    if (output_749[do_it_1032]) {
+                        if (!src_block_1034_phase)			
+                            memcpy(recon_block_16_715[recon_block_16_1037].data, i_info.src_block_Y.data, sizeof(uint8_t)*16*16);
+                        x264_prepred4x4(n_info.i_neighbour, recon_block_16_715[recon_block_16_1037].data, n_info.preddata16_Y.data, 
+                                dst_block_732[recon_block_4_1036].data, src_block_4_712.data, preddata4_713.data, &i_neighbour4_714, src_block_1034_phase);
+                    }
+                    src_block_1034_phase = (src_block_1034_phase+1)%16;
+                    recon_block_16_1037_phase = (recon_block_16_1037_phase+1)%16;
+                    do_it_1032 += 1;
+                    if (do_it_1032 >= 32)
+                        do_it_1032 -= 32;
+                    recon_block_4_1036 += 1;
+                    if (recon_block_4_1036 >= 16)
+                        recon_block_4_1036 -= 16;
+                    if (recon_block_16_1037_phase == 0)
+                        recon_block_16_1037 += 1;
+                    if (recon_block_16_1037 >= 2)
+                        recon_block_16_1037 -= 2;
+                }
+
+                {  /*  (class CGCXpred4x4Available) */
+                    if (output_749[do_it_1030]) 
+                        i_max_708 = predict_4x4_mode_available(i_neighbour4_714, predict_mode_707.data); 
+                    do_it_1030 += 1;
+                    if (do_it_1030 >= 32)
+                        do_it_1030 -= 32;
+                }
+
+                {  /*  (class CGCXpred4x4Available) Inter.Intra*/ 
+                    if (output_894) 
+                        i_max_853 = predict_4x4_mode_available(i_neighbour4_859, predict_mode_852.data); 
+                }
+
+                {  /* (class CGCXpred4x4) */
+                    if (output_749[do_it_1031]) 
+                        predict_4x4(i_max_708, predict_mode_707.data, src_block_4_712.data, preddata4_713.data, &i_predict4x4_709, &i_sad_i4x4_710, best_4x4_block_711.data);
+                    do_it_1031 += 1;
+                    if (do_it_1031 >= 32)
+                        do_it_1031 -= 32;
+                }
+
+                {  /*  (class CGCXpred4x4) Inter.Intra*/
+                    if (output_894) 
+                    {
+                        predict_4x4(i_max_853, predict_mode_852.data, src_block_4_857.data, preddata4_858.data, &i_predict4x4_854, &i_sad_i4x4_855, best_4x4_block_856.data);
+                        sub4x4_dct(dct4x4_870.data, src_block_4_857.data, 4, best_4x4_block_856.data, 4);
+                    }
+                }
+
+                {  /* (class CGCXsub4x4_dct) */
+                    if (output_749[do_it_1043]) 
+                        sub4x4_dct(dct4x4_725.data, src_block_4_712.data, 4, best_4x4_block_711.data, 4);
+                    do_it_1043 += 1;
+                    if (do_it_1043 >= 32)
+                        do_it_1043 -= 32;
+                }
+
+                {  /*  (class CGCXquant_4x4) */
+                    if (output_749[do_it_1045]) {
+                        memcpy(dct4x4_out_727.data, dct4x4_725.data, sizeof(int16_t)*16);
+                        quant_4x4(dct4x4_out_727.data, i_info.inter_do_it ? QP_CONSTANT : QP_CONSTANT_I, 1 );
+                    }
+                    do_it_1045 += 1;
+                    if (do_it_1045 >= 32)
+                        do_it_1045 -= 32;
+                }
+
+                {  /*  (class CGCXquant_4x4) Inter.Intra */
+                    if (output_894) {
+                        memcpy(dct4x4_out_872.data, dct4x4_870.data, sizeof(int16_t)*16);
+                        quant_4x4(dct4x4_out_872.data, i_info.inter_do_it ? QP_CONSTANT : QP_CONSTANT_I, 1);
+                    }
+                }
+
+
+                {  /* (class CGCXpostpred4x4) Inter.Intra */
+                    if(output_894) {
+                        int lambda = i_qp0_cost_table[(0 == i_info.inter_do_it) ? QP_CONSTANT_I : QP_CONSTANT];
+                        x264_postpred4x4(i_sad_i4x4_855, i_predict4x4_854, &i_sad_i4x4_868, i_predict4x4_869.data, i_predict4x4_1101_phase);
+                        if (i_sad_i4x4_1100_phase == 15) 
+                            i_sad_i4x4_868 += 24 * lambda;
+                    }
+                    else
+                        i_sad_i4x4_868 = COST_MAX;
+                    i_sad_i4x4_1100_phase = (i_sad_i4x4_1100_phase+1)%16;
+                    i_predict4x4_1101_phase = (i_predict4x4_1101_phase+1)%16;
+                }
+
+                {  /*  (class CGCXdequant_4x4) Inter.Intra */
+                    if (output_894) {
+                        memcpy(dct4x4_out_876.data, dct4x4_out_872.data, sizeof(int16_t)*16);
+                        dequant_4x4(dct4x4_out_876.data, i_info.inter_do_it? QP_CONSTANT : QP_CONSTANT_I);
+                    }
+                }
+
+                {  /*  (class CGCXdequant_4x4) */
+                    if (output_749[do_it_1049]) {
+                        memcpy(dct4x4_out_731.data, dct4x4_out_727.data, sizeof(int16_t)*16);
+                        dequant_4x4(dct4x4_out_731.data, i_info.inter_do_it ? QP_CONSTANT : QP_CONSTANT_I);
+                    }
+                    do_it_1049 += 1;
+                    if (do_it_1049 >= 32)
+                        do_it_1049 -= 32;
+                }
+
+                {  /* (class CGCXadd4x4_idct) */
+                    if (output_749[do_it_1051]) {
+                        memcpy(dst_block_732[dst_block_1052].data, best_4x4_block_711.data, sizeof(uint8_t)*16);
+                        add4x4_idct(dst_block_732[dst_block_1052].data, 4, dct4x4_out_731.data);
+                    }
+                    do_it_1051 += 1;
+                    if (do_it_1051 >= 32)
+                        do_it_1051 -= 32;
+                    dst_block_1052 += 1;
+                    if (dst_block_1052 >= 16)
+                        dst_block_1052 -= 16;
+                }
+
+                {  /*  (class CGCXadd4x4_idct) Inter.Intra */
+                    if (output_894) {
+                        memcpy(dst_block_877[dst_block_1111].data, best_4x4_block_856.data, sizeof(uint8_t)*16);
+                        add4x4_idct(dst_block_877[dst_block_1111].data, 4, dct4x4_out_876.data);
+                    }
+                    dst_block_1111 += 1;
+                    if (dst_block_1111 >= 16)
+                        dst_block_1111 -= 16;
+                }
+
+                {  /*  (class CGCXpostpred4x4) */
+                    if(output_749[do_it_1039]) {
+                        int lambda = i_qp0_cost_table[(0 == i_info.inter_do_it) ? QP_CONSTANT_I : QP_CONSTANT];
+                        x264_postpred4x4(i_sad_i4x4_710, i_predict4x4_709, &i_sad_i4x4_723, i_predict4x4_724.data, i_predict4x4_1042_phase);
+                        if (i_sad_i4x4_1041_phase == 15) 
+                            i_sad_i4x4_723 += 24 * lambda;
+                    }
+                    else
+                        i_sad_i4x4_723 = COST_MAX;
+                    i_sad_i4x4_1041_phase = (i_sad_i4x4_1041_phase+1)%16;
+                    i_predict4x4_1042_phase = (i_predict4x4_1042_phase+1)%16;
+                    do_it_1039 += 1;
+                    if (do_it_1039 >= 32)
+                        do_it_1039 -= 32;
+                }
+
+                {  /*  (class CGCXscan_zigzag_4x4full) */
+                    if (output_749[do_it_1048]) {
+                        scan_zigzag_4x4full(e_s_info.luma_4x4[phase_16].data, dct4x4_out_727.data);
+                    }
+                    do_it_1048 += 1;
+                    if (do_it_1048 >= 32)
+                        do_it_1048 -= 32;
+                }
+                {  /*  (class CGCXscan_zigzag_4x4full) Inter.Intra */
+                    if (output_894) {
+                        scan_zigzag_4x4full(e_s_info.luma_4x4[phase_16].data, dct4x4_out_872.data);
+                    }
+                }
+
+                phase_16++;
+                if (phase_16>= 16)
+                    phase_16-= 16;
+            }
+        } /* end 16 loop repeat, depth 3*/
+
+        {  /* (class CGCXIntraChromaCond) Inter.Intra */
+            if (i_info.inter_do_it) 
+                do_it_out_904 = x264_intrachroma_cond(i_sad_i16x16_851, i_sad_i4x4_868, i_cost_804);
+            else
+                do_it_out_904 = 0;
+        }
+
+        {  /* (class CGCXIntraChroma) Inter.Intra */
+            if (do_it_out_904) 
+                x264_mb_analyse_intra_chroma(i_info.i_lambda, n_info.i_neighbour, i_info.src_block_U.data, i_info.src_block_V.data, dst_block_U_900.data, dst_block_V_901.data,
+                        n_info.preddata8_U.data, n_info.preddata8_V.data, &i_sad_i8x8chroma_898, &i_chroma_pred_mode_899);
+        }
+
+        {  /* (class CGCXSelMBType) */
+            if (i_info.inter_do_it) 
+                x264_select_mb_type(i_sad_i16x16_851, i_sad_i4x4_868, i_sad_i8x8chroma_898, i_cost_804, i_type_799, &(e_s_info.i_type), &i_cost_903);
+        }
+
+
+        {  /* (class CGCXSelMBTypeGlobal) */
+            int i;
+
+            memcpy(e_s_info.intra4x4_pred_mode.data, n_info.i_pred4x4.data, sizeof(int)*48);
+
+            if (i_info.intra_do_it) { // Intra frame
+                if (i_sad_i4x4_723 < i_sad_i16x16_706)
+                    e_s_info.mb_type = I_4x4;
+                else
+                    e_s_info.mb_type = I_16x16;
+
+                e_s_info.i_pred16x16 = i_predict16x16_705;
+                memcpy(i_pred4x4_918.data, i_predict4x4_724.data, sizeof(int)*4*4);
+                for (i = 0 ; i < 16 ; i++) {
+                    int ii, jj;
+                    int x = block_idx_x[i];
+                    int y = block_idx_y[i];
+
+                    for (ii = 0 ; ii < 4 ; ii++)
+                        for (jj = 0 ; jj < 4 ; jj++)
+                            recon_block_4x4_919.data[(y*4 + ii)*16 + (x*4) + jj] = dst_block_732[i].data[ii*4 + jj];
+                }	 		
+                e_s_info.chroma_pred_mode = i_chroma_pred_mode_913;
+            }
+            else {
+                e_s_info.mb_type = e_s_info.i_type;
+                e_s_info.i_pred16x16 = i_predict16x16_850;
+                memcpy(i_pred4x4_918.data, i_predict4x4_869.data, sizeof(int)*4*4);
+                for (i = 0 ; i < 16 ; i++) {
+                    int ii, jj;
+                    int x = block_idx_x[i];
+                    int y = block_idx_y[i];
+
+                    for (ii = 0 ; ii < 4 ; ii++)
+                        for (jj = 0 ; jj < 4 ; jj++)
+                            recon_block_4x4_919.data[(y*4 + ii)*16 + (x*4) + jj] = dst_block_877[(15-((15-i)))].data[ii*4 + jj];
+                }			
+                e_s_info.chroma_pred_mode = i_chroma_pred_mode_899;
+            }
+
+            for (i = 0 ; i < 16 ; i++)
+                e_s_info.intra4x4_pred_mode.data[x264_scan8[i]] = i_pred4x4_918.data[block_idx_x[i]][block_idx_y[i]];
+
+        }
+
+        memcpy(&(e_s_info.non_zero_count), (unsigned char *)&n_info.non_zero_count,192);     // to Enc
+        memcpy(&(e_s_info.preddata16_Y) , (unsigned char *)&n_info.preddata16_Y,42);        // to Enc
+        memcpy(&(e_s_info.preddata8_U) , (unsigned char *)&n_info.preddata8_U, 18);        // to Enc
+        memcpy(&(e_s_info.preddata8_V) , (unsigned char *)&n_info.preddata8_V, 18);        // to Enc
+        memcpy(&(e_s_info.ME_ref_chroma) , (unsigned char *)&n_info.ME_ref_chroma, 1152);    // to Enc
+        memcpy(&(e_s_info.ME_ref) , (unsigned char *)&n_info.ME_ref, 9216);           // to Enc
+
+        memcpy( &(d_s_info.mv_mb), (unsigned char *)e_s_info.mv_mb.data, 384);                // to Debl 29
+        memcpy( &(d_s_info.ref_mb), (unsigned char *)e_s_info.ref_mb.data, 96);                // to Debl 28
+        memcpy( &(d_s_info.i_pred4x4), (unsigned char *)&i_pred4x4_918, 64);             // to Debl 26
+        memcpy( &(d_s_info.recon_block_4x4), (unsigned char *)&recon_block_4x4_919, 256);      // to Debl 21
+        memcpy( &(d_s_info.mb_type), (unsigned char *)&e_s_info.mb_type, 4);                // to Debl 20
+
+        MEEncPacket m;
+        memcpy(&m.e_s_info, &e_s_info, sizeof(encoder_send_info));
+        memcpy(&m.d_s_info, &d_s_info, sizeof(deblock_send_info));
+        memcpy(&m.i_info, &i_info, sizeof(init_info));
+        memcpy(&m.output, &t.output, sizeof(int)*99);
+        memcpy(&m.o_msgSliceHeader, &t.o_msgSliceHeader, sizeof(SliceHeader));
+        m.o_intFrameType = t.o_intFrameType;
+
+        MQ_SEND(port_p105, (unsigned char*)&m, sizeof(MEEncPacket));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

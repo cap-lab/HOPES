@@ -1,0 +1,77 @@
+/************************************
+ *
+ * File : LoadImage.cic
+ * Date : Mar 16, 2018 2:31 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+ 
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC FILE *fd;
+STATIC unsigned char *src;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src    = (unsigned char*)malloc(WIDTH * HEIGHT * 1.5);
+    
+    fd = fopen("out.yuv","rb");
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    fread((void*)(src), sizeof(unsigned char), WIDTH * HEIGHT * 1.5, fd);
+
+    MQ_SEND(port_output, (unsigned char*)src, WIDTH * HEIGHT * 1.5);
+    //printf("LoadImage_MQ_SEND_FINISH!\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    
+    free(src);
+    fclose(fd);
+}
+
+TASK_CODE_END
