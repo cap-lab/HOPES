@@ -12,7 +12,7 @@ For more detailed information about HOPES, You can refer to the following docume
 To install HOPES on Linux, do the following steps.
 
   1. Install prerequsite :
-Java (version 1.7.x or higher, not necessary to install jdk), ant
+Java (version 1.7.x or 1.8.x. not necessary to install jdk), ant
 
   2. Clone git repository and update submodules to your *HOPES_DIR*.
   ```
