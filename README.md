@@ -3,8 +3,9 @@ HOPES is a model-based embedded software design framework that supports all stag
 
 For more detailed information about HOPES, You can refer to the following document.(https://link.springer.com/chapter/10.1007/978-3-319-95246-8_18)
 
-# Licence
+# License
 
+Software license is provided separately per each folder (HOPES_UI, Public/UEMLibraryCode, Public/UEMTranslator).
 
 # Installation
 
