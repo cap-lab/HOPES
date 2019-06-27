@@ -13,7 +13,7 @@ Software license is provided separately per each folder (HOPES_UI, Public/UEMLib
 To install HOPES on Linux, do the following steps.
 
   1. Install prerequsite :
-Java (version 1.7.x or 1.8.x. not necessary to install jdk), ant
+Java (version 1.8.x. not necessary to install jdk), ant
 
   2. Clone git repository and update submodules to your *HOPES_DIR*.
   ```
