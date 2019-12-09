@@ -16,9 +16,7 @@
           <schematic>
             <![CDATA[Domain "BP"
 Target "CIC-TaskEditor"
-TargetParameter "SimulationTarget" STRING "PTHREAD ##PThread-C++,PThread,NONE"
-TargetParameter "ThreadSetting" String "MULTI_THREAD"
-TargetParameter "TaskGraphProperty" String "DataFlow"
+TargetParameter "SimulationTarget" STRING "PThread ##PThread-C++,PThread,NONE"
 Run 10
 ]]>
           </schematic>
@@ -53,7 +51,7 @@ Run 10
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
             </elements>
             <connections>
-                <SerialConnection role="master" portAddress="/dev/ttyUSB1" network="USB" name="Serial_hostpc"/>
+                <SerialConnection role="master" portAddress="/dev/ttyUSB1" network="USB" name="Serial_hostpc" multicast="false"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -64,7 +62,7 @@ Run 10
                 <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
             </elements>
             <connections>
-                <SerialConnection role="slave" portAddress="/dev/ttyAMA0" network="USB" name="Serial_raspi"/>
+                <SerialConnection role="slave" portAddress="/dev/ttyAMA0" network="USB" name="Serial_raspi" multicast="false"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -93,23 +91,6 @@ Run 10
           <schematic>
             <![CDATA[Domain "BP"
 Target "CIC-ManualGen"
-Run 10
-]]>
-          </schematic>
-        </target>
-      </target_list>
-    </step>
-    <step>
-      <title>Profile</title>
-      <selected>no</selected>
-      <name>profile</name>
-      <target_list>
-        <target>
-          <name>CIC-Profile</name>
-          <select>yes</select>
-          <schematic>
-            <![CDATA[Domain "BP"
-Target "CIC-Profile"
 Run 10
 ]]>
           </schematic>

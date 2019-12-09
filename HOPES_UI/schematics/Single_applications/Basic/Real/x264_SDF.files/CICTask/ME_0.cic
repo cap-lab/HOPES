@@ -2721,11 +2721,12 @@ TASK_GO
     int nDataRead = 0;
     int nDataWrite = 0;
     uem_result result;
-    // TODO: task main code
-    //MQ_RECEIVE( port_p101 , (unsigned char *)&t, sizeof(InitMEPacket)); // 
+    // TODO: task main code    
+
+	int threadId = THIS_THREAD_ID;
+	
     result = UFPort_ReadFromQueue(port_p101, (unsigned char *) &t, sizeof(InitMEPacket), THIS_THREAD_ID, &nDataRead);
-    ERRIFGOTO(result, _EXIT);
-    //MQ_RECEIVE( port_p102 , (unsigned char *)&n_info,sizeof(neighbour_info)); //
+    ERRIFGOTO(result, _EXIT);    
     result = UFPort_ReadFromQueue(port_p102, (unsigned char *) &n_info, sizeof(neighbour_info), THIS_THREAD_ID, &nDataRead);
     ERRIFGOTO(result, _EXIT);
     
@@ -3108,8 +3109,7 @@ TASK_GO
         memcpy(&m.output, &t.output, sizeof(int)*99);
         memcpy(&m.o_msgSliceHeader, &t.o_msgSliceHeader, sizeof(SliceHeader));
         m.o_intFrameType = t.o_intFrameType;
-
-        //MQ_SEND(port_p105, (unsigned char*)&m, sizeof(MEEncPacket));
+        
         result = UFPort_WriteToQueue(port_p105, (unsigned char *) &m, sizeof(MEEncPacket), THIS_THREAD_ID, &nDataWrite);
         ERRIFGOTO(result, _EXIT);
 _EXIT:

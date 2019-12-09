@@ -7,7 +7,7 @@
   <step_list>
     <step>
       <title>Func.</title>
-      <selected>no</selected>
+      <selected>yes</selected>
       <name>sim</name>
       <target_list>
         <target>
@@ -25,7 +25,7 @@ Run 10
     </step>
     <step>
       <title>H/W Platform</title>
-      <selected>yes</selected>
+      <selected>no</selected>
       <name>arch</name>
       <target_list>
         <target>
@@ -82,23 +82,6 @@ Run 10
       </target_list>
     </step>
     <step>
-      <title>Profile</title>
-      <selected>no</selected>
-      <name>profile</name>
-      <target_list>
-        <target>
-          <name>CIC-Profile</name>
-          <select>yes</select>
-          <schematic>
-            <![CDATA[Domain "BP"
-Target "CIC-Profile"
-Run 10
-]]>
-          </schematic>
-        </target>
-      </target_list>
-    </step>
-    <step>
       <title>DSE</title>
       <selected>no</selected>
       <name>dse</name>
@@ -122,7 +105,7 @@ Run 10
       <target_list>
         <target>
           <name>Translation</name>
-          <select>no</select>
+          <select>yes</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"
@@ -242,7 +225,7 @@ Run 10
         </target>
         <target>
           <name>Translation</name>
-          <select>yes</select>
+          <select>no</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"

@@ -172,6 +172,9 @@ int o_MB_index;
 
 init_info i_s_info;
 
+STATIC int phase_99 = 0;
+STATIC int q_index = 0;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 STATIC inline void plane_copy( uint8_t *dst, int i_dst,
@@ -245,8 +248,10 @@ TASK_INIT
   {int i; for(i=0;i<99;i++) output_1857[i] = 0;}
 
   o_MB_index = 0 ;
-  
   g_iFrame_1873 = -1;
+
+  phase_99 = 0;
+  q_index = 0;
 }
 
 
@@ -257,8 +262,6 @@ TASK_INIT
 TASK_GO
 {
   // TODO: task main code
-  STATIC int phase_99 = 0;
-  STATIC int q_index = 0;
   InitMEPacket t;
   int terminate = FALSE;
   // phase 0

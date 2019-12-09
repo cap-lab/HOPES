@@ -64,10 +64,11 @@ TASK_GO
     UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &taskIterationCount);
 	//always consume port_in_fb
 	MQ_RECEIVE(port_in_fb, (unsigned char *)&out_clusters, sizeof(float) * NUM_CLUSTER * NUM_ATTRIBUTES);
+	MQ_RECEIVE(port_in_f, (unsigned char *)&feature, sizeof(float) * NUM_OBJECTS * NUM_ATTRIBUTES);
     if(taskIterationCount < 1) //if port_in_f has item.
     {
 		isInitialCondition = 1;
-		MQ_RECEIVE(port_in_f, (unsigned char *)&feature, sizeof(float) * NUM_OBJECTS * NUM_ATTRIBUTES);
+		
 		for (i = 0; i < NUM_CLUSTER; i++) {
 			for (j = 0; j < NUM_ATTRIBUTES; j++){
 				out_clusters[i * NUM_ATTRIBUTES + j] = feature[i][j];

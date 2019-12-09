@@ -27,22 +27,24 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="last_frame" type="fifo" sample_size="20" sample_rate="Fixed">
+        <port id="1" export="false" name="last_frame" type="fifo" sample_size="20" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="out" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="out" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list>
         <extraSetting type="Extra Header" name="format.h" />
       </extraSetting_list>
@@ -74,17 +76,19 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="true" name="out_tld_cmd" type="overwritable" sample_size="4" sample_rate="Variable" />
+        <port id="0" export="true" name="out_tld_cmd" type="overwritable" sample_size="4" sample_rate="Variable" description="" />
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list>
         <extraSetting type="Extra Header" name="format.h" />
       </extraSetting_list>
@@ -116,22 +120,24 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="learn_complete" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="learn_complete" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list>
-        <libraryPort id="0" export="false" name="NC" type="sample" />
-        <libraryPort id="1" export="false" name="EC" type="sample" />
+        <libraryPort id="0" export="false" name="NC" type="sample" description="" />
+        <libraryPort id="1" export="false" name="EC" type="sample" description="" />
       </libraryPort_list>
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -161,30 +167,32 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="t_in" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="t_in" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="d_in" type="fifo" sample_size="24" sample_rate="Fixed">
+        <port id="1" export="false" name="d_in" type="fifo" sample_size="24" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="BB" type="fifo" sample_size="20" sample_rate="Fixed">
+        <port id="0" export="false" name="BB" type="fifo" sample_size="20" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="result" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="1" export="false" name="result" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="2" export="false" name="cresult" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="2" export="false" name="cresult" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list>
-        <libraryPort id="0" export="false" name="NC" type="sample" />
+        <libraryPort id="0" export="false" name="NC" type="sample" description="" />
       </libraryPort_list>
+      <multicast_port_list />
       <extraSetting_list>
         <extraSetting type="Extra Source" name="TLDUtil.cpp" />
       </extraSetting_list>
@@ -216,22 +224,24 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="in" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="out" type="fifo" sample_size="24" sample_rate="Fixed">
+        <port id="0" export="false" name="out" type="fifo" sample_size="24" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list>
-        <libraryPort id="0" export="false" name="EC" type="sample" />
-        <libraryPort id="1" export="false" name="NC" type="sample" />
+        <libraryPort id="0" export="false" name="EC" type="sample" description="" />
+        <libraryPort id="1" export="false" name="NC" type="sample" description="" />
       </libraryPort_list>
+      <multicast_port_list />
       <extraSetting_list>
         <extraSetting type="Extra Header" name="format.h" />
         <extraSetting type="Extra Source" name="TLDUtil.cpp" />
@@ -264,23 +274,25 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="true" name="in_Camera" type="overwritable" sample_size="172800" sample_rate="Variable" />
-        <port id="1" export="false" name="in_complete" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="true" name="in_Camera" type="overwritable" sample_size="172800" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="in_complete" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="out" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="0" export="false" name="out" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="out_d" type="fifo" sample_size="3000000" sample_rate="Fixed">
+        <port id="1" export="false" name="out_d" type="fifo" sample_size="3000000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -301,22 +313,23 @@
         <parameter name="Language" value="C++" />
         <parameter name="LinkFlags" value="" />
         <parameter name="IsDependency" value="No" />
+        <parameter name="Description" />
       </config>
       <inPort_list>
-        <inPort id="0" name="EnsembleClassfier" type="fifo" />
+        <inPort id="0" name="EnsembleClassfier" type="fifo" description="" />
       </inPort_list>
       <outPort_list />
       <function_list>
-        <function name="filter" type="int">
-          <argument name="i" type="int" />
+        <function name="filter" type="int" description="">
+          <argument name="i" type="int" description="" />
         </function>
-        <function name="learn" type="void">
-          <argument name="boundary" type="int *" />
-          <argument name="positive" type="int" />
-          <argument name="featureVector" type="int *" />
+        <function name="learn" type="void" description="">
+          <argument name="boundary" type="int *" description="" />
+          <argument name="positive" type="int" description="" />
+          <argument name="featureVector" type="int *" description="" />
         </function>
-        <function name="nextIteration" type="void">
-          <argument name="capImg" type="const cv::Mat &amp;" />
+        <function name="nextIteration" type="void" description="">
+          <argument name="capImg" type="const cv::Mat &amp;" description="" />
         </function>
       </function_list>
       <extraSetting_list>
@@ -334,25 +347,26 @@
         <parameter name="Language" value="C++" />
         <parameter name="LinkFlags" value="$(shell pkg-config --libs opencv)" />
         <parameter name="IsDependency" value="No" />
+        <parameter name="Description" />
       </config>
       <inPort_list>
-        <inPort id="0" name="NNClassfier" type="fifo" />
+        <inPort id="0" name="NNClassfier" type="fifo" description="" />
       </inPort_list>
       <outPort_list />
       <function_list>
-        <function name="filter" type="int">
-          <argument name="img" type="const cv::Mat &amp;" />
-          <argument name="windowIdx" type="int" />
+        <function name="filter" type="int" description="">
+          <argument name="img" type="const cv::Mat &amp;" description="" />
+          <argument name="windowIdx" type="int" description="" />
         </function>
-        <function name="learn" type="void">
-          <argument name="patches" type="std::vector&lt;NormalizedPatch&gt;" />
+        <function name="learn" type="void" description="">
+          <argument name="patches" type="std::vector&lt;NormalizedPatch&gt;" description="" />
         </function>
-        <function name="getThetaTP" type="float" />
-        <function name="classifyBB" type="float">
-          <argument name="img" type="cv::Mat &amp;" />
-          <argument name="bb" type="cv::Rect *" />
+        <function name="getThetaTP" type="float" description="" />
+        <function name="classifyBB" type="float" description="">
+          <argument name="img" type="cv::Mat &amp;" description="" />
+          <argument name="bb" type="cv::Rect *" description="" />
         </function>
-        <function name="getThetaFP" type="float" />
+        <function name="getThetaFP" type="float" description="" />
       </function_list>
       <extraSetting_list>
         <extraSetting type="Extra Header" name="format.h" />
@@ -453,5 +467,6 @@
   </taskLibraryConnection_list>
   <libraryLibraryConnection_list />
   <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 

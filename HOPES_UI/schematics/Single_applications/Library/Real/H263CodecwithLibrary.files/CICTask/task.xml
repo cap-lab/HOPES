@@ -16,7 +16,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -27,21 +27,23 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list />
       <outport_list>
-        <port id="0" name="stream_out" type="fifo" sample_size="30000" sample_rate="Fixed">
+        <port id="0" export="false" name="stream_out" type="fifo" sample_size="30000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" name="size_out" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="size_out" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list>
-        <libraryPort id="0" name="dct" type="dct" />
-        <libraryPort id="1" name="idct_1" type="idct" />
+        <libraryPort id="0" export="false" name="dct" type="dct" description="" />
+        <libraryPort id="1" export="false" name="idct_1" type="idct" description="" />
       </libraryPort_list>
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="false">
         <control_params />
@@ -59,7 +61,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -70,30 +72,32 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="stream_in" type="fifo" sample_size="30000" sample_rate="Fixed">
+        <port id="0" export="false" name="stream_in" type="fifo" sample_size="30000" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="size_in" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="size_in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="Y_out" type="fifo" sample_size="25344" sample_rate="Fixed">
+        <port id="0" export="false" name="Y_out" type="fifo" sample_size="25344" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" name="U_out" type="fifo" sample_size="6336" sample_rate="Fixed">
+        <port id="1" export="false" name="U_out" type="fifo" sample_size="6336" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="2" name="V_out" type="fifo" sample_size="6336" sample_rate="Fixed">
+        <port id="2" export="false" name="V_out" type="fifo" sample_size="6336" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list>
-        <libraryPort id="0" name="idct_2" type="idct" />
+        <libraryPort id="0" export="false" name="idct_2" type="idct" description="" />
       </libraryPort_list>
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="false">
         <control_params />
@@ -111,7 +115,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="-DDISPLAY" />
         <parameter name="LinkFlags" value="-lm -lX11" />
         <parameter name="HasMTM" value="No" />
@@ -122,21 +126,23 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="Y_in" type="fifo" sample_size="25344" sample_rate="Fixed">
+        <port id="0" export="false" name="Y_in" type="fifo" sample_size="25344" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="U_in" type="fifo" sample_size="6336" sample_rate="Fixed">
+        <port id="1" export="false" name="U_in" type="fifo" sample_size="6336" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="V_in" type="fifo" sample_size="6336" sample_rate="Fixed">
+        <port id="2" export="false" name="V_in" type="fifo" sample_size="6336" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list />
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="false">
         <control_params />
@@ -153,17 +159,18 @@
         <parameter name="LibraryHeader" value="dct.cicl.h" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="CompileFlags" value="" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="IsDependency" value="No" />
+        <parameter name="Description" />
       </config>
       <inPort_list>
-        <inPort id="0" name="dct" type="fifo" />
+        <inPort id="0" name="dct" type="fifo" description="" />
       </inPort_list>
       <outPort_list />
       <function_list>
-        <function name="doDCT" type="short_block_8x8">
-          <argument name="dct_block" type="short_block_8x8" />
+        <function name="doDCT" type="short_block_8x8" description="">
+          <argument name="dct_block" type="short_block_8x8" description="" />
         </function>
       </function_list>
       <extraSetting_list>
@@ -178,17 +185,18 @@
         <parameter name="LibraryHeader" value="idct.cicl.h" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="CompileFlags" value="" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="IsDependency" value="No" />
+        <parameter name="Description" />
       </config>
       <inPort_list>
-        <inPort id="0" name="idct" type="fifo" />
+        <inPort id="0" name="idct" type="fifo" description="" />
       </inPort_list>
       <outPort_list />
       <function_list>
-        <function name="doIDCT" type="short_block_8x8">
-          <argument name="idct_block" type="short_block_8x8" />
+        <function name="doIDCT" type="short_block_8x8" description="">
+          <argument name="idct_block" type="short_block_8x8" description="" />
         </function>
       </function_list>
       <extraSetting_list>
@@ -249,6 +257,7 @@
     </taskLibraryConnection>
   </taskLibraryConnection_list>
   <libraryLibraryConnection_list />
-  <taskGroupList name="taskGroups" />
+  <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 

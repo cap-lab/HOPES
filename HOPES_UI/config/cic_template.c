@@ -22,6 +22,9 @@ TASK_CODE_BEGIN
 // ##DEFINE_PORT_SECTION::START
 // ##DEFINE_PORT_SECTION::END
 
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
 /////////////////////////////////////
 // init code
 /////////////////////////////////////
@@ -30,6 +33,9 @@ TASK_INIT
 {
 // ##INIT_PORT_SECTION::START
 // ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
 
     // TODO: task initialize code
 

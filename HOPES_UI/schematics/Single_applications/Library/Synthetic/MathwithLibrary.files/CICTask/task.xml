@@ -27,15 +27,17 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list />
       <outport_list>
-        <port id="0" export="false" name="output" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="false">
         <control_params />
@@ -64,36 +66,38 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="output_pow" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="0" export="false" name="output_pow" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="output_exp" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="1" export="false" name="output_exp" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="2" export="false" name="output_log" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="2" export="false" name="output_log" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="3" export="false" name="output_sin" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="3" export="false" name="output_sin" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="4" export="false" name="output_cos" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="4" export="false" name="output_cos" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="5" export="false" name="output_tan" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="5" export="false" name="output_tan" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list>
-        <libraryPort id="0" export="false" name="math_1" type="math" />
+        <libraryPort id="0" export="false" name="math_1" type="math" description="" />
       </libraryPort_list>
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="false">
         <control_params />
@@ -122,30 +126,32 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input_pow" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="0" export="false" name="input_pow" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="input_exp" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="1" export="false" name="input_exp" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="2" export="false" name="input_log" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="2" export="false" name="input_log" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="3" export="false" name="input_sin" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="3" export="false" name="input_sin" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="4" export="false" name="input_cos" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="4" export="false" name="input_cos" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="5" export="false" name="input_tan" type="fifo" sample_size="8" sample_rate="Fixed">
+        <port id="5" export="false" name="input_tan" type="fifo" sample_size="8" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list />
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="false">
         <control_params />
@@ -165,30 +171,31 @@
         <parameter name="Language" value="C++" />
         <parameter name="LinkFlags" value="" />
         <parameter name="IsDependency" value="No" />
+        <parameter name="Description" />
       </config>
       <inPort_list>
-        <inPort id="0" name="inPort_math" type="fifo" />
+        <inPort id="0" name="inPort_math" type="fifo" description="" />
       </inPort_list>
       <outPort_list />
       <function_list>
-        <function name="my_cos" type="double">
-          <argument name="num" type="double" />
+        <function name="my_cos" type="double" description="">
+          <argument name="num" type="double" description="" />
         </function>
-        <function name="my_pow" type="double">
-          <argument name="num_1" type="double" />
-          <argument name="num_2" type="double" />
+        <function name="my_pow" type="double" description="">
+          <argument name="num_1" type="double" description="" />
+          <argument name="num_2" type="double" description="" />
         </function>
-        <function name="my_sin" type="double">
-          <argument name="num" type="double" />
+        <function name="my_sin" type="double" description="">
+          <argument name="num" type="double" description="" />
         </function>
-        <function name="my_log" type="double">
-          <argument name="num" type="double" />
+        <function name="my_log" type="double" description="">
+          <argument name="num" type="double" description="" />
         </function>
-        <function name="my_tan" type="double">
-          <argument name="num" type="double" />
+        <function name="my_tan" type="double" description="">
+          <argument name="num" type="double" description="" />
         </function>
-        <function name="my_exp" type="double">
-          <argument name="num" type="double" />
+        <function name="my_exp" type="double" description="">
+          <argument name="num" type="double" description="" />
         </function>
       </function_list>
       <extraSetting_list />
@@ -248,5 +255,6 @@
   </taskLibraryConnection_list>
   <libraryLibraryConnection_list />
   <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 

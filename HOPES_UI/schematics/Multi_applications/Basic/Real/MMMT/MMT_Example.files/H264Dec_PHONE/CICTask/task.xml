@@ -27,16 +27,17 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list />
       <outport_list>
-        <port id="0" name="outFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="outFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -54,7 +55,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -65,37 +66,39 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="inFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outMB_interY" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="outMB_interY" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" name="outMB_interU" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="outMB_interU" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="2" name="outMB_interV" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="2" export="false" name="outMB_interV" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="3" name="outMB_intraY" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="3" export="false" name="outMB_intraY" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
-        <port id="4" name="outMB_intraU" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="4" export="false" name="outMB_intraU" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
-        <port id="5" name="outMB_intraV" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="5" export="false" name="outMB_intraV" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -113,7 +116,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -124,22 +127,24 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inMB_Y" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="inMB_Y" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inPrevFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="inPrevFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame_Y" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="outFrame_Y" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -157,7 +162,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -168,22 +173,24 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inMB_U" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="inMB_U" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inPrevFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="inPrevFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame_U" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="outFrame_U" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -201,7 +208,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -212,22 +219,24 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inMB_V" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="inMB_V" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inPrevFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="inPrevFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame_V" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="outFrame_V" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -245,7 +254,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -256,43 +265,45 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inFrame_interY" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="inFrame_interY" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inFrame_interU" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="inFrame_interU" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inFrame_interV" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="2" export="false" name="inFrame_interV" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inFrame_intraY" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="3" export="false" name="inFrame_intraY" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inFrame_intraU" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="4" export="false" name="inFrame_intraU" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="0" name="inFrame_intraV" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="5" export="false" name="inFrame_intraV" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="outFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" name="outRef_Y" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="1" export="false" name="outRef_Y" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="2" name="outRef_U" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="2" export="false" name="outRef_U" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="3" name="outRef_V" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="3" export="false" name="outRef_V" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -310,7 +321,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -321,15 +332,17 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inFrame" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="inFrame" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list />
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -347,7 +360,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -358,21 +371,23 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inMB_Y" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="0" export="false" name="inMB_Y" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame_Y" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="0" export="false" name="outFrame_Y" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -390,7 +405,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -401,21 +416,23 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inMB_U" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="0" export="false" name="inMB_U" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame_U" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="0" export="false" name="outFrame_U" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -433,7 +450,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -444,21 +461,23 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="inMB_V" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="0" export="false" name="inMB_V" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="outFrame_V" type="fifo" sample_size="4" sample_rate="Multiple">
+        <port id="0" export="false" name="outFrame_V" type="fifo" sample_size="4" sample_rate="Multiple" description="">
           <rate id="0" mode="I_Frame" rate="1" />
           <rate id="1" mode="P_Frame" rate="0" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -579,19 +598,7 @@
   </channel_list>
   <taskLibraryConnection_list />
   <libraryLibraryConnection_list />
-  <taskGroupList name="taskGroups">
-    <taskGroup name="H264Dec_PHONE" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="H264Dec_PHONE" />
-    </taskGroup>
-    <taskGroup name="H264Dec_VP" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="H264Dec_VP" />
-    </taskGroup>
-    <taskGroup name="x264Enc" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="x264Enc" />
-    </taskGroup>
-    <taskGroup name="MP3Dec" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="MP3Dec" />
-    </taskGroup>
-  </taskGroupList>
+  <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 

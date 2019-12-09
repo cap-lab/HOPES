@@ -5,8 +5,6 @@
  *
 *************************************/
 
-//#include "turtlebot3_tank.h" //TODO : check if autoincluded here.
-//#include <bitset>
 #include <inttypes.h>
 
 
@@ -176,7 +174,6 @@ TASK_WRAPUP
 	// other method should be used.
 	//goal_linear_velocity = 0;
 	//goal_angular_velocity = 0;
-	//controlTank();
 }
 
 TASK_CODE_END

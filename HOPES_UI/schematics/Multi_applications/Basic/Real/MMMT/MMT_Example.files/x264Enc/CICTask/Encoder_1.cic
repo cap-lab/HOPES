@@ -1484,6 +1484,7 @@ TASK_INIT
     output_1563 = 0;
     {int i; for(i=0;i<64;i++) recon_block_U_1389.data[i] = 0;}
     {int i; for(i=0;i<64;i++) recon_block_V_1390.data[i] = 0;}
+    sdfLoopCounter_16 = 0;
 }
 
 

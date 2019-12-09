@@ -7,7 +7,7 @@
   <step_list>
     <step>
       <title>Func.</title>
-      <selected>yes</selected>
+      <selected>no</selected>
       <name>sim</name>
       <target_list>
         <target>
@@ -16,9 +16,7 @@
           <schematic>
             <![CDATA[Domain "BP"
 Target "CIC-TaskEditor"
-TargetParameter "SimulationTarget" STRING "PTHREAD ##PThread-C++,PThread,NONE"
-TargetParameter "ThreadSetting" String "MULTI_THREAD"
-TargetParameter "TaskGraphProperty" String "ProcessNetwork"
+TargetParameter "SimulationTarget" STRING "PThread ##PThread-C++,PThread,NONE"
 Run 10
 ]]>
           </schematic>
@@ -34,14 +32,28 @@ Run 10
           <name>platform</name>
           <select>yes</select>
           <schematic>
-            <![CDATA[Domain "Archi"
-Target "platform"
-TargetParameter "PredefinedTarget" STRING "Default ##Default,HSim,Cell,TIMED_FUNC,TIMED_FUNC_V2"
-Run 10
-PredefinedTarget ""
-PlatformName "ConnectionInformationList"
-Architecture "x86" SWPlatform "Linux" Runtime "Native"
-ConnectionInformationList 
+            <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_Architecture target="test_sdf_matrix" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <elementTypes>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_0" category="memory">
+            <slavePort size="4000" name="Slave" metric="MiB"/>
+        </elementType>
+    </elementTypes>
+    <devices>
+        <device runtime="native" platform="linux" name="test_sdf_matrix" architecture="x86">
+            <elements>
+                <element type="i7_0" poolSize="4" name="i7_0"/>
+                <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
+            </elements>
+            <connections/>
+            <modules/>
+            <environmentVariables/>
+        </device>
+    </devices>
+    <connections/>
+</CIC_Architecture>
+
 ]]>
           </schematic>
         </target>
@@ -49,7 +61,7 @@ ConnectionInformationList
     </step>
     <step>
       <title>Xml-Gen</title>
-      <selected>no</selected>
+      <selected>yes</selected>
       <name>codegen</name>
       <target_list>
         <target>
@@ -58,23 +70,6 @@ ConnectionInformationList
           <schematic>
             <![CDATA[Domain "BP"
 Target "CIC-ManualGen"
-Run 10
-]]>
-          </schematic>
-        </target>
-      </target_list>
-    </step>
-    <step>
-      <title>Profile</title>
-      <selected>no</selected>
-      <name>profile</name>
-      <target_list>
-        <target>
-          <name>CIC-Profile</name>
-          <select>yes</select>
-          <schematic>
-            <![CDATA[Domain "BP"
-Target "CIC-Profile"
 Run 10
 ]]>
           </schematic>

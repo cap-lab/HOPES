@@ -55,7 +55,7 @@ Run 10
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
             </elements>
             <connections>
-                <SerialConnection role="slave" network="USB" name="Serial_OpenCR" boardTXPinNumber="0" boardRXPinNumber="0"/>
+                <SerialConnection role="slave" network="USB" name="Serial_OpenCR" multicast="false" boardTXPinNumber="0" boardRXPinNumber="0"/>
             </connections>
             <modules/>
             <environmentVariables>
@@ -69,8 +69,8 @@ Run 10
                 <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
             </elements>
             <connections>
-                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="wifi_raspberrypi" ip="147.46.121.7"/>
-                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Serial_raspberrypi"/>
+                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="wifi_raspberrypi" multicast="false" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Serial_raspberrypi" multicast="false"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -81,7 +81,7 @@ Run 10
                 <element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
             </elements>
             <connections>
-                <TCPConnection role="server" port="7776" network="Ethernet/Wi-Fi" name="wifi_HostPC" ip="147.46.114.124"/>
+                <TCPConnection role="server" port="7776" network="Ethernet/Wi-Fi" name="wifi_HostPC" multicast="false" ip="147.46.114.124"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -120,23 +120,6 @@ Run 10
       </target_list>
     </step>
     <step>
-      <title>Profile</title>
-      <selected>no</selected>
-      <name>profile</name>
-      <target_list>
-        <target>
-          <name>CIC-Profile</name>
-          <select>yes</select>
-          <schematic>
-            <![CDATA[Domain "BP"
-Target "CIC-Profile"
-Run 10
-]]>
-          </schematic>
-        </target>
-      </target_list>
-    </step>
-    <step>
       <title>DSE</title>
       <selected>no</selected>
       <name>dse</name>
@@ -160,7 +143,7 @@ Run 10
       <target_list>
         <target>
           <name>Translation</name>
-          <select>yes</select>
+          <select>no</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"
@@ -280,7 +263,7 @@ Run 10
         </target>
         <target>
           <name>Translation</name>
-          <select>no</select>
+          <select>yes</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"

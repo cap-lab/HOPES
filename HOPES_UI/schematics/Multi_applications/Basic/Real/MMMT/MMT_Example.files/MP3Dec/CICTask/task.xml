@@ -16,7 +16,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -27,15 +27,17 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list />
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="2" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -53,7 +55,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -64,19 +66,21 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -94,7 +98,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -105,19 +109,21 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="2" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="2" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -135,7 +141,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -146,19 +152,21 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -176,7 +184,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -187,19 +195,21 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -217,7 +227,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="-lm" />
         <parameter name="HasMTM" value="No" />
@@ -228,19 +238,21 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -258,7 +270,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -269,19 +281,21 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="2" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" name="output" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -299,7 +313,7 @@
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
-        <parameter name="Language" />
+        <parameter name="Language" value="" />
         <parameter name="CompileFlags" value="" />
         <parameter name="LinkFlags" value="" />
         <parameter name="HasMTM" value="No" />
@@ -310,15 +324,17 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" name="input" type="fifo" sample_size="4" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="4" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list />
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -375,19 +391,7 @@
   </channel_list>
   <taskLibraryConnection_list />
   <libraryLibraryConnection_list />
-  <taskGroupList name="taskGroups">
-    <taskGroup name="H264Dec_PHONE" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="H264Dec_PHONE" />
-    </taskGroup>
-    <taskGroup name="H264Dec_VP" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="H264Dec_VP" />
-    </taskGroup>
-    <taskGroup name="x264Enc" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="x264Enc" />
-    </taskGroup>
-    <taskGroup name="MP3Dec" priority="1" period="1" deadline="1" maxII="-1" type="StaticRate">
-      <task name="MP3Dec" />
-    </taskGroup>
-  </taskGroupList>
+  <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 

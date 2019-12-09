@@ -27,25 +27,27 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="true" name="input2" type="fifo" sample_size="1605632" sample_rate="Fixed">
+        <port id="1" export="true" name="input2" type="fifo" sample_size="1605632" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="output_shortcut" type="fifo" sample_size="1605632" sample_rate="Fixed">
+        <port id="0" export="false" name="output_shortcut" type="fifo" sample_size="1605632" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="output" type="fifo" sample_size="1605632" sample_rate="Fixed">
+        <port id="1" export="false" name="output" type="fifo" sample_size="1605632" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -75,19 +77,21 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input" type="fifo" sample_size="1605632" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="1605632" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -116,19 +120,21 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="output" type="fifo" sample_size="200704" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="200704" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -157,19 +163,21 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input" type="fifo" sample_size="200704" sample_rate="Fixed">
+        <port id="0" export="false" name="input" type="fifo" sample_size="200704" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -198,25 +206,27 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="Yes" />
         <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" />
       </config>
       <inport_list>
-        <port id="0" export="false" name="input_shortcut" type="fifo" sample_size="1605632" sample_rate="Fixed">
+        <port id="0" export="false" name="input_shortcut" type="fifo" sample_size="1605632" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="1" export="false" name="input" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </inport_list>
       <outport_list>
-        <port id="0" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="0" export="false" name="output" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
-        <port id="1" export="true" name="output2" type="fifo" sample_size="802816" sample_rate="Fixed">
+        <port id="1" export="true" name="output2" type="fifo" sample_size="802816" sample_rate="Fixed" description="">
           <rate id="0" mode="Default" rate="1" />
         </port>
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -273,5 +283,6 @@
   <taskLibraryConnection_list />
   <libraryLibraryConnection_list />
   <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 

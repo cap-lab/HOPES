@@ -37,6 +37,7 @@
       </outport_list>
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -83,6 +84,7 @@
         <portMap macroNode="CTypeLoop" macroNodePort="out_rp" direction="Out" insideTask="Replace" insideTaskPort="out_rp" portType="fifo" portMapType="broadcasting" />
       </portMap_list>
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -121,6 +123,7 @@
       <outport_list />
       <portMap_list />
       <libraryPort_list />
+      <multicast_port_list />
       <extraSetting_list />
       <control priority="0" controller="true">
         <control_params />
@@ -147,5 +150,6 @@
   <taskLibraryConnection_list />
   <libraryLibraryConnection_list />
   <taskGroupList />
+  <multicast_group_list />
 </cic_manual>
 
