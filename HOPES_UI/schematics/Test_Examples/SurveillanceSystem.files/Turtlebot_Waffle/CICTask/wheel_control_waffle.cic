@@ -1,0 +1,203 @@
+/************************************
+ *
+ * File : wheel_.cic
+ * Date : Mar 19, 2019 10:39 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/file.h>
+
+// ##DEFINE_SECTION::START
+#define CMD_STOP 0 
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+#define CMD_TURN_LEFT 3
+#define CMD_TURN_RIGHT 4
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+
+#define CMD_TLD_MOVE_FORWARD 9
+#define CMD_TLD_FORWARD_LEFT 10
+#define CMD_TLD_FORWARD_RIGHT 11
+#define CMD_TLD_FAIL 12
+
+#define MAX_LINEAR_VELOCITY 0.22  //defined in turtlebot3_tank.h 
+#define MAX_ANGULAR_VELOCITY 2.84 //defined in turtlebot3_tank.h
+
+#define INITIAL_LINEAR_X (MAX_LINEAR_VELOCITY/3) 
+#define INITIAL_ANGULAR_Z (MAX_ANGULAR_VELOCITY)
+
+#define VELOCITY_LINEAR_X               0.01   // m/s
+#define VELOCITY_ANGULAR_Z              0.1    // rad/s
+
+
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_velocity_out;
+// ##DEFINE_PORT_SECTION::END
+static int start = 0;
+typedef struct _SontrolVelocity{
+    double linear_x;
+    double angular_z;
+
+} SControlVelocity;
+
+static SControlVelocity stControlVelocity = {0,0};
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_velocity_out = PORT_INITIALIZE(TASK_ID, "velocity_out");
+// ##INIT_PORT_SECTION::END
+    if(start == 0){
+        start = 1;
+        stControlVelocity = {0,0};
+    }
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int cmd = -1;
+    cmd = SYS_REQ(GET_PARAM_INT, "wheel_control_waffle", "cmd");
+        
+        //printf(" ********* MOVE TASK **************\n\n");
+        //printf("cmd received in wheel_control task : %d\n",cmd);
+        
+        switch(cmd)
+        {        
+            case CMD_STOP:
+                printf("Wheel_control:: STOP\n");                
+                stControlVelocity.linear_x = 0;
+                stControlVelocity.angular_z = 0;
+            //sendStop(irobot_fd);
+                break;
+            case CMD_MOVE_FORWARD:
+                printf("Wheel_control:: move FORWARD\n");                
+                stControlVelocity.linear_x = INITIAL_LINEAR_X;
+                stControlVelocity.angular_z = 0;
+            //sendGo(irobot_fd);
+                break;
+            case CMD_MOVE_BACKWARD:
+                printf("Wheel_control:: move BACKWARD\n");
+                stControlVelocity.linear_x = -1 * INITIAL_LINEAR_X;
+                stControlVelocity.angular_z = 0;
+                //sendBack(irobot_fd);
+                break;
+            case CMD_TURN_LEFT:
+                printf("Wheel_control:: move TURN LEFT\n");
+                stControlVelocity.linear_x = 0;
+                stControlVelocity.angular_z = INITIAL_ANGULAR_Z/7;
+            //turnLeft(irobot_fd);
+                break;
+            case CMD_TURN_RIGHT:
+                printf("Wheel_control:: move TURN RIGHT\n");
+                stControlVelocity.linear_x = 0;
+                stControlVelocity.angular_z = -1 * INITIAL_ANGULAR_Z/7;
+                //turnRight(irobot_fd);
+                break;   
+            case CMD_ACC_FORWARD:
+                printf("Wheel_control:: acc FORWARD\n");                
+                stControlVelocity.linear_x += VELOCITY_LINEAR_X;
+            //sendGo(irobot_fd);
+                break;
+            case CMD_ACC_BACKWARD:                
+                printf("Wheel_control:: acc BACKWARD\n");
+                stControlVelocity.linear_x -= VELOCITY_LINEAR_X;
+                //sendBack(irobot_fd);
+                break;
+            case CMD_ACC_LEFT:
+                printf("Wheel_control:: acc LEFT\n");
+                stControlVelocity.angular_z += VELOCITY_ANGULAR_Z;
+            //turnLeft(irobot_fd);
+                break;
+            case CMD_ACC_RIGHT:
+                printf("Wheel_control:: acc TURN RIGHT\n");
+                stControlVelocity.angular_z -= VELOCITY_ANGULAR_Z;
+                //turnRight(irobot_fd);
+                break;
+            case CMD_TLD_MOVE_FORWARD:
+                printf("Wheel_control:: TLD move FORWARD\n");                
+                stControlVelocity.linear_x = INITIAL_LINEAR_X;
+                stControlVelocity.angular_z = 0;
+                break;
+                 case CMD_TLD_FORWARD_LEFT :
+               printf("Wheel_control:: TLD FORWARD LEFT\n");
+               stControlVelocity.linear_x = INITIAL_LINEAR_X/1.5;
+               stControlVelocity.angular_z = INITIAL_ANGULAR_Z/8;
+               break;          
+           case CMD_TLD_FORWARD_RIGHT :
+               printf("Wheel_control:: TLD FORWARD RIGHT\n");
+               stControlVelocity.linear_x = INITIAL_LINEAR_X/1.5;
+               stControlVelocity.angular_z = -1 * INITIAL_ANGULAR_Z/8;
+               break;    
+           case CMD_TLD_FAIL :
+               printf("Wheel_control:: TLD FAIL (STOP)\n");
+               stControlVelocity.linear_x = 0;
+               stControlVelocity.angular_z = 0;
+               break;                          
+            default:
+                printf("[ERR]I don't know this cmd: %d\n", cmd);
+                break;
+        }
+        
+        if(stControlVelocity.linear_x > MAX_LINEAR_VELOCITY){
+            stControlVelocity.linear_x = MAX_LINEAR_VELOCITY;
+        }else if(stControlVelocity.linear_x < -1 * MAX_LINEAR_VELOCITY){
+            stControlVelocity.linear_x = -1 * MAX_LINEAR_VELOCITY;
+        }
+        
+        if(stControlVelocity.angular_z > MAX_ANGULAR_VELOCITY){
+            stControlVelocity.angular_z = MAX_ANGULAR_VELOCITY;
+        }else if(stControlVelocity.angular_z < -1 * MAX_ANGULAR_VELOCITY){
+            stControlVelocity.angular_z = -1 * MAX_ANGULAR_VELOCITY;
+        }        
+        BUF_SEND(port_velocity_out, (unsigned char *)&stControlVelocity, sizeof(SControlVelocity));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

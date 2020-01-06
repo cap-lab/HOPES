@@ -28,26 +28,7 @@ Java (version 1.8 and above, 64bit), ant
   ant
   ```
   
-4. Before Execution, change translator configuration path. You can use vim or any other text editors instead of nano.
-
-```
-  nano (HOPES_DIR)/Public/UEMTranslator/config/translator.properties
-```
-
-Replace two sentences at the top of the text, from ...
-```
-  template_code_path = ..\\UEMLibraryCode\\templates
-  translated_code_template_path = ..\\UEMLibraryCode
-```
-
-to ...
-
-```  
-  template_code_path = ../UEMLibraryCode/templates
-  translated_code_template_path = ../UEMLibraryCode
-```
-
-To execute HOPES program, execute uem_ui.jar inside HOPES_UI.
+4. To execute HOPES program, execute uem_ui.jar inside HOPES_UI.
 ```
   cd (HOPES_DIR)/HOPES_UI
   java -jar uem_ui.jar
@@ -68,6 +49,7 @@ To execute HOPES program, execute uem_ui.jar inside HOPES_UI folder.
 
 # Note
 
+Gantt chart viewer of performance estimation is not currently supported in Linux platform.
 
 # Publication
 

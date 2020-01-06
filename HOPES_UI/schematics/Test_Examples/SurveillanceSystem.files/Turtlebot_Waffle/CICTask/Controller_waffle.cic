@@ -1,0 +1,301 @@
+/************************************
+ *
+ * File : Controller.cic
+ * Date : Mar 18, 2019 5:18 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+#include <unistd.h>
+#include <UFTimer.h>
+#include <iostream>
+
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_INIT 0
+#define ID_STATE_STOP 1
+#define ID_STATE_MOVEFORWARD 2
+#define ID_STATE_MOVEBACKWARD 3
+#define ID_TRANSITION_TRANSITION_0_0 0
+#define ID_TRANSITION_TRANSITION_0_1 1
+#define ID_TRANSITION_TRANSITION_0_2 2
+#define ID_TRANSITION_TRANSITION_0_3 3
+#define ID_TRANSITION_TRANSITION_0_4 4
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+/************COMMAND DEFINITION************/
+
+
+#define NO_COMMAND -1
+#define CMD_STOP 0 
+/*AUTO_CMD*/
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+#define CMD_TURN_LEFT 3
+#define CMD_TURN_RIGHT 4
+/*RC_CMD*/
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+
+#define CMD_TLD_MOVE_FORWARD 9
+#define CMD_TLD_FORWARD_LEFT 10
+#define CMD_TLD_FORWARD_RIGHT 11
+#define CMD_TLD_FAIL 12
+
+#define NO_COMMAND -1
+
+/************KEYCODE & COMMAND DEFINITION************/
+
+#define FRONT_STOP_DISTANCE 350
+//#define BACK_STOP_DISTANCE 350
+#define FAR_STOP_DISTANCE 2500
+
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_detectionInfo;
+STATIC int port_distance;
+STATIC int port_DMS_distance;
+STATIC int port_PIR_motion;
+
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state_0;
+// ##VARIABLE_SECTION::END
+//static int prev_cmd = -1;
+
+typedef struct _SDistance{
+    int front;
+    int back;
+} SDistance; 
+
+STATIC int detectionInfo = -1;
+SDistance stDistance;
+STATIC int dmsDistance = -1;
+STATIC int pirMotion = -1; 
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_detectionInfo = PORT_INITIALIZE(TASK_ID, "detectionInfo");
+    port_distance = PORT_INITIALIZE(TASK_ID, "distance");
+    port_DMS_distance = PORT_INITIALIZE(TASK_ID, "DMS_distance");
+    port_PIR_motion = PORT_INITIALIZE(TASK_ID, "PIR_motion");    
+
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state_0 = ID_STATE_INIT;
+// ##INIT_SECTION::END
+
+}
+
+//-----------------------------------
+// hierarchical code
+//-----------------------------------
+// ##HIERARCHICAL_SECTION::START
+// ##HIERARCHICAL_SECTION::END
+
+//-----------------------------------
+// go code
+//-----------------------------------
+bool isFrontStopCondition() //stop when front distance <= FRONT_STOP_DISTANCE.
+{
+    if(stDistance.front < FRONT_STOP_DISTANCE)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool isBackStopCondition() //stop when front distance <= BACK_STOP_DISTANCE.
+{
+    //if(stDistance.back < BACK_STOP_DISTANCE)
+    if(stDistance.front > FAR_STOP_DISTANCE)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool isPersonDetected()
+{
+    if(detectionInfo == 1)
+    {
+        return true;
+    }
+    else if(detectionInfo == 0)
+    {
+        return false;
+    }
+    else
+    {
+        printf("error : invalid detectionInfo value %d\n",detectionInfo);
+        return false;
+    }    
+}
+
+void sendStop()
+{
+    printf("sendStop!\n");            	           
+    SYS_REQ(SET_PARAM_INT, "wheel_control_waffle", "cmd", CMD_STOP);
+    SYS_REQ(CALL_TASK, "wheel_control_waffle");
+}
+
+void sendMoveForward()
+{
+    printf("sendMoveForward!\n");            	           
+    SYS_REQ(SET_PARAM_INT, "wheel_control_waffle", "cmd", CMD_MOVE_FORWARD);
+    SYS_REQ(CALL_TASK, "wheel_control_waffle");
+}
+
+void sendMoveBackward()
+{
+    printf("sendMoveBackward!\n");            	           
+    SYS_REQ(SET_PARAM_INT, "wheel_control_waffle", "cmd", CMD_MOVE_BACKWARD);
+    SYS_REQ(CALL_TASK, "wheel_control_waffle");
+}
+
+void sendLEDOn()
+{
+    printf("sendLEDOn!\n");            	           
+    SYS_REQ(SET_PARAM_INT, "LED_control_waffle", "signal", 1);
+    SYS_REQ(CALL_TASK, "LED_control_waffle");
+}
+
+void sendLEDOff()
+{
+    printf("sendLEDOff!\n");            	           
+    SYS_REQ(SET_PARAM_INT, "LED_control_waffle", "signal", 0);
+    SYS_REQ(CALL_TASK, "LED_control_waffle");
+}
+
+
+
+int determineState()
+{
+       if(isPersonDetected() && !isFrontStopCondition())
+       {
+           return ID_STATE_MOVEFORWARD;
+       }
+       else if(isPersonDetected() && isFrontStopCondition())
+       {
+          return ID_STATE_STOP;           
+       }
+       else if(!isPersonDetected() && !isBackStopCondition())
+       {
+           return ID_STATE_MOVEBACKWARD;
+       }
+       else if(!isPersonDetected() && isBackStopCondition())
+       {
+           return ID_STATE_STOP;
+       }            
+}
+
+
+using namespace std;
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add trigerring code here.
+    
+     // TODO: task main code     
+     uem_result result;          
+     int nDataRead = 0, nDataWrite = 0;
+	
+	result = UFPort_ReadFromQueue(port_detectionInfo, (unsigned char *) &(detectionInfo), sizeof(int), 0, &nDataRead);
+    result = UFPort_ReadFromQueue(port_distance, (unsigned char *) &(stDistance), sizeof(SDistance), 0, &nDataRead);
+    result = UFPort_ReadFromQueue(port_DMS_distance, (unsigned char *) &(dmsDistance), sizeof(int), 0, &nDataRead);
+    result = UFPort_ReadFromQueue(port_PIR_motion, (unsigned char *) &(pirMotion), sizeof(int), 0, &nDataRead);    
+    long long int curtime;
+    UFTimer_GetCurrentTime(THIS_TASK_ID, &curtime);
+    if(curtime % 1000 <= 100) //print during 100ms for every 1000ms
+    {
+        printf(" DMS_distance : %d, pirMotion : %d\n", dmsDistance, pirMotion);            
+    } 
+
+	switch( current_state_0 )
+	{
+	case ID_STATE_INIT:
+		{
+
+			{
+				// Add exit code for ID_STATE_INIT state here.
+
+				// Add transition code for "from ID_STATE_INIT state to ID_STATE_STOP state" here.
+
+				// State transition
+				current_state_0 = ID_STATE_STOP;
+
+				// Add enter code for ID_STATE_STOP state here.
+
+			}
+		}
+		break;
+	case ID_STATE_STOP:	
+		{
+		  sendStop();
+		  current_state_0 = determineState();    
+		}
+		break;
+	case ID_STATE_MOVEFORWARD:
+		{
+			sendMoveForward();
+			sendLEDOn();
+			current_state_0 = determineState();			
+		}
+		break;
+	case ID_STATE_MOVEBACKWARD:
+		{
+			sendMoveBackward();
+			sendLEDOff();
+            current_state_0 = determineState();        
+		}
+		break;
+	}
+// ##GO_SECTION::END
+
+    // TODO: task main code
+
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

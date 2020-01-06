@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project>
+  <project_type>ManualCICDesignFlow</project_type>
+  <name>codesignFlow.xml</name>
+  <version>0.2</version>
+  <step_list>
+    <step>
+      <title>Func.</title>
+      <selected>no</selected>
+      <name>sim</name>
+      <target_list>
+        <target>
+          <name>CIC-TaskEditor</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-TaskEditor"
+TargetParameter "SimulationTarget" STRING "PTHREAD ##PThread-C++,PThread,NONE"
+TargetParameter "ThreadSetting" String "MULTI_THREAD"
+TargetParameter "TaskGraphProperty" String "ProcessNetwork"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>H/W Platform</title>
+      <selected>no</selected>
+      <name>arch</name>
+      <target_list>
+        <target>
+          <name>platform</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_Architecture target="HostPC" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <elementTypes>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_0" category="memory">
+            <slavePort size="8000" name="Slave" metric="MiB"/>
+        </elementType>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_1" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_1" category="memory">
+            <slavePort size="8000" name="Slave" metric="MiB"/>
+        </elementType>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_2" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_2" category="memory">
+            <slavePort size="8000" name="Slave" metric="MiB"/>
+        </elementType>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="ARM_cortex-m7_0" model="ARM_cortex-m7" clock="216" category="processor" activePower="80000" OS="NO_OS"/>
+        <elementType name="SHARED_MEMORY_3" category="memory">
+            <slavePort size="320" name="Slave" metric="KiB"/>
+        </elementType>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_3" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_4" category="memory">
+            <slavePort size="8000" name="Slave" metric="MiB"/>
+        </elementType>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="ARM_cortex-m7_1" model="ARM_cortex-m7" clock="216" category="processor" activePower="80000" OS="NO_OS"/>
+        <elementType name="SHARED_MEMORY_5" category="memory">
+            <slavePort size="320" name="Slave" metric="KiB"/>
+        </elementType>
+    </elementTypes>
+    <devices>
+        <device runtime="native" platform="linux" name="HostPC" architecture="x86_64">
+            <elements>
+                <element type="i7_0" poolSize="4" name="i7_0"/>
+                <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
+            </elements>
+            <connections>
+                <TCPConnection role="server" port="7776" network="Ethernet/Wi-Fi" name="HostPC_TCP" multicast="false" ip="255.255.255.255"/>
+            </connections>
+            <modules/>
+            <environmentVariables/>
+        </device>
+        <device runtime="native" platform="linux" name="NRFLabtop" architecture="x86_64">
+            <elements>
+                <element type="i7_1" poolSize="4" name="i7_1"/>
+                <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
+            </elements>
+            <connections>
+                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="Labtop_TCP2HostPC" multicast="false" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="B8:27:EB:44:50:58" network="Bluetooth" name="Labtop_Bluetooth2waffle_pi" multicast="false"/>
+            </connections>
+            <modules/>
+            <environmentVariables/>
+        </device>
+        <device runtime="native" platform="linux" name="Turletbot_waffle_pi" architecture="x86_64">
+            <elements>
+                <element type="i7_2" poolSize="4" name="i7_2"/>
+                <element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
+            </elements>
+            <connections>
+                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="Turtlebot_waffle_pi_TCP2HostPC" multicast="false" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Turtlebot_waffle_pi_USB" multicast="false"/>
+                <SerialConnection role="slave" portAddress="74:E5:F9:C4:C4:70" network="Bluetooth" name="Waffle_pi_Bluetooth2Labtop" multicast="false"/>
+            </connections>
+            <modules/>
+            <environmentVariables/>
+        </device>
+        <device runtime="native" platform="arduino" name="Turtlebot_waffle_OpenCR" architecture="samd">
+            <elements>
+                <element type="ARM_cortex-m7_0" poolSize="1" name="ARM_cortex-m7_0"/>
+                <element type="SHARED_MEMORY_3" name="SHARED_MEMORY_3"/>
+            </elements>
+            <connections>
+                <SerialConnection role="slave" network="USB" name="turtlebot_waffle_OpenCR_USB" multicast="false" boardTXPinNumber="0" boardRXPinNumber="0"/>
+            </connections>
+            <modules/>
+            <environmentVariables>
+                <variable value="OpenCR" name="BOARD_TAG"/>
+                <variable value="DynamixelSDK OLLO" name="ARDUINO_LIBS"/>
+            </environmentVariables>
+        </device>
+        <device runtime="native" platform="linux" name="Turtlebot_tank_pi" architecture="x86_64">
+            <elements>
+                <element type="i7_3" poolSize="4" name="i7_3"/>
+                <element type="SHARED_MEMORY_4" name="SHARED_MEMORY_4"/>
+            </elements>
+            <connections>
+                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="Turtlebot_tank_pi_TCP2HostPC" multicast="false" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Turtlebot_tank_pi_USB" multicast="false"/>
+            </connections>
+            <modules/>
+            <environmentVariables/>
+        </device>
+        <device runtime="native" platform="arduino" name="Turtlebot_tank_OpenCR" architecture="samd">
+            <elements>
+                <element type="ARM_cortex-m7_1" poolSize="1" name="ARM_cortex-m7_1"/>
+                <element type="SHARED_MEMORY_5" name="SHARED_MEMORY_5"/>
+            </elements>
+            <connections>
+                <SerialConnection role="slave" network="USB" name="Turtlebot_tank_OpenCR_USB" multicast="false" boardTXPinNumber="0" boardRXPinNumber="0"/>
+            </connections>
+            <modules/>
+            <environmentVariables>
+                <variable value="OpenCR" name="BOARD_TAG"/>
+                <variable value="DynamixelSDK" name="ARDUINO_LIBS"/>
+            </environmentVariables>
+        </device>
+    </devices>
+    <connections>
+        <connection master="NRFLabtop" connection="Labtop_Bluetooth2waffle_pi">
+            <slave device="Turletbot_waffle_pi" connection="Waffle_pi_Bluetooth2Labtop"/>
+        </connection>
+        <connection master="Turletbot_waffle_pi" connection="Turtlebot_waffle_pi_USB">
+            <slave device="Turtlebot_waffle_OpenCR" connection="turtlebot_waffle_OpenCR_USB"/>
+        </connection>
+        <connection master="Turtlebot_tank_pi" connection="Turtlebot_tank_pi_USB">
+            <slave device="Turtlebot_tank_OpenCR" connection="Turtlebot_tank_OpenCR_USB"/>
+        </connection>
+        <connection master="HostPC" connection="HostPC_TCP">
+            <slave device="NRFLabtop" connection="Labtop_TCP2HostPC"/>
+            <slave device="Turletbot_waffle_pi" connection="Turtlebot_waffle_pi_TCP2HostPC"/>
+            <slave device="Turtlebot_tank_pi" connection="Turtlebot_tank_pi_TCP2HostPC"/>
+        </connection>
+    </connections>
+</CIC_Architecture>
+
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Xml-Gen</title>
+      <selected>yes</selected>
+      <name>codegen</name>
+      <target_list>
+        <target>
+          <name>CIC-ManualGen</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-ManualGen"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>DSE</title>
+      <selected>no</selected>
+      <name>dse</name>
+      <target_list>
+        <target>
+          <name>CIC-DSE</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-DSE"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Synthesis</title>
+      <selected>no</selected>
+      <name>cosim</name>
+      <target_list>
+        <target>
+          <name>Translation</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>HSim</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "HSim"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+  </step_list>
+</project>
+

@@ -1,0 +1,113 @@
+/************************************
+ *
+ * File : L.cic
+ * Date : Mar 18, 2019 5:19 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <chrono>
+#include <opencv2/opencv.hpp>
+
+#include <UFTimer.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image_survelliance;
+STATIC int port_image_turtlebot_waffle;
+STATIC int port_image_turtlebot_tank;
+STATIC int port_image_out;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+#define CAP_HEIGHT 300
+#define CAP_WIDTH 300
+#define CAP_CHANNEL 3
+
+#define QCIF_HEIGHT 144
+#define QCIF_WIDTH 176
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+typedef struct _cvMatColorhalf
+{
+    unsigned char data[CAP_HEIGHT / 2 *CAP_WIDTH / 2 *CAP_CHANNEL];
+} CapMatColorhalf;
+
+
+
+
+typedef struct _cvMatYUVColor
+{
+    unsigned char data[QCIF_WIDTH * QCIF_HEIGHT * 3 / 2];
+} CapMatYUVColor;
+
+STATIC CapMatYUVColor capMatYUV;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image_survelliance = PORT_INITIALIZE(TASK_ID, "image_survelliance");
+// ##INIT_PORT_SECTION::END
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    using namespace std;
+    using namespace cv;
+    
+    uem_result result;
+    int nDataRead = 0, nDataWrite = 0;
+    Mat inputImage_surveillance;     
+	CapMatColorhalf inputMat_survelliance;
+	int detectionInfo = -1;
+	
+    result = UFPort_ReadFromQueue(port_image_survelliance, (unsigned char *) &inputMat_survelliance, sizeof(CapMatColorhalf), 0, &nDataRead); 
+    inputImage_surveillance = cv::Mat(CAP_HEIGHT / 2, CAP_WIDTH / 2, CV_8UC3, inputMat_survelliance.data);
+    cv::imshow("image_PC_from_surveillance", inputImage_surveillance);
+    cv::waitKey(1);
+	
+	
+    //DEBUG
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

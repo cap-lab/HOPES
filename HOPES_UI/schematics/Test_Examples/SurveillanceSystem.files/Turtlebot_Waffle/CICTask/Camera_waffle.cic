@@ -1,0 +1,94 @@
+/************************************
+ *
+ * File : Camera.cic
+ * Date : Mar 18, 2019 5:16 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <iostream>
+#include <raspicam/raspicam_cv.h>
+//#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#define INPUT_HEIGHT 320
+#define INPUT_WIDTH 240
+
+
+#define CAP_HEIGHT 300
+#define CAP_WIDTH 300
+#define CAP_CHANNEL 3
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+using namespace std;
+static raspicam::RaspiCam_Cv Camera;
+static cv::Mat image;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image_out = PORT_INITIALIZE(TASK_ID, "image_out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+ 
+    Camera.set( CV_CAP_PROP_FORMAT, CV_8UC3);
+    //Camera.set( CV_CAP_PROP_FRAME_WIDTH, 640 );
+    //Camera.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
+    Camera.set( CV_CAP_PROP_FRAME_WIDTH, INPUT_HEIGHT);
+    Camera.set( CV_CAP_PROP_FRAME_HEIGHT, INPUT_WIDTH);
+          
+     if (!Camera.open()) {
+        cerr<<"Error opening the camera"<<endl;
+     }
+
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    
+    Camera.grab();
+    Camera.retrieve(image);
+      
+    cv::resize(image, image, cv::Size(CAP_HEIGHT, CAP_WIDTH));
+    
+    BUF_SEND(port_image_out, (unsigned char *)image.data, CAP_HEIGHT * CAP_WIDTH * CAP_CHANNEL);    
+    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

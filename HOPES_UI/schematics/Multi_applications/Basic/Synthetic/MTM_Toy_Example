@@ -33,7 +33,7 @@ Run 10
           <select>yes</select>
           <schematic>
             <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<CIC_Architecture target="test_sdf_matrix" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+<CIC_Architecture target="testDevice" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
     <elementTypes>
         <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
         <elementType name="SHARED_MEMORY_0" category="memory">
@@ -41,7 +41,7 @@ Run 10
         </elementType>
     </elementTypes>
     <devices>
-        <device runtime="native" platform="linux" name="test_sdf_matrix" architecture="x86">
+        <device runtime="native" platform="linux" name="testDevice" architecture="x86">
             <elements>
                 <element type="i7_0" poolSize="4" name="i7_0"/>
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>

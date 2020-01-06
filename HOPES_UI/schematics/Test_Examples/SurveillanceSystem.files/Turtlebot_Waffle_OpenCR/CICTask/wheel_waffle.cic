@@ -1,0 +1,165 @@
+/************************************
+ *
+ * File : Wheel.cic
+ * Date : Feb 25, 2019 4:03 PM
+ *
+*************************************/
+
+#include <inttypes.h>
+
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/*******************************************************************************
+* Declaration for Hardware Timer (Interrupt control)
+*******************************************************************************/
+HardwareTimer Timer(TIMER_CH1);
+
+/*******************************************************************************
+* Declaration for RC100 remote conroller
+*******************************************************************************/
+double const_cmd_vel    = 0.2;
+
+/*******************************************************************************
+* Declaration for motor
+*******************************************************************************/
+Turtlebot3MotorDriver motor_driver;
+
+double linear_x              = 0.0;
+double angular_z             = 0.0;
+double goal_linear_velocity  = 0.0;
+double goal_angular_velocity = 0.0;
+
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_velocity;
+// ##DEFINE_PORT_SECTION::END
+STATIC int led_pin = 13;
+STATIC int led_pin_user[4] = { BDPIN_LED_USER_1, BDPIN_LED_USER_2, BDPIN_LED_USER_3, BDPIN_LED_USER_4 };
+
+typedef struct _ControlVelocity{
+    double linear_x;
+    double angular_z;
+
+} stControlVelocity_t;
+
+static stControlVelocity_t stControlVelocity = {0,0};
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+void controlTank()
+{
+  bool dxl_comm_result = false;
+
+  const int8_t motor_num = 2;
+
+  int64_t wheel_value[motor_num] = {0, 0};             //LEFT, RIGHT
+  double wheel_angular_velocity[motor_num] = {0.0, 0.0};
+
+  wheel_angular_velocity[0] = goal_linear_velocity - (goal_angular_velocity * WHEEL_SEPARATION / 2);
+  wheel_angular_velocity[1] = goal_linear_velocity + (goal_angular_velocity * WHEEL_SEPARATION / 2);
+  //UEM_DEBUG_PRINT("wheel_angular_velocity 0 : ");
+  //Serial2.println(wheel_angular_velocity[0]);
+  //UEM_DEBUG_PRINT("wheel_angular_velocity 1 : ");
+  //Serial2.println(wheel_angular_velocity[1]);
+
+  for (int id = 0; id < motor_num; id++)
+  {
+    wheel_value[id] = wheel_angular_velocity[id] * VELOCITY_CONSTANT_VAULE;
+
+    if (wheel_value[id] > LIMIT_X_MAX_VALUE)       wheel_value[id] =  LIMIT_X_MAX_VALUE;
+    else if (wheel_value[id] < -LIMIT_X_MAX_VALUE) wheel_value[id] = -LIMIT_X_MAX_VALUE;
+  }
+
+  dxl_comm_result = motor_driver.controlMotor((int64_t)wheel_value[0], (int64_t)wheel_value[1]);
+  if (dxl_comm_result == false)
+	UEM_DEBUG_PRINT("dxl_comm_result is false!");
+    return;
+}
+
+
+void startDynamixelControlInterrupt()
+{
+	Timer.pause();
+	Timer.setPeriod(CONTROL_PERIOD);           // in microseconds
+	Timer.attachInterrupt(controlTank);
+	Timer.refresh();
+	Timer.resume();
+}
+
+
+int isLow = 1;
+
+TASK_INIT
+{
+	// ##INIT_PORT_SECTION::START
+    port_velocity = PORT_INITIALIZE(TASK_ID, "velocity");    
+    // ##INIT_PORT_SECTION::END
+		
+	motor_driver.init();
+
+	pinMode(13, OUTPUT);
+	// Start Dynamixel Control Interrupt
+	startDynamixelControlInterrupt();
+	
+}
+
+void receiveControl_fromWheelControlTask(void)
+{
+	double linear_x, angular_z;
+
+	if((MQ_AVAILABLE(port_velocity) > 0)){
+		MQ_RECEIVE(port_velocity, (unsigned char *)&stControlVelocity, sizeof(stControlVelocity));    		
+		goal_linear_velocity  = stControlVelocity.linear_x;
+		goal_angular_velocity = stControlVelocity.angular_z;
+	}
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+    /*DEBUG CODE for raspberrypi 
+
+	MQ_RECEIVE(port_velocity, (unsigned char *)&stControlVelocity, sizeof(stControlVelocity));	    
+    printf("linear_x : %lf\n",stControlVelocity.linear_x);
+    printf("angular_z : %lf\n",stControlVelocity.angular_z);    
+    */
+        
+    receiveControl_fromWheelControlTask();
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+	// TODO : intended to stop motors, but not work.
+	// other method should be used.
+	//goal_linear_velocity = 0;
+	//goal_angular_velocity = 0;
+}
+
+TASK_CODE_END

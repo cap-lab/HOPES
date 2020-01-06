@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<document_list>
+  <document name="Task Graph" selected="true" />
+  <document name="task.xml(PC)" selected="false" />
+  <document name="Listen.cic" selected="false" />
+  <document name="keyboard.cic" selected="false" />
+  <document name="task.xml(Turtlebot_Tank)" selected="false" />
+  <document name="Camera_tank.cic" selected="false" />
+  <document name="task.xml(Turtlebot_Waffle)" selected="false" />
+  <document name="Controller_waffle.cic" selected="false" />
+  <document name="task.xml(Surveillance_camera)" selected="false" />
+  <document name="Object_Detection.cic" selected="false" />
+</document_list>
+

@@ -1,0 +1,562 @@
+/************************************
+ *
+ * File : Controller.cic
+ * Date : Mar 18, 2019 5:18 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+#include <unistd.h>
+
+
+
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_INIT 0
+#define ID_STATE_AUTO 1
+#define ID_STATE_RC 2
+#define ID_STATE_FINISH 3
+#define ID_STATE_AUTO_MOVE 4
+#define ID_STATE_AUTO_TURN 5
+#define ID_STATE_AUTO_FINISH 6
+#define ID_STATE_RC_LISTEN 7
+#define ID_STATE_RC_TLD_MODE 8
+#define ID_STATE_RC_FINISH 9
+#define ID_TRANSITION_INIT2MOVE 0
+#define ID_TRANSITION_MOVE2RC 1
+#define ID_TRANSITION_RC2MOVE 2
+#define ID_TRANSITION_MOVE2FINISH 3
+#define ID_TRANSITION_RC2FINISH 4
+#define ID_TRANSITION_INIT2RC 5
+#define ID_TRANSITION_MOVE2TURN 6
+#define ID_TRANSITION_TURN2MOVE 7
+#define ID_TRANSITION_LISTEN2FINISH 9
+#define ID_TRANSITION_LISTEN2RC_CMD 10
+#define ID_TRANSITION_RC_CMD2LISTEN 11
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+/************KEYCODE & COMMAND DEFINITION************/
+#define KEYCODE_R 0x43
+#define KEYCODE_L 0x44
+#define KEYCODE_U 0x41
+#define KEYCODE_D 0x42
+
+#define KEYCODE_KEY_A 0x61 
+#define KEYCODE_KEY_R 0x72
+#define KEYCODE_KEY_T 0x74
+#define KEYCODE_KEY_F 0x66
+ 
+#define KEYCODE_SPACE 0x20 //stop
+
+#define NO_COMMAND -2
+#define CMD_STOP 0 
+/*AUTO_CMD*/
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+#define CMD_TURN_LEFT 3
+#define CMD_TURN_RIGHT 4
+/*RC_CMD*/
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+
+#define CMD_TLD_MOVE_FORWARD 9
+#define CMD_TLD_FORWARD_LEFT 10
+#define CMD_TLD_FORWARD_RIGHT 11
+#define CMD_TLD_FAIL -1
+
+
+#define SWITCH_RC_MODE 100
+#define SWITCH_AUTO_MODE 101
+#define SWITCH_RC_TLD_MODE 102
+#define SWITCH_FINISH 103
+/************KEYCODE & COMMAND DEFINITION************/
+
+#define SAFETY_MARGIN 350
+
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_cmd;
+STATIC int port_tld_cmd;
+STATIC int port_distance;
+// ##DEFINE_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state_0;
+static int current_state_AUTO_0;
+void execute_AUTO_1_state();
+static int current_state_RC_0;
+void execute_RC_1_state(int cmd, int tld_cmd);
+// ##VARIABLE_SECTION::END
+//static int prev_cmd = -1;
+
+typedef struct _astDistance3{
+    int left30;
+    int right30;
+    int front;
+} astDistance3; 
+
+static astDistance3 stDistance3;  
+
+void stopTLDTask();
+void stopLDSTask();
+//-----------------------------------
+// init code
+//-----------------------------------
+
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_cmd = PORT_INITIALIZE(TASK_ID, "cmd");
+    port_distance = PORT_INITIALIZE(TASK_ID, "distance");    
+    port_tld_cmd = PORT_INITIALIZE(TASK_ID, "tld_cmd");
+    
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state_0 = ID_STATE_INIT;
+	current_state_AUTO_0 = ID_STATE_AUTO_MOVE;
+	current_state_RC_0 = ID_STATE_RC_LISTEN;
+// ##INIT_SECTION::END
+
+    //stopTLDTask();
+    //stopLDSTask();
+    // TODO: task initialize code
+
+}
+
+//-----------------------------------
+// hierarchical code
+//-----------------------------------
+// ##HIERARCHICAL_SECTION::START
+// Hierarchical FSM Code
+
+
+
+/*********************AUTO mode ********************/
+
+int isAutoModeTurnCondition(){
+    if((stDistance3.left30 < SAFETY_MARGIN) || (stDistance3.right30 < SAFETY_MARGIN) || (stDistance3.front < SAFETY_MARGIN)){
+        return 1;
+    }else{
+        return 0;
+    }
+    
+}
+int isTLDFinishCondition(){
+    //TODO
+    return 0;
+}
+
+int isAutoModeMoveCondition(){    
+    if(isAutoModeTurnCondition() == 0) return 1;
+    else return 0;
+}
+
+int isAutoModeFinishCondition(){
+    //TODO 
+    return 0;
+}
+
+void sendMove(){
+    printf("sendMove!\n");            	           
+    SYS_REQ(SET_PARAM_INT, "wheel_control_tank", "cmd", CMD_MOVE_FORWARD);
+    SYS_REQ(CALL_TASK, "wheel_control_tank");
+}
+
+void sendTurn(){
+    if((stDistance3.left30 < SAFETY_MARGIN) || (stDistance3.front < SAFETY_MARGIN)){
+        printf("sendTurn(right)!\n");  
+        SYS_REQ(SET_PARAM_INT, "wheel_control_tank", "cmd", CMD_TURN_RIGHT);
+        SYS_REQ(CALL_TASK, "wheel_control_tank");
+    }else if(stDistance3.right30 < SAFETY_MARGIN){
+        printf("sendTurn(left)!\n");
+        SYS_REQ(SET_PARAM_INT, "wheel_control_tank", "cmd", CMD_TURN_LEFT);
+        SYS_REQ(CALL_TASK, "wheel_control_tank");
+    }else{ //illegal
+        printf("illegal sendTurn request! \n");
+    }
+}
+
+
+void execute_AUTO_1_state()
+{
+	switch( current_state_AUTO_0 )
+	{
+	case ID_STATE_AUTO_MOVE:
+		{
+		    sendMove();		    
+			if(isAutoModeTurnCondition())
+			{				
+				current_state_AUTO_0 = ID_STATE_AUTO_TURN;
+			}
+			else if(isAutoModeFinishCondition())
+			{				
+				current_state_AUTO_0 = ID_STATE_AUTO_FINISH;
+			}
+		}
+		break;
+	case ID_STATE_AUTO_TURN:
+		{
+		    sendTurn();
+			if(isAutoModeMoveCondition())
+			{
+				current_state_AUTO_0 = ID_STATE_AUTO_MOVE;
+			}
+			else if(isAutoModeFinishCondition())
+            {
+                current_state_AUTO_0 = ID_STATE_AUTO_FINISH;
+            }
+		}
+		break;
+	case ID_STATE_AUTO_FINISH:
+		{
+		}
+		break;
+	}
+}
+
+/*********************RC mode ********************/
+
+int isRCFinishCondition(){
+  return 0;
+}
+
+int isSwitchModeCmd(int cmd){
+    if ((cmd ==SWITCH_RC_MODE) || (cmd == SWITCH_AUTO_MODE)){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+int isRCCmd(int cmd){
+    if ((cmd ==CMD_STOP) || (cmd == CMD_ACC_FORWARD) || (cmd == CMD_ACC_BACKWARD) || (cmd == CMD_ACC_LEFT) || (cmd == CMD_ACC_RIGHT)){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+int isTLDCmd(int cmd){
+    if ((cmd==CMD_TLD_MOVE_FORWARD) || (cmd==CMD_TLD_FORWARD_LEFT) || (cmd==CMD_TLD_FORWARD_RIGHT) || (cmd==CMD_TLD_FAIL)){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+int isAutoCmd(int cmd){
+    if ((cmd ==CMD_STOP) || (cmd == CMD_MOVE_FORWARD) || (cmd == CMD_MOVE_BACKWARD) || (cmd == CMD_TURN_LEFT) || (cmd == CMD_TURN_RIGHT)){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+void execRCCmd(int cmd){ //send RCcmd to wheel_control_tank
+    if(cmd == NO_COMMAND){ //illegal command came, ignore.
+        return ;
+    }
+    printf("execRCCmd! %d\n",cmd);
+    SYS_REQ(SET_PARAM_INT, "wheel_control_tank", "cmd", cmd);
+    SYS_REQ(CALL_TASK, "wheel_control_tank");    
+}
+
+void execTLDCmd(int tld_cmd){ //send TLDcmd to wheel_control_tank
+    if(tld_cmd == NO_COMMAND){ //illegal command came, ignore.
+        return ;
+    }
+    printf("execTLDCmd! %d\n",tld_cmd);    
+    SYS_REQ(SET_PARAM_INT, "wheel_control_tank", "cmd", tld_cmd);
+    SYS_REQ(CALL_TASK, "wheel_control_tank");    
+}
+
+void runTLDTask(){
+    if(SYS_REQ(CHECK_TASK_STATE, "tld") != 0){//not STATE_RUN
+        printf("run TLD!\n");            
+        SYS_REQ(RUN_TASK, "tld");
+    }
+}
+
+void stopTLDTask(){    
+    if(SYS_REQ(CHECK_TASK_STATE, "tld") == 0){//STATE_RUN
+        printf("stop TLD!\n");
+        SYS_REQ(STOP_TASK, "tld");
+    }
+}
+
+void runLDSTask(){
+    if(SYS_REQ(CHECK_TASK_STATE, "LDS_tank") != 0){//not STATE_RUN
+        printf("run LDS!\n");            
+        SYS_REQ(RUN_TASK, "LDS_tank");
+    }
+}
+
+void stopLDSTask(){    
+    if(SYS_REQ(CHECK_TASK_STATE, "LDS_tank") == 0){//STATE_RUN
+        printf("stop LDS!\n");
+        SYS_REQ(STOP_TASK, "LDS_tank");
+    }
+}
+
+void execute_RC_1_state(int cmd, int tld_cmd)
+{
+	//printf("check state : %d\n",SYS_REQ(CHECK_TASK_STATE, "tld"));
+	switch( current_state_RC_0 )
+	{
+	case ID_STATE_RC_LISTEN:
+		{
+			if(isRCFinishCondition())
+			{
+				current_state_RC_0 = ID_STATE_RC_FINISH;
+			}
+			else if(isRCCmd(cmd))
+			{
+			     execRCCmd(cmd);			     
+			}
+			else if(cmd == SWITCH_RC_TLD_MODE)
+			{
+			     //run TLD
+			     //runTLDTask();
+			     current_state_RC_0 = ID_STATE_RC_TLD_MODE;
+			}
+			else if(isAutoCmd(cmd)){
+			    printf("[ERR] invaild cmd : %d in RC_LISTEN state(this is command for Auto Mode)\n",cmd);
+			}
+			else{
+			    printf("[ERR] Unknown cmd : %d in RC_LISTEN state!\n",cmd);
+			}
+		}
+		break;
+	case ID_STATE_RC_TLD_MODE:
+        {            
+        
+            if(cmd == SWITCH_RC_MODE)
+            {
+                //immediately exit TLD mode when RC cmd get in.
+                //stopTLDTask();
+                current_state_RC_0 = ID_STATE_RC_LISTEN;                
+            }
+            else if(isTLDFinishCondition())
+            {
+                //stopTLDTask();            
+            	current_state_RC_0 = ID_STATE_RC_FINISH;
+            }
+			else if(stDistance3.front < SAFETY_MARGIN)//move backward condition
+			{
+				execRCCmd(CMD_MOVE_BACKWARD);
+			}
+            else if(isTLDCmd(tld_cmd))
+            {
+                execTLDCmd(tld_cmd);
+            }            
+        }
+	break;		
+	case ID_STATE_RC_FINISH:
+		{		  
+		}
+		break;
+	}
+}
+// ##HIERARCHICAL_SECTION::END
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+void doFinish(){
+        printf("Finish Mission! \n");
+        SYS_REQ(STOP);
+        sleep(2);
+    }
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add trigerring code here.
+	/*
+	int cmd = -1;
+    int port_cmd_avail = MQ_AVAILABLE(port_cmd);
+    if(port_cmd_avail > 0){ //cmd exists
+       MQ_RECEIVE(port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+       if(isSwitchModeCmd()){
+           if(prev_cmd == cmd){
+                //do nothing
+           }else{
+                //switch mode
+           }
+       }else if(isRCCmd(cmd)){
+           if(current_state_0 == ID_STATE_RC){
+            //control
+           }else if(current_state_0 == ID_STATE_AUTO){
+            //do nothing.
+           }
+       }else{ //illegal cmd
+         printf("illegal cmd : %d\n",cmd);
+       }                     
+    } else{ //cmd not exists
+        ;
+    }
+    */
+    
+    //should be nonblocking, since control module (for AUTO mode) should always run).
+        
+    int cmd = NO_COMMAND;
+    int tld_cmd = NO_COMMAND;
+        
+ 
+/* 
+    if(current_state_0 == ID_STATE_INIT){ //block
+       MQ_RECEIVE(port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+       if ((cmd == NO_COMMAND)){ //initial block until real command get In.
+           return ;
+       }
+    }else{
+        int port_cmd_avail = MQ_AVAILABLE(port_cmd);
+        if(port_cmd_avail > 0){ //cmd exists
+            MQ_RECEIVE(port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+        }else{
+           cmd = NO_COMMAND;
+        }        
+    }
+    */     
+    
+    if (current_state_0 == ID_STATE_AUTO){ //nonblock cmd wait when current state is AUTO state
+         if(MQ_AVAILABLE(port_cmd) > 0){ //cmd exists
+            MQ_RECEIVE(port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+         }else{
+            ;
+         }        
+     }else if(current_state_0 == ID_STATE_RC){ //block cmd wait when current state is RC state    
+         if(MQ_AVAILABLE(port_cmd) > 0){ //cmd exists
+			MQ_RECEIVE(port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+		 }
+        if(MQ_AVAILABLE(port_tld_cmd)){
+            MQ_RECEIVE(port_tld_cmd, (unsigned char*)&tld_cmd, sizeof(tld_cmd));
+        }          
+     }else if(current_state_0 == ID_STATE_INIT){
+        MQ_RECEIVE(port_cmd, (unsigned char*)&cmd, sizeof(cmd));
+        if ((cmd == NO_COMMAND)){ //initial block until real command get In.
+            return ;
+        }
+     }else{ //TODO : finish state
+     
+     }
+    
+     if(MQ_AVAILABLE(port_distance)){
+        MQ_RECEIVE(port_distance, (unsigned char*)&stDistance3, sizeof(stDistance3));
+    }
+
+	switch( current_state_0 )
+	{
+	case ID_STATE_INIT:
+		{
+		    //Initially STOP TLD, LDS Task
+		    //stopTLDTask();
+		    //stopLDSTask();
+			if(cmd == SWITCH_AUTO_MODE)
+			{
+			    //runLDSTask();
+				current_state_0 = ID_STATE_AUTO;
+			}
+			else if(cmd == SWITCH_RC_MODE)
+			{
+				current_state_0 = ID_STATE_RC;
+			}else if(cmd == SWITCH_FINISH)
+            {
+                doFinish();   
+                current_state_0 = ID_STATE_FINISH;
+            }
+			else{
+			 printf("please select AUTO mode or RC mode.\n");
+			}
+		}
+		break;
+	case ID_STATE_AUTO:
+		{
+			if(cmd == SWITCH_RC_MODE)
+			{			
+			    //stopLDSTask();
+				current_state_0 = ID_STATE_RC;
+			}
+			else if(cmd == SWITCH_FINISH)
+			{				
+                doFinish();   
+				current_state_0 = ID_STATE_FINISH;
+			}
+			else
+			{
+				execute_AUTO_1_state();
+			}
+		}
+		break;
+	case ID_STATE_RC:
+		{
+			if(cmd == SWITCH_AUTO_MODE)
+			{
+			    //stopTLDTask();
+			    //runLDSTask();
+				current_state_0 = ID_STATE_AUTO;
+			}
+			else if(cmd == SWITCH_FINISH)
+			{				
+                doFinish();   
+    			current_state_0 = ID_STATE_FINISH;
+
+				// State transition			
+				// Add enter code for ID_STATE_FINISH state here.
+			}
+			else
+			{			    
+				execute_RC_1_state(cmd, tld_cmd);
+			}
+		}
+		break;		    
+	case ID_STATE_FINISH:
+		{
+            break;
+		    
+		}
+		break;
+	}
+	
+	
+	int control = 1;	
+// ##GO_SECTION::END
+
+
+    // TODO: task main code
+
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

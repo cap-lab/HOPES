@@ -1,0 +1,108 @@
+/************************************
+ *
+ * File : Wheel.cic
+ * Date : Feb 25, 2019 4:03 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/*******************************************************************************
+* Declaration for Hardware Timer (Interrupt control)
+*******************************************************************************/
+
+/*******************************************************************************
+* Declaration for RC100 remote conroller
+*******************************************************************************/
+
+/*******************************************************************************
+* Declaration for motor
+*******************************************************************************/
+#include <OLLO.h>
+
+
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_dms_distance_out;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+STATIC OLLO myOLLO;
+
+TASK_INIT
+{
+	// ##INIT_PORT_SECTION::START
+    port_dms_distance_out = PORT_INITIALIZE(TASK_ID, "dms_distance_out");
+// ##INIT_PORT_SECTION::END
+      myOLLO.begin(1); //port 1
+
+			
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+
+    int distance = -1; //cm   
+    int ADCvalue = myOLLO.read(1); //port 1
+    
+    if(ADCvalue >= 700) //detected
+    {  
+        distance = -1;
+    }
+    else if(ADCvalue >= 400 && ADCvalue < 600)
+    {
+        distance = 10;
+    }
+    else if(ADCvalue >= 200 && ADCvalue < 400)
+    {
+      distance = 20;
+    }
+    else if(ADCvalue >= 100 && ADCvalue < 200)
+    {
+        distance = 30;
+    }
+    else if(ADCvalue >= 600 && ADCvalue < 100)
+    {
+        distance = 50;
+    }
+        
+        
+    
+    BUF_SEND(port_dms_distance_out, (unsigned char *)&distance, sizeof(int));       
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+
+}
+
+TASK_CODE_END

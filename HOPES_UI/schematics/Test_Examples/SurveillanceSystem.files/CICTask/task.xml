@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="SurveillanceSystem">
+  <setting_list>
+    <setting cycle="10000000000" unit="us" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="ProcessNetwork" />
+  </setting_list>
+  <task_list>
+    <task name="Surveillance_camera" type="Computational">
+      <config>
+        <location x="140" y="220" width="80" height="60" />
+        <parameter name="CICFile" value="Surveillance_camera/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="image_out" type="fifo" sample_size="67500" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="detectionInfo_out" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="Surveillance_camera" macroNodePort="image_out" direction="Out" insideTask="Report" insideTaskPort="image_out" portType="" />
+        <portMap macroNode="Surveillance_camera" macroNodePort="detectionInfo_out" direction="Out" insideTask="Report" insideTaskPort="detectionInfo_out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="PC" type="Computational">
+      <config>
+        <location x="460" y="52" width="80" height="80" />
+        <parameter name="CICFile" value="PC/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="image_survelliance" type="fifo" sample_size="67500" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="image_turtlebot_waffle" type="fifo" sample_size="270000" sample_rate="Variable" description="" />
+        <port id="2" export="false" name="image_turtlebot_tank" type="fifo" sample_size="270000" sample_rate="Variable" description="" />
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="cmd_out" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="PC" macroNodePort="image_survelliance" direction="In" insideTask="Listen_from_surveillance" insideTaskPort="image_survelliance" portType="" />
+        <portMap macroNode="PC" macroNodePort="image_turtlebot_waffle" direction="In" insideTask="Listen_from_waffle" insideTaskPort="image_turtlebot_waffle" portType="" />
+        <portMap macroNode="PC" macroNodePort="image_turtlebot_tank" direction="In" insideTask="Listen_from_tank" insideTaskPort="image_turtlebot_tank" portType="" />
+        <portMap macroNode="PC" macroNodePort="cmd_out" direction="Out" insideTask="keyboard" insideTaskPort="cmd_out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Turtlebot_Waffle" type="Computational">
+      <config>
+        <location x="452" y="240" width="80" height="80" />
+        <parameter name="CICFile" value="Turtlebot_Waffle/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="detectionInfo" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="DMS_distance" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+        <port id="2" export="false" name="PIR_motion" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="image_out" type="fifo" sample_size="270000" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="velocity_out" type="fifo" sample_size="16" sample_rate="Variable" description="" />
+        <port id="2" export="false" name="signal_out" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="Turtlebot_Waffle" macroNodePort="detectionInfo" direction="In" insideTask="Listen_waffle" insideTaskPort="detectionInfo" portType="" />
+        <portMap macroNode="Turtlebot_Waffle" macroNodePort="DMS_distance" direction="In" insideTask="Controller_waffle" insideTaskPort="DMS_distance" portType="" />
+        <portMap macroNode="Turtlebot_Waffle" macroNodePort="PIR_motion" direction="In" insideTask="Controller_waffle" insideTaskPort="PIR_motion" portType="" />
+        <portMap macroNode="Turtlebot_Waffle" macroNodePort="image_out" direction="Out" insideTask="Report_waffle" insideTaskPort="image_out" portType="" />
+        <portMap macroNode="Turtlebot_Waffle" macroNodePort="velocity_out" direction="Out" insideTask="Report_waffle" insideTaskPort="velocity_out" portType="" />
+        <portMap macroNode="Turtlebot_Waffle" macroNodePort="signal_out" direction="Out" insideTask="LED_control_waffle" insideTaskPort="signal_out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Turtlebot_Waffle_OpenCR" type="Computational">
+      <config>
+        <location x="444" y="404" width="80" height="60" />
+        <parameter name="CICFile" value="Turtlebot_Waffle_OpenCR/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="velocity" type="fifo" sample_size="16" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="signal" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="PIR_motion_out" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="DMS_distance_out" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="Turtlebot_Waffle_OpenCR" macroNodePort="velocity" direction="In" insideTask="wheel_waffle" insideTaskPort="velocity" portType="" />
+        <portMap macroNode="Turtlebot_Waffle_OpenCR" macroNodePort="signal" direction="In" insideTask="LED_waffle" insideTaskPort="signal" portType="" />
+        <portMap macroNode="Turtlebot_Waffle_OpenCR" macroNodePort="PIR_motion_out" direction="Out" insideTask="PIR10_motion_waffle" insideTaskPort="PIR_motion_out" portType="" />
+        <portMap macroNode="Turtlebot_Waffle_OpenCR" macroNodePort="DMS_distance_out" direction="Out" insideTask="DMS10_distance_waffle" insideTaskPort="dms_distance_out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Turtlebot_Tank" type="Computational">
+      <config>
+        <location x="700" y="240" width="80" height="60" />
+        <parameter name="CICFile" value="Turtlebot_Tank/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="cmd" type="fifo" sample_size="4" sample_rate="Variable" description="" />
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="image_out" type="fifo" sample_size="270000" sample_rate="Variable" description="" />
+        <port id="1" export="false" name="velocity_out" type="fifo" sample_size="16" sample_rate="Variable" description="" />
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="Turtlebot_Tank" macroNodePort="cmd" direction="In" insideTask="Listen_tank" insideTaskPort="in_cmd" portType="" />
+        <portMap macroNode="Turtlebot_Tank" macroNodePort="image_out" direction="Out" insideTask="Report_tank" insideTaskPort="image_out" portType="" />
+        <portMap macroNode="Turtlebot_Tank" macroNodePort="velocity_out" direction="Out" insideTask="Report_tank" insideTaskPort="velocity_out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Turtlebot_Tank_OpenCR" type="Computational">
+      <config>
+        <location x="824" y="424" width="80" height="40" />
+        <parameter name="CICFile" value="Turtlebot_Tank_OpenCR/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="velocity" type="fifo" sample_size="16" sample_rate="Variable" description="" />
+      </inport_list>
+      <outport_list />
+      <portMap_list>
+        <portMap macroNode="Turtlebot_Waffle_OpenCR" macroNodePort="velocity" direction="In" insideTask="wheel_tank" insideTaskPort="velocity" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="Surveillance_camera" src_port="detectionInfo_out" dst_task="Turtlebot_Waffle" dst_port="detectionInfo" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="220" y="260" />
+        <edge id="1" x="452" y="260" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Waffle" src_port="velocity_out" dst_task="Turtlebot_Waffle_OpenCR" dst_port="velocity" size="1" init_size="0" sampleType="" sampleSize="16">
+      <edge_list>
+        <edge id="0" x="532" y="280" />
+        <edge id="1" x="600" y="280" />
+        <edge id="2" x="400" y="328" />
+        <edge id="3" x="444" y="424" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Tank" src_port="velocity_out" dst_task="Turtlebot_Tank_OpenCR" dst_port="velocity" size="1" init_size="0" sampleType="" sampleSize="16">
+      <edge_list>
+        <edge id="0" x="780" y="280" />
+        <edge id="1" x="928" y="280" />
+        <edge id="2" x="704" y="328" />
+        <edge id="3" x="824" y="444" />
+      </edge_list>
+    </channel>
+    <channel src_task="PC" src_port="cmd_out" dst_task="Turtlebot_Tank" dst_port="cmd" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="540" y="72" />
+        <edge id="1" x="700" y="260" />
+      </edge_list>
+    </channel>
+    <channel src_task="Surveillance_camera" src_port="image_out" dst_task="PC" dst_port="image_survelliance" size="1" init_size="0" sampleType="" sampleSize="67500">
+      <edge_list>
+        <edge id="0" x="220" y="240" />
+        <edge id="1" x="460" y="72" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Waffle" src_port="image_out" dst_task="PC" dst_port="image_turtlebot_waffle" size="1" init_size="0" sampleType="" sampleSize="270000">
+      <edge_list>
+        <edge id="0" x="532" y="260" />
+        <edge id="1" x="604" y="260" />
+        <edge id="2" x="400" y="200" />
+        <edge id="3" x="460" y="92" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Tank" src_port="image_out" dst_task="PC" dst_port="image_turtlebot_tank" size="1" init_size="0" sampleType="" sampleSize="270000">
+      <edge_list>
+        <edge id="0" x="780" y="260" />
+        <edge id="1" x="932" y="260" />
+        <edge id="2" x="416" y="172" />
+        <edge id="3" x="460" y="112" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Waffle" src_port="signal_out" dst_task="Turtlebot_Waffle_OpenCR" dst_port="signal" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="532" y="300" />
+        <edge id="1" x="592" y="300" />
+        <edge id="2" x="372" y="348" />
+        <edge id="3" x="444" y="444" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Waffle_OpenCR" src_port="PIR_motion_out" dst_task="Turtlebot_Waffle" dst_port="PIR_motion" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="524" y="424" />
+        <edge id="1" x="628" y="420" />
+        <edge id="2" x="308" y="380" />
+        <edge id="3" x="452" y="300" />
+      </edge_list>
+    </channel>
+    <channel src_task="Turtlebot_Waffle_OpenCR" src_port="DMS_distance_out" dst_task="Turtlebot_Waffle" dst_port="DMS_distance" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="524" y="444" />
+        <edge id="1" x="660" y="440" />
+        <edge id="2" x="248" y="360" />
+        <edge id="3" x="452" y="280" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

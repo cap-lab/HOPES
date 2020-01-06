@@ -1,0 +1,2130 @@
+/************************************
+ *
+ * File : Encoder_1.cic
+ * Date : Jul 23, 2009 10:53 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_p52;
+STATIC int port_p43;
+STATIC int port_p28;
+// ##DEFINE_PORT_SECTION::END
+
+
+/* Define macro for prototyping functions on ANSI & non-ANSI compilers */
+#ifndef ARGS
+#if defined(__STDC__) || defined(__cplusplus)
+#define ARGS(args) args
+#else
+#define ARGS(args) ()
+#endif
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include "x264.h"
+// by jwlee 2008.05.28
+#include "ME.h"
+
+
+typedef struct
+{
+    int i_type;
+    int i_first_mb;
+    int i_last_mb;		
+    int i_frame_num;		
+    int i_idr_pic_id;
+    int i_poc_lsb;		
+    int b_num_ref_idx_override;		
+    int i_qp;
+    int i_qp_delta;		
+    int i_disable_deblocking_filter_idc;		
+} SliceHeader;
+
+typedef struct{
+    int i_cbp_luma;
+    int i_cbp_chroma;
+    struct IntBlock16x16 luma4x4_out;
+    struct IntArr16x15 luma_residual_ac;
+    struct IntArr48 non_zero_count;
+    struct IntArr8x15 chroma_residual_ac;
+    struct IntArr2x4 chroma_dc;
+    struct IntArr16 luma4x4;
+    SliceHeader msgSliceHeader;
+    int intFrameType;
+    encoder_send_info e_s_info;
+} EncVLCPacket;
+
+
+typedef struct{
+    int intFrameType;
+    int MB_index_Enc;
+    struct Uint8_tArr64 recon_block_U;
+    struct Uint8_tArr64 recon_block_V;
+    struct Uint8_tArr256 recon_block_1313;
+    struct Uint8_tArr256 recon_block_1382;
+    struct IntArr48 non_zero_count;
+    deblock_send_info d_s_info;
+} EncDbkPacket;
+
+
+typedef struct {
+   int output[99];
+   int o_intFrameType;
+   SliceHeader o_msgSliceHeader;
+   encoder_send_info e_s_info;
+   deblock_send_info d_s_info;
+   init_info i_info;
+} MEEncPacket;
+
+/* Define constants TRUE and FALSE for portability */
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+/* Define a complex data type if one has not been defined */
+#if !defined(COMPLEX_DATA)
+#define COMPLEX_DATA 1
+typedef struct complex_data { double real; double imag; } complex;
+#endif
+
+#define CGC_MOD(a,b) ((a)>=(b) ? (a-b):(a))
+#ifndef __CIC__
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
+/* original global declaration */
+#define QP_CONSTANT 26
+#define QP_CONSTANT_I 23
+#define QUANT_ONE( coef, mf ) \
+{ \
+    if( (coef) > 0 ) \
+    (coef) = ( f + (coef) * (mf) ) >> i_qbits; \
+    else \
+    (coef) = - ( ( f - (coef) * (mf) ) >> i_qbits ); \
+}
+#define DEQUANT_SHL( x ) \
+    dct[y][x] = ( dct[y][x] * dequant4_mf[0][i_mf][y][x] ) << i_qbits
+
+#define DEQUANT_SHR( x ) \
+    dct[y][x] = ( dct[y][x] * dequant4_mf[0][i_mf][y][x] + f ) >> (-i_qbits)
+#define ZIG(i,y,x) level[i] = dct[y][x];
+#define IS_INTRA(type) ( (type) == I_4x4 || (type) == I_8x8 || (type) == I_16x16)
+
+STATIC int do_it_1438;
+STATIC struct Uint8_tArr256 best_block_1299;
+STATIC int do_it_1439;
+STATIC struct Uint8_tArr16 src_block_4x4_1300[16];
+STATIC struct Uint8_tArr16 best_block_4x4_1301[1584];
+STATIC int best_block_4x4_1440;
+STATIC int do_it_1441;
+STATIC int src_block_1442;
+STATIC int best_block_1443;
+STATIC struct Int16_tBlock4x4 dct4x4_1302[16];
+STATIC int dct4x4_1444;
+STATIC int do_it_1445;
+STATIC struct Int16_tBlock4x4 dc_block_4x4_1303;
+STATIC int do_it_1446;
+STATIC int frame_type_1447;
+STATIC int frame_type_1447_phase;
+STATIC int dct4x4_in_1448;
+STATIC struct Int16_tBlock4x4 dct4x4_out_1306[16];
+STATIC int dct4x4_out_1449;
+STATIC int do_it_1450;
+STATIC int frame_type_1451_phase;
+STATIC int dct4x4_in_1452;
+STATIC struct Int16_tBlock4x4 dct4x4_out_1307;
+STATIC int do_it_1453;
+STATIC struct Int16_tBlock4x4 dst_block_1308;
+STATIC int do_it_1454;
+STATIC int frame_type_1455_phase;
+STATIC struct Int16_tBlock4x4 dct4x4_out_1309;
+STATIC int do_it_1456;
+STATIC int frame_type_1457;
+STATIC int frame_type_1457_phase;
+STATIC int dct4x4_in_1458;
+STATIC struct Int16_tBlock4x4 dct4x4_out_1310[1569];
+STATIC int dct4x4_out_1459;
+STATIC int do_it_1460;
+STATIC int src_block_4x4_1461;
+STATIC int dc_block_4x4_1462_phase;
+STATIC struct Int16_tBlock4x4 dst_block_4x4_1311;
+STATIC int do_it_1463;
+STATIC int best_block_1464;
+STATIC struct Uint8_tArr16 dst_block_1312[16];
+STATIC int dst_block_1465;
+STATIC int do_it_1466;
+STATIC struct Uint8_tArr256 recon_block_1313;
+STATIC int do_it_1467;
+STATIC struct IntArr16 luma4x4_1314;
+STATIC int do_it_1468;
+STATIC int dct4x4_1469;
+STATIC struct IntArr15 residual_ac_1319[1584];
+STATIC int residual_ac_1470;
+STATIC int output_1320;
+STATIC int input_1471;
+STATIC int output_1326[1584];
+STATIC int output_1472;
+STATIC int output_1346[16];
+STATIC int do_it_1473;
+STATIC struct Int16_tBlock4x4 dst_block_1349[99];
+STATIC int dst_block_1474;
+STATIC struct Uint8_tArr256 recon_block_1350;
+STATIC struct Uint8_tArr64 recon_block_U_1351[99];
+STATIC int recon_block_U_1475;
+STATIC struct Uint8_tArr64 recon_block_V_1352[99];
+STATIC int recon_block_V_1476;
+STATIC struct Uint8_tArr16 src_block_4x4_1353[16];
+STATIC struct Uint8_tArr16 best_block_4x4_1354[16];
+STATIC int do_it_1477;
+STATIC int src_block_1478;
+STATIC int best_block_1479;
+STATIC struct Int16_tBlock4x4 dct4x4_1355;
+STATIC int output_1358[16];
+STATIC int do_it_1480;
+STATIC int frame_type_1481;
+STATIC int frame_type_1481_phase;
+STATIC struct Int16_tBlock4x4 dct4x4_out_1362[16];
+STATIC int dct4x4_out_1482;
+STATIC int do_it_1483;
+STATIC int dct4x4_1484;
+STATIC struct IntArr16 luma4x4_1365[16];
+STATIC int luma4x4_1485;
+STATIC int output_1369[16];
+STATIC int do_it_1486;
+STATIC int luma4x4_1487;
+STATIC int i_decimate_1374[16];
+STATIC int i_decimate_1488;
+STATIC struct IntArr16 luma4x4_out_1375[1584];
+STATIC int luma4x4_out_1489;
+STATIC int do_it_out_1376[16];
+STATIC int do_it_1490;
+STATIC int frame_type_1491;
+STATIC int frame_type_1491_phase;
+STATIC int dct4x4_in_1492;
+STATIC struct Int16_tBlock4x4 dct4x4_out_1379;
+STATIC int do_it_1493;
+STATIC int best_block_1494;
+STATIC struct Uint8_tArr16 dst_block_1380;
+STATIC int do_it_1495;
+STATIC int src_block_predct_1496;
+STATIC struct Uint8_tArr16 src_block_1381[16];
+STATIC int src_block_1497;
+STATIC struct Uint8_tArr256 recon_block_1382;
+STATIC int output_1383;
+STATIC int output_1384;
+STATIC int do_it_1498;
+STATIC int i_mb_type_1499;
+STATIC int i_frame_type_1500_phase;
+STATIC int chroma_pred_mode_1501;
+STATIC int src_block_U_1502;
+STATIC int src_block_V_1503;
+STATIC int recon_block_U_in_1504;
+STATIC int recon_block_V_in_1505;
+STATIC int preddata8_U_1506;
+STATIC int preddata8_V_1507;
+STATIC struct IntArr8x15 chroma_residual_ac_1387;
+STATIC struct IntArr2x4 chroma_dc_1388;
+STATIC struct Uint8_tArr64 recon_block_U_1389;
+STATIC struct Uint8_tArr64 recon_block_V_1390;
+STATIC int i_frame_type_1508_phase;
+STATIC int i_mb_type_1509;
+STATIC int luma4x4_4I_1510;
+STATIC int luma4x4_4P_1511;
+STATIC int residual_ac_16_1512;
+STATIC int luma4x4_Inter_1513;
+STATIC int non_zero_count_in_1514;
+STATIC int i_cbp_luma_1391;
+STATIC int i_cbp_chroma_1392;
+STATIC struct IntArr48 non_zero_count_1393;
+STATIC struct IntBlock16x16 luma4x4_out_1394;
+STATIC struct IntArr16x15 luma_residual_ac_1395;
+STATIC int output_1404[99];
+STATIC int output_1515;
+STATIC int output_1410;
+STATIC int output_1519_phase;
+STATIC int output_1411;
+STATIC int output_1521_phase;
+STATIC int output_1412;
+STATIC int output_1413;
+STATIC int output_1421;
+STATIC int output_1423;
+STATIC int output_1424;
+STATIC int output_1425;
+STATIC int output_1426[99];
+STATIC int output_1539;
+STATIC int output_1427;
+STATIC int output_1541_phase;
+STATIC int output_1428[99];
+STATIC int output_1543;
+STATIC struct Uint8_tArr64 output_1429[99];
+STATIC int output_1545;
+STATIC struct Uint8_tArr64 output_1430[99];
+STATIC int output_1547;
+STATIC struct preddata8 output_1431[99];
+STATIC int output_1549;
+STATIC struct preddata8 output_1432[99];
+STATIC int output_1551;
+STATIC int output_1433;
+STATIC int output_1555_phase;
+STATIC int output_1434[99];
+STATIC int output_1557;
+STATIC struct IntArr16 output_1435[1584];
+STATIC int output_1559;
+STATIC struct IntArr16 output_1436[1584];
+STATIC int output_1561;
+STATIC struct IntArr48 output_1437[99];
+STATIC int output_1563;
+/* new global declaration */
+
+STATIC encoder_send_info e_r_info; //
+STATIC init_info i_to_e_info;      //
+
+STATIC inline int clip_uint8( int a )
+{
+    if (a&(~255))
+        return (-a)>>31;
+    else
+        return a;
+}
+
+// by iloy 2008.05.08                                                                                                                                                                                            
+// start
+STATIC void predict_16x16_v_new( uint8_t *src, uint8_t preddata[2][21] );
+STATIC void predict_16x16_h_new( uint8_t *src, uint8_t preddata[2][21]);
+STATIC void predict_16x16_dc_new( uint8_t *src, uint8_t preddata[2][21] );
+STATIC void predict_16x16_p_new( uint8_t *src, uint8_t preddata[2][21] );
+STATIC void predict_16x16_dc_left_new( uint8_t *src, uint8_t preddata[2][21] );
+STATIC void predict_16x16_dc_top_new( uint8_t *src, uint8_t preddata[2][21] );
+STATIC void predict_16x16_dc_128_new( uint8_t *src, uint8_t preddata[2][21] );
+// end
+
+
+STATIC void predict_16x16_get_best(int i_pred16x16, uint8_t preddata16[2][21], uint8_t dst_block[16*16]) {
+
+    switch(i_pred16x16)
+    {
+        case I_PRED_16x16_V :
+            predict_16x16_v_new( dst_block, preddata16 );
+            break;
+        case I_PRED_16x16_H :
+            predict_16x16_h_new( dst_block, preddata16 );
+            break;
+        case I_PRED_16x16_DC :
+            predict_16x16_dc_new( dst_block, preddata16 );
+            break;
+        case I_PRED_16x16_P :
+            predict_16x16_p_new( dst_block, preddata16 );
+            break;
+        case I_PRED_16x16_DC_LEFT :
+            predict_16x16_dc_left_new( dst_block, preddata16  );
+            break;
+        case I_PRED_16x16_DC_TOP :
+            predict_16x16_dc_top_new( dst_block, preddata16  );
+            break;
+        case I_PRED_16x16_DC_128 :
+            predict_16x16_dc_128_new( dst_block, preddata16  );
+            break;
+    }
+}        
+STATIC void predict_16x16_v_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+    int i;
+
+    for( i = 0; i < 16; i++ )
+        memcpy(&src[i*16], &preddata[0][1], 16*sizeof(uint8_t));
+}
+STATIC void predict_16x16_h_new( uint8_t *src, uint8_t preddata[2][21])
+{
+    int i;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], preddata[1][i+1], 16);
+}
+STATIC void predict_16x16_dc_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+
+    int dc = 0;
+    int i;
+
+    /* calculate DC value */
+    for( i = 0; i < 16; i++ )
+    {
+        dc += preddata[0][i+1];
+        dc += preddata[1][i+1];
+    }
+    dc = ( dc + 16 ) >> 5;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], dc, 16);
+}
+STATIC void predict_16x16_p_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+    int x, y, i;
+    int a, b, c;
+    int H = 0;
+    int V = 0;
+    int i00;
+
+    /* calcule H and V */
+    for( i = 0; i <= 7; i++ )
+    {
+        H += ( i + 1 ) * ( preddata[0][9 + i] - preddata[0][7 -i] );
+        V += ( i + 1 ) * ( preddata[1][9 + i] - preddata[1][7 -i] );
+    }
+
+    a = 16 * ( preddata[1][16] + preddata[0][16] );
+    b = ( 5 * H + 32 ) >> 6;
+    c = ( 5 * V + 32 ) >> 6;
+
+    i00 = a - b * 7 - c * 7 + 16;
+
+    for( y = 0; y < 16; y++ )
+    {
+        for( x = 0; x < 16; x++ )
+        {
+            int pix;
+
+            pix = (i00+b*x)>>5;
+
+            src[y* 16 + x] = clip_uint8( pix );
+        }
+        i00 += c;
+    }
+}
+STATIC void predict_16x16_dc_left_new( uint8_t *src, uint8_t preddata[2][21] )
+{
+    int dc = 0;
+    int i;
+
+    for( i = 0; i < 16; i++ )
+    {
+        dc += preddata[1][i+1];
+    }
+    dc = ( dc + 8 ) >> 4;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], dc, 16);
+}
+STATIC void predict_16x16_dc_top_new( uint8_t *src, uint8_t preddata[2][21] )
+{           
+    int dc = 0;
+    int i;
+
+    for( i = 0; i < 16; i++ )
+    {
+        dc += preddata[0][i + 1];
+    }
+    dc = ( dc + 8 ) >> 4;
+
+    for( i = 0; i < 16; i++ )
+        memset(&src[i*16], dc, 16);
+}
+STATIC void predict_16x16_dc_128_new( uint8_t *src, uint8_t preddata[2][21] )
+{           
+    int i;
+
+    for( i = 0; i < 16; i++ )
+        memset((void *)&src[i*16], 128, 16);
+}
+STATIC void x264_pre_16x16_dct(int i, uint8_t src_block[16*16], uint8_t best_block[16*16], uint8_t src_block_4x4[4*4], uint8_t best_block_4x4[4*4])
+{
+    int x = block_idx_x[i];
+    int y = block_idx_y[i];
+    int iter;
+
+    for (iter = 0 ; iter < 4 ; iter++) {
+        memcpy(&src_block_4x4[iter*4], &src_block[(y*4 + iter) * 16 + (x*4)], sizeof(uint8_t)*4);
+        memcpy(&best_block_4x4[iter*4], &best_block[(y*4 + iter) * 16 + (x*4)], sizeof(uint8_t)*4);
+    }
+}
+
+
+// by iloy 2008.05.08
+// start
+//STATIC inline void pixel_sub_wxh( int16_t *diff, int i_size,
+ //               uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 );
+// end
+STATIC void pixel_sub_wxh( int16_t *diff, int i_size,
+        uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 )
+{
+    int y, x;
+    for( y = 0; y < i_size; y++ )
+    {
+        for( x = 0; x < i_size; x++ )
+        {
+            diff[x + y*i_size] = pix1[x] - pix2[x];
+        }
+        pix1 += i_pix1;
+        pix2 += i_pix2;
+    }
+}
+
+STATIC void sub4x4_dct( int16_t dct[4][4], uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 )
+{
+    int16_t d[4][4];
+    int16_t tmp[4][4];
+    int i;
+
+    pixel_sub_wxh( (int16_t*)d, 4, pix1, i_pix1, pix2, i_pix2 );
+    //pixel_sub_wxh( *d, 4, pix1, i_pix1, pix2, i_pix2 );
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s03 = d[i][0] + d[i][3];
+        const int s12 = d[i][1] + d[i][2];
+        const int d03 = d[i][0] - d[i][3];
+        const int d12 = d[i][1] - d[i][2];
+
+        tmp[0][i] =   s03 +   s12;
+        tmp[1][i] = 2*d03 +   d12;
+        tmp[2][i] =   s03 -   s12;
+        tmp[3][i] =   d03 - 2*d12;
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s03 = tmp[i][0] + tmp[i][3];
+        const int s12 = tmp[i][1] + tmp[i][2];
+        const int d03 = tmp[i][0] - tmp[i][3];
+        const int d12 = tmp[i][1] - tmp[i][2];
+
+        dct[0][i] =   s03 +   s12;
+        dct[1][i] = 2*d03 +   d12;
+        dct[2][i] =   s03 -   s12;
+        dct[3][i] =   d03 - 2*d12;
+    }
+}
+STATIC void x264_16x16_dc_gen(int i, int16_t src_block_4x4[4][4], int16_t dc_block_4x4[4][4])
+{
+    int x = block_idx_x[i];
+    int y = block_idx_y[i];
+    int iter;
+
+    dc_block_4x4[x][y] = src_block_4x4[0][0];
+}
+STATIC void quant_4x4_core( int16_t dct[4][4], int i_mf, int i_qbits, int f )
+{
+    int i;
+    for( i = 0; i < 16; i++ )
+        QUANT_ONE( dct[0][i], quant4_mf[0][i_mf][0][i] );
+}
+STATIC void quant_4x4(int16_t dct[4][4], int i_qscale, int b_intra )
+{
+    const int i_qbits = 15 + i_qscale / 6;
+    const int i_mf = i_qscale % 6;
+    const int f = ( 1 << i_qbits ) / ( b_intra ? 3 : 6 );
+    quant_4x4_core( dct, i_mf, i_qbits, f );
+}
+STATIC void quant_4x4_dc_core( int16_t dct[4][4], int i_mf, int i_qbits, int f )
+{
+    int i;
+    for( i = 0; i < 16; i++ )
+        QUANT_ONE( dct[0][i], quant4_mf[0][i_mf][0][0] );
+}
+STATIC void quant_4x4_dc(int16_t dct[4][4], int i_qscale)
+{
+    const int i_qbits = 16 + i_qscale / 6;
+    const int i_mf = i_qscale % 6;
+    const int f = ( 1 << i_qbits ) / 3;
+    quant_4x4_dc_core( dct, i_mf, i_qbits, f );
+}
+STATIC void idct4x4dc( int16_t d[4][4] )
+{
+    int16_t tmp[4][4];
+    int s01, s23;
+    int d01, d23;
+    int i;
+
+    for( i = 0; i < 4; i++ )
+    {
+        s01 = d[0][i] + d[1][i];
+        d01 = d[0][i] - d[1][i];
+        s23 = d[2][i] + d[3][i];
+        d23 = d[2][i] - d[3][i];
+
+        tmp[0][i] = s01 + s23;
+        tmp[1][i] = s01 - s23;
+        tmp[2][i] = d01 - d23;
+        tmp[3][i] = d01 + d23;
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        s01 = tmp[i][0] + tmp[i][1];
+        d01 = tmp[i][0] - tmp[i][1];
+        s23 = tmp[i][2] + tmp[i][3];
+        d23 = tmp[i][2] - tmp[i][3];
+
+        d[i][0] = s01 + s23;
+        d[i][1] = s01 - s23;
+        d[i][2] = d01 - d23;
+        d[i][3] = d01 + d23;
+    }
+}
+STATIC void dequant_4x4_dc(int16_t dct[4][4], int i_qp)
+{
+    const int i_qbits = i_qp/6 - 6;
+    int y;
+
+    if( i_qbits >= 0 )
+    {
+        const int i_dmf = dequant4_mf[0][i_qp%6][0][0] << i_qbits;
+
+        for( y = 0; y < 4; y++ )
+        {
+            dct[y][0] *= i_dmf;
+            dct[y][1] *= i_dmf;
+            dct[y][2] *= i_dmf;
+            dct[y][3] *= i_dmf;
+        }
+    }
+    else
+    {
+        const int i_dmf = dequant4_mf[0][i_qp%6][0][0];
+        const int f = 1 << (-i_qbits-1);
+
+        for( y = 0; y < 4; y++ )
+        {
+            dct[y][0] = ( dct[y][0] * i_dmf + f ) >> (-i_qbits);
+            dct[y][1] = ( dct[y][1] * i_dmf + f ) >> (-i_qbits);
+            dct[y][2] = ( dct[y][2] * i_dmf + f ) >> (-i_qbits);
+            dct[y][3] = ( dct[y][3] * i_dmf + f ) >> (-i_qbits);
+        }
+    }
+}
+STATIC void dequant_4x4( int16_t dct[4][4],  int i_qp )
+{
+    const int i_mf = i_qp%6;
+    const int i_qbits = i_qp/6 - 4;
+    int y;
+
+    if( i_qbits >= 0 )
+    {
+        for( y = 0; y < 4; y++ )
+        {
+            DEQUANT_SHL( 0 );
+            DEQUANT_SHL( 1 );
+            DEQUANT_SHL( 2 );
+            DEQUANT_SHL( 3 );
+        }
+    }
+    else
+    {
+        const int f = 1 << (-i_qbits-1);
+        for( y = 0; y < 4; y++ )
+        {
+            DEQUANT_SHR( 0 );
+            DEQUANT_SHR( 1 );
+            DEQUANT_SHR( 2 );
+            DEQUANT_SHR( 3 );
+        }
+    }
+}
+STATIC void x264_16x16_dc_merge(int16_t src_block_4x4[4][4], int16_t dc_block_4x4[4][4], int16_t dst_block[4][4], int idx)
+{
+    int x = block_idx_x[idx];
+    int y = block_idx_y[idx];
+
+    memcpy(&dst_block[0][0], &src_block_4x4[0][0], sizeof(int16_t)*16);
+    dst_block[0][0] = dc_block_4x4[x][y];	
+}
+STATIC void add4x4_idct( uint8_t *p_dst, int i_dst, int16_t dct[4][4] )
+{
+    int16_t d[4][4];
+    int16_t tmp[4][4];
+    int x, y;
+    int i;
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s02 =  dct[i][0]     +  dct[i][2];
+        const int d02 =  dct[i][0]     -  dct[i][2];
+        const int s13 =  dct[i][1]     + (dct[i][3]>>1);
+        const int d13 = (dct[i][1]>>1) -  dct[i][3];
+
+        tmp[i][0] = s02 + s13;
+        tmp[i][1] = d02 + d13;
+        tmp[i][2] = d02 - d13;
+        tmp[i][3] = s02 - s13;
+        //if(c2 == 0) printf("%d %d %d %d\n", dct[i][0], dct[i][1], dct[i][2], dct[i][3]);
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        const int s02 =  tmp[0][i]     +  tmp[2][i];
+        const int d02 =  tmp[0][i]     -  tmp[2][i];
+        const int s13 =  tmp[1][i]     + (tmp[3][i]>>1);
+        const int d13 = (tmp[1][i]>>1) -   tmp[3][i];
+
+        d[0][i] = ( s02 + s13 + 32 ) >> 6;
+        d[1][i] = ( d02 + d13 + 32 ) >> 6;
+        d[2][i] = ( d02 - d13 + 32 ) >> 6;
+        d[3][i] = ( s02 - s13 + 32 ) >> 6;
+    }
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            p_dst[x] = clip_uint8( p_dst[x] + d[y][x] );
+        }
+        p_dst += i_dst;
+    }
+}
+STATIC void x264_post_16x16_dct(int idx, uint8_t src_block_4x4[16], uint8_t recon_block[16*16])
+{
+    int x = block_idx_x[idx];
+    int y = block_idx_y[idx];
+    int i, j;
+
+    for (i = 0 ; i < 4 ; i++)
+        for (j = 0 ; j < 4 ; j++)
+            recon_block[(y*4 + i) * 16 + (x*4) + j] = src_block_4x4[i*4 + j];
+}
+STATIC void scan_zigzag_4x4full( int level[16], int16_t dct[4][4] );
+
+STATIC void scan_zigzag_4x4full( int level[16], int16_t dct[4][4] )
+{
+    ZIG( 0,0,0) ZIG( 1,0,1) ZIG( 2,1,0) ZIG( 3,2,0)
+        ZIG( 4,1,1) ZIG( 5,0,2) ZIG( 6,0,3) ZIG( 7,1,2)
+        ZIG( 8,2,1) ZIG( 9,3,0) ZIG(10,3,1) ZIG(11,2,2)
+        ZIG(12,1,3) ZIG(13,2,3) ZIG(14,3,2) ZIG(15,3,3)
+}
+STATIC void scan_zigzag_4x4( int level[15], int16_t dct[4][4] )
+{
+    ZIG( 0,0,1) ZIG( 1,1,0) ZIG( 2,2,0)
+        ZIG( 3,1,1) ZIG( 4,0,2) ZIG( 5,0,3) ZIG( 6,1,2)
+        ZIG( 7,2,1) ZIG( 8,3,0) ZIG( 9,3,1) ZIG(10,2,2)
+        ZIG(11,1,3) ZIG(12,2,3) ZIG(13,3,2) ZIG(14,3,3)
+}
+STATIC void dct4x4dc( int16_t d_in[4][4], int16_t d_out[4][4] )
+{
+    int16_t tmp[4][4];
+    int s01, s23;
+    int d01, d23;
+    int i;
+
+    for( i = 0; i < 4; i++ )
+    {
+        s01 = d_in[i][0] + d_in[i][1];
+        d01 = d_in[i][0] - d_in[i][1];
+        s23 = d_in[i][2] + d_in[i][3];
+        d23 = d_in[i][2] - d_in[i][3];
+
+        tmp[0][i] = s01 + s23;
+        tmp[1][i] = s01 - s23;
+        tmp[2][i] = d01 - d23;
+        tmp[3][i] = d01 + d23;
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        s01 = tmp[i][0] + tmp[i][1];
+        d01 = tmp[i][0] - tmp[i][1];
+        s23 = tmp[i][2] + tmp[i][3];
+        d23 = tmp[i][2] - tmp[i][3];
+
+        d_out[0][i] = ( s01 + s23 + 1 ) >> 1;
+        d_out[1][i] = ( s01 - s23 + 1 ) >> 1;
+        d_out[2][i] = ( d01 - d23 + 1 ) >> 1;
+        d_out[3][i] = ( d01 + d23 + 1 ) >> 1;
+    }
+}
+STATIC inline void pixel_avg( uint8_t *dst,  int i_dst_stride,
+        uint8_t *src1, int i_src1_stride,
+        uint8_t *src2, int i_src2_stride,
+        int i_width, int i_height )
+{
+    int x, y;
+    for( y = 0; y < i_height; y++ )
+    {
+        for( x = 0; x < i_width; x++ )
+        {
+            dst[x] = ( src1[x] + src2[x] + 1 ) >> 1;
+        }
+        dst  += i_dst_stride;
+        src1 += i_src1_stride;
+        src2 += i_src2_stride;
+    }
+}
+STATIC void mc_copy(uint8_t *src, int i_src_stride, uint8_t *dst, int i_dst_stride, int i_width, int i_height )
+{
+    int y;
+
+    for( y = 0; y < i_height; y++ )
+    {
+        memcpy( dst, src, i_width );
+
+        src += i_src_stride;
+        dst += i_dst_stride;
+    }
+}
+STATIC void mc_luma(uint8_t src [4][48*48], int i_src_stride,
+        uint8_t *dst,    int i_dst_stride,
+        int mvx,int mvy,
+        int i_width, int i_height )
+{
+    uint8_t *src1, *src2;
+
+    int correction = (mvx&1) && (mvy&1) && ((mvx&2) ^ (mvy&2));
+    int hpel1x = mvx>>1;
+    int hpel1y = (mvy+1-correction)>>1;
+    int shpel1x = hpel1x >> 1;
+    int shpel1y = hpel1y >> 1;
+    int filter1 = (hpel1x & 1) + ( (hpel1y & 1) << 1 );
+
+    src1 = src[filter1] + (shpel1y + 16) * i_src_stride + (shpel1x + 16);
+
+    if ( (mvx|mvy) & 1 ) /* qpel interpolation needed */
+    {
+        int hpel2x = (mvx+1)>>1;
+        int hpel2y = (mvy+correction)>>1;
+        int shpel2x = hpel2x >> 1;
+        int shpel2y = hpel2y >> 1;
+        int filter2 = (hpel2x & 1) + ( (hpel2y & 1) <<1 );
+
+        src2 = src[filter2] + (shpel2y+16) * i_src_stride + (shpel2x +16);
+
+        pixel_avg(dst, i_dst_stride, src1, i_src_stride, src2, i_src_stride, i_width, i_height );
+    }
+    else
+    {
+        mc_copy(src1, i_src_stride, dst, i_dst_stride, i_width, i_height );
+    }
+}
+STATIC void motion_compensation_chroma_new( uint8_t *src, int i_src_stride,
+        uint8_t *dst, int i_dst_stride,
+        int mvx, int mvy,
+        int i_width, int i_height )
+{
+    uint8_t *srcp;
+    int x, y;
+
+    const int d8x = mvx&0x07;
+    const int d8y = mvy&0x07;
+
+    const int cA = (8-d8x)*(8-d8y);
+    const int cB = d8x    *(8-d8y);
+    const int cC = (8-d8x)*d8y;
+    const int cD = d8x    *d8y;
+
+    src  += ((mvy >> 3)+8) * i_src_stride + ((mvx >> 3)+8);
+    srcp = &src[i_src_stride];
+
+    for( y = 0; y < i_height; y++ )
+    {
+        for( x = 0; x < i_width; x++ )
+        {
+            dst[x] = ( cA*src[x]  + cB*src[x+1] +
+                    cC*srcp[x] + cD*srcp[x+1] + 32 ) >> 6;
+        }
+        dst  += i_dst_stride;
+
+        src   = srcp;
+        srcp += i_src_stride;
+    }
+}        
+STATIC void x264_mb_mc_0xywh_new(int x, int y, int width, int height, uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24], 
+        int16_t mv_mb[2][48][2], int8_t ref_mb[2][48], uint8_t *dst, uint8_t *dstU, uint8_t *dstV)
+{
+    const int i8 = x264_scan8[0]+x+8*y;
+    const int i_ref = ref_mb[0][i8];
+    int mvx = mv_mb[0][i8][0];
+    const int mvy = mv_mb[0][i8][1];
+
+    mc_luma( ME_ref, 48, &dst[4*y*16 +4*x], 16,
+            mvx + 4*4*x, mvy + 4*4*y, 4*width, 4*height );
+
+    motion_compensation_chroma_new( &ME_ref_chroma[0][2*y*24 + 2*x], 24, &dstU[2*y*8 +2*x], 8,
+            mvx, mvy, 2*width, 2*height );
+
+    motion_compensation_chroma_new( &ME_ref_chroma[1][2*y*24 + 2*x], 24, &dstV[2*y*8 +2*x], 8,
+            mvx, mvy, 2*width, 2*height );
+}
+STATIC void x264_mb_mc(int i_type, int i_partition, int i_sub_partition[4], int16_t mv_mb[2][48][2], int8_t ref_mb[2][48], 
+        uint8_t ME_ref[4][48*48], uint8_t ME_ref_chroma[2][24*24],
+        uint8_t recon_block[256], uint8_t recon_block_U[64], uint8_t recon_block_V[64])
+{
+    if( i_type == P_L0 )
+    {
+        if( i_partition == D_16x16 )
+        {
+            x264_mb_mc_0xywh_new( 0, 0, 4, 4, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V );
+        }
+        else if( i_partition == D_16x8 )
+        {
+            x264_mb_mc_0xywh_new( 0, 0, 4, 2, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+            x264_mb_mc_0xywh_new( 0, 2, 4, 2, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+        }
+        else if( i_partition == D_8x16 )
+        {
+            x264_mb_mc_0xywh_new( 0, 0, 2, 4, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+            x264_mb_mc_0xywh_new( 2, 0, 2, 4, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+        }
+    }
+    else if( i_type == P_8x8)
+    {
+        int i;
+        for( i = 0; i < 4; i++ )
+        {
+            const int x = 2*(i%2);
+            const int y = 2*(i/2);
+            switch( i_sub_partition[i] )
+            {
+                case D_L0_8x8:
+                    x264_mb_mc_0xywh_new( x, y, 2, 2, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    break;
+                case D_L0_8x4:
+                    x264_mb_mc_0xywh_new( x, y+0, 2, 1, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    x264_mb_mc_0xywh_new( x, y+1, 2, 1, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    break;
+                case D_L0_4x8:
+                    x264_mb_mc_0xywh_new( x+0, y, 1, 2, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    x264_mb_mc_0xywh_new( x+1, y, 1, 2, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    break;
+                case D_L0_4x4:
+                    x264_mb_mc_0xywh_new( x+0, y+0, 1, 1, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    x264_mb_mc_0xywh_new( x+1, y+0, 1, 1, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    x264_mb_mc_0xywh_new( x+0, y+1, 1, 1, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    x264_mb_mc_0xywh_new( x+1, y+1, 1, 1, ME_ref, ME_ref_chroma, mv_mb, ref_mb, recon_block, recon_block_U, recon_block_V  );
+                    break;
+                    /*
+                    // do not support direct mode yet
+                    case D_DIRECT_8x8:
+                    x264_mb_mc_direct8x8( x, y );
+                    break;
+                     */
+            }
+        }
+    }    
+}
+STATIC int x264_mb_decimate_score( int *dct, int i_max )
+{
+    STATIC const int i_ds_table4[16] = {
+        3,2,2,1,1,1,0,0,0,0,0,0,0,0,0,0 };
+    STATIC const int i_ds_table8[64] = {
+        3,3,3,3,2,2,2,2,2,2,2,2,1,1,1,1,
+        1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+
+    const int *ds_table = (i_max == 64) ? i_ds_table8 : i_ds_table4;
+    int i_score = 0;
+    int idx = i_max - 1;
+
+    while( idx >= 0 && dct[idx] == 0 )
+        idx--;
+
+    while( idx >= 0 )
+    {
+        int i_run;
+
+        if( abs( dct[idx--] ) > 1 )
+            return 9;
+
+        i_run = 0;
+        while( idx >= 0 && dct[idx] == 0 )
+        {
+            idx--;
+            i_run++;
+        }
+        i_score += ds_table[i_run];
+    }
+
+    return i_score;
+}
+STATIC void x264_set_nnz(int i_decimate[16], struct IntArr16 luma4x4[16], struct IntArr16 luma4x4_out[16], int do_it_out[16])
+{
+    int i_decimate_8x8[4];
+    int i_decimate_total;
+
+    i_decimate_8x8[0] = i_decimate[0]+i_decimate[1]+i_decimate[2]+i_decimate[3];
+    i_decimate_8x8[1] = i_decimate[4]+i_decimate[5]+i_decimate[6]+i_decimate[7];
+    i_decimate_8x8[2] = i_decimate[8]+i_decimate[9]+i_decimate[10]+i_decimate[11];
+    i_decimate_8x8[3] = i_decimate[12]+i_decimate[13]+i_decimate[14]+i_decimate[15];
+
+    i_decimate_total = i_decimate_8x8[0] + i_decimate_8x8[1] + i_decimate_8x8[2] + i_decimate_8x8[3];
+
+    if (i_decimate_total < 6) {
+        int i;
+        for (i = 0 ; i < 16 ; i++) {
+            do_it_out[i] = 0;
+            memset(luma4x4_out[i].data, 0, 16*sizeof(int));
+        }
+    }	
+    else {
+        int i;
+
+        for (i = 0 ; i < 4 ; i++) {
+            if (i_decimate_8x8[i] < 4) {
+                int j; 
+                for (j = 0 ; j < 4 ; j++) do_it_out[i*4+j] = 0;
+                memset(luma4x4_out[i*4].data, 0, 16*sizeof(int));
+                memset(luma4x4_out[i*4+1].data, 0, 16*sizeof(int));
+                memset(luma4x4_out[i*4+2].data, 0, 16*sizeof(int));
+                memset(luma4x4_out[i*4+3].data, 0, 16*sizeof(int));
+            }
+            else {
+                int j;
+                for (j = 0 ; j < 4 ; j++) {
+                    do_it_out[i*4+j] = 1;
+                    memcpy(luma4x4_out[i*4+j].data, luma4x4[i*4+j].data, 16*sizeof(int));
+                }
+            }
+        }
+    }		
+}
+STATIC void predict_8x8c_dc( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+    int s0 = 0, s1 = 0, s2 = 0, s3 = 0;
+    int dc0, dc1, dc2, dc3;
+    int i;
+
+    /* First do :
+       s0 s1
+       s2
+       s3
+     */
+    for( i = 0; i < 4; i++ )
+    {
+        s0 += preddata8[0][i + 1];
+        s1 += preddata8[0][i + 5];
+        s2 += preddata8[1][i + 1];
+        s3 += preddata8[1][i + 5];
+    }
+    /* now calculate
+       dc0 dc1
+       dc2 dc3
+     */
+    dc0 = ( s0 + s2 + 4 ) >> 3;
+    dc1 = ( s1 + 2 ) >> 2;
+    dc2 = ( s3 + 2 ) >> 2;
+    dc3 = ( s1 + s3 + 4 ) >> 3;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[             x    ] = dc0;
+            src[             x + 4] = dc1;
+            src[4*8 + x    ] = dc2;
+            src[4*8 + x + 4] = dc3;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8c_h( uint8_t *src, uint8_t preddata8[2][9] )
+{	
+    int i,j;
+
+    for( i = 0; i < 8; i++ )
+    {
+        uint8_t v;
+
+        v = preddata8[1][i+1];
+
+        for( j = 0; j < 8; j++ )
+        {
+            src[j] = v;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8c_v( uint8_t *src, uint8_t preddata8[2][9] )
+{			
+    int i,j;
+
+    for( i = 0; i < 8; i++ )
+    {
+        for( j = 0; j < 8; j++ )
+        {
+            src[i * 8 +j] = preddata8[0][j + 1];
+        }
+    }
+}
+STATIC void predict_8x8c_p( uint8_t *src, uint8_t preddata8[2][9] )
+{
+    int i;
+    int x,y;
+    int a, b, c;
+    int H = 0;
+    int V = 0;
+    int i00;
+
+    for( i = 0; i < 4; i++ )
+    {
+        H += ( i + 1 ) * ( preddata8[0][5+i] - preddata8[0][3-i]);
+        V += ( i + 1 ) * ( preddata8[1][5+i] - preddata8[1][3-i]);
+    }
+
+    a = 16 * ( preddata8[0][8] + preddata8[1][8] );
+    b = ( 17 * H + 16 ) >> 5;
+    c = ( 17 * V + 16 ) >> 5;
+    i00 = a -3*b -3*c + 16;
+
+    for( y = 0; y < 8; y++ )
+    {
+        for( x = 0; x < 8; x++ )
+        {
+            int pix;
+
+            pix = (i00 +b*x) >> 5;
+            src[x] = clip_uint8( pix );
+        }
+        src += 8;
+        i00 += c;
+    }
+}
+STATIC void predict_8x8c_dc_left( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+    int dc0 = 0, dc1 = 0;
+
+    for( y = 0; y < 4; y++ )
+    {
+        dc0 += preddata8[1][y+1];
+        dc1 += preddata8[1][y+5];
+    }
+    dc0 = ( dc0 + 2 ) >> 2;
+    dc1 = ( dc1 + 2 ) >> 2;
+
+    for( y = 0; y < 4; y++ )
+    {
+        for( x = 0; x < 8; x++ )
+        {
+            src[           x] = dc0;
+            src[4*8+x] = dc1;
+        }
+        src += 8;
+    }
+}
+STATIC void predict_8x8c_dc_top( uint8_t *src, uint8_t preddata8[2][9] )
+{		
+    int x,y;
+    int dc0 = 0, dc1 = 0;
+
+    for( x = 0; x < 4; x++ )
+    {
+        dc0 += preddata8[0][x+1];
+        dc1 += preddata8[0][x+5];
+    }
+    dc0 = ( dc0 + 2 ) >> 2;
+    dc1 = ( dc1 + 2 ) >> 2;
+
+    for( y = 0; y < 8; y++ )
+    {
+        for( x = 0; x < 4; x++ )
+        {
+            src[x    ] = dc0;
+            src[x + 4] = dc1;
+        }
+        src += 8;
+    }	
+}	
+STATIC void predict_8x8c_dc_128( uint8_t *src)
+{		
+    int x,y;
+
+    for( y = 0; y < 8; y++ )
+    {
+        for( x = 0; x < 8; x++ )
+        {
+            src[x] = 128;
+        }
+        src += 8;
+    }
+}
+STATIC void quant_2x2_dc_core( int16_t dct[2][2], int i_quant_mf, int i_qbits, int f )
+{
+    QUANT_ONE( dct[0][0], i_quant_mf );
+    QUANT_ONE( dct[0][1], i_quant_mf );
+    QUANT_ONE( dct[1][0], i_quant_mf );
+    QUANT_ONE( dct[1][1], i_quant_mf );
+}
+STATIC void quant_2x2_dc(int16_t dct[2][2], int quant_mf[6][4][4], int i_qscale, int b_intra )
+{
+    const int i_qbits = 16 + i_qscale / 6;
+    const int i_mf = i_qscale % 6;
+    const int f = ( 1 << i_qbits ) / ( b_intra ? 3 : 6 );
+    quant_2x2_dc_core( dct, quant_mf[i_mf][0][0], i_qbits, f );
+}
+STATIC void sub8x8_dct( int16_t dct[4][4][4], uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2 )
+{
+    sub4x4_dct( dct[0], &pix1[0], i_pix1, &pix2[0], i_pix2 );
+    sub4x4_dct( dct[1], &pix1[4], i_pix1, &pix2[4], i_pix2 );
+    sub4x4_dct( dct[2], &pix1[4*i_pix1+0], i_pix1, &pix2[4*i_pix2+0], i_pix2 );
+    sub4x4_dct( dct[3], &pix1[4*i_pix1+4], i_pix1, &pix2[4*i_pix2+4], i_pix2 );
+}
+STATIC void dct2x2dc( int16_t d[2][2] )
+{
+    int tmp[2][2];
+
+    tmp[0][0] = d[0][0] + d[0][1];
+    tmp[1][0] = d[0][0] - d[0][1];
+    tmp[0][1] = d[1][0] + d[1][1];
+    tmp[1][1] = d[1][0] - d[1][1];
+
+    d[0][0] = tmp[0][0] + tmp[0][1];
+    d[0][1] = tmp[1][0] + tmp[1][1];
+    d[1][0] = tmp[0][0] - tmp[0][1];
+    d[1][1] = tmp[1][0] - tmp[1][1];
+}
+STATIC inline void scan_zigzag_2x2_dc( int level[4], int16_t dct[2][2] )
+{
+    ZIG(0,0,0)
+        ZIG(1,0,1)
+        ZIG(2,1,0)
+        ZIG(3,1,1)
+}
+STATIC void x264_mb_dequant_2x2_dc( int16_t dct[2][2], int dequant_mf[6][4][4], int i_qp )
+{
+    const int i_qbits = i_qp/6 - 5;
+
+    if( i_qbits >= 0 )
+    {
+        const int i_dmf = dequant_mf[i_qp%6][0][0] << i_qbits;
+        dct[0][0] *= i_dmf;
+        dct[0][1] *= i_dmf;
+        dct[1][0] *= i_dmf;
+        dct[1][1] *= i_dmf;
+    }
+    else
+    {
+        const int i_dmf = dequant_mf[i_qp%6][0][0];
+        // chroma DC is truncated, not rounded
+        dct[0][0] = ( dct[0][0] * i_dmf ) >> (-i_qbits);
+        dct[0][1] = ( dct[0][1] * i_dmf ) >> (-i_qbits);
+        dct[1][0] = ( dct[1][0] * i_dmf ) >> (-i_qbits);
+        dct[1][1] = ( dct[1][1] * i_dmf ) >> (-i_qbits);
+    }
+}
+STATIC void add8x8_idct( uint8_t *p_dst, int i_dst, int16_t dct[4][4][4] )
+{
+    add4x4_idct( p_dst, i_dst,             dct[0] );
+    add4x4_idct( &p_dst[4], i_dst,         dct[1] );
+    add4x4_idct( &p_dst[4*i_dst+0], i_dst, dct[2] );
+    add4x4_idct( &p_dst[4*i_dst+4], i_dst, dct[3] );
+}
+
+STATIC void x264_mb_encode_8x8_chroma(uint8_t src_block_U[64], uint8_t src_block_V[64], uint8_t recon_block_U[64],  uint8_t recon_block_V[64],
+        int b_inter, int i_qscale, int residual_ac[8][15], int chroma_dc[2][4])
+{
+    int i, ch;
+
+    for( ch = 0; ch < 2; ch++ )
+    {
+        uint8_t  *p_src = !ch ? src_block_U : src_block_V;
+        uint8_t  *p_dst = !ch ? recon_block_U : recon_block_V;
+        int i_decimate_score = 0;
+        static int16_t dct2x2[2][2];
+        int16_t dct4x4[4][4][4];
+
+        sub8x8_dct( dct4x4, p_src, 8, p_dst, 8);
+
+        /* calculate dct coeffs */
+        for( i = 0; i < 4; i++ )
+        {
+            /* copy dc coeff */
+            dct2x2[block_idx_y[i]][block_idx_x[i]] = dct4x4[i][0][0];
+
+            /* no trellis; it doesn't seem to help chroma noticeably */
+            quant_4x4(dct4x4[i], i_qscale, !b_inter );
+            scan_zigzag_4x4( residual_ac[i+ch*4], dct4x4[i] );
+
+            if( b_inter )
+            {
+                i_decimate_score += x264_mb_decimate_score( residual_ac[i+ch*4], 15 );
+            }
+        }
+
+        dct2x2dc( dct2x2 );
+        quant_2x2_dc( dct2x2, quant4_mf[CQM_4IC + b_inter], i_qscale, !b_inter );
+        scan_zigzag_2x2_dc(chroma_dc[ch], dct2x2 );
+
+        /* output samples to fdec */
+        dct2x2dc( dct2x2 );
+        x264_mb_dequant_2x2_dc( dct2x2, dequant4_mf[CQM_4IC + b_inter], i_qscale );  /* XXX not inversed */
+
+        if( b_inter && i_decimate_score < 7 )
+        {
+            /* Near null chroma 8x8 block so make it null (bits saving) */
+            memset( dct4x4, 0, sizeof( dct4x4 ) );
+            memset( &residual_ac[ch*4][0], 0, 4 * 15 * sizeof(int) );
+        }
+        else
+        {
+            for( i = 0; i < 4; i++ )
+                dequant_4x4( dct4x4[i], i_qscale );
+        }
+        /* calculate dct coeffs */
+        for( i = 0; i < 4; i++ )
+        {
+            /* copy dc coeff */
+            dct4x4[i][0][0] = dct2x2[0][i];
+        }
+        add8x8_idct( p_dst, 8, dct4x4 );
+    }
+}
+STATIC inline int array_non_zero( int *v, int i_count )
+{
+    int i;
+    for( i = 0; i < i_count; i++ )
+        if( v[i] ) return 1;
+    return 0;
+}
+STATIC inline int array_non_zero_count( int *v, int i_count )
+{
+    int i;
+    int i_nz;
+
+    for( i = 0, i_nz = 0; i < i_count; i++ )
+        if( v[i] )
+            i_nz++;
+
+    return i_nz;
+}
+STATIC void calc_luma_patern_nzc(struct IntArr16 luma4x4[16], int non_zero_count[48], int luma4x4_out[16][16], int *i_cbp_luma) {
+    int i;
+    for (i = 0 ; i < 16 ; i++) {
+        const int nz = array_non_zero_count(luma4x4[i].data, 16);
+        non_zero_count[x264_scan8[i]] = nz;
+        if (nz > 0)
+            *i_cbp_luma |= 1 << (i/4);
+        memcpy(&luma4x4_out[i][0], luma4x4[i].data, sizeof(int)*16);
+    }
+}
+STATIC void calc_luma_patern_nzc_16(struct IntArr15 residual_ac[16], int non_zero_count[48], int luma_residual_ac[16][15], int *i_cbp_luma) {
+    int i;
+    for (i = 0 ; i < 16 ; i++) {
+        const int nz = array_non_zero_count(residual_ac[i].data, 15);
+        non_zero_count[x264_scan8[i]] = nz;
+        if (nz > 0)
+            *i_cbp_luma = 0x0f;
+        memcpy(&luma_residual_ac[i][0], residual_ac[i].data, sizeof(int)*15);
+    }
+}
+STATIC void calc_chroma_patern_nzc(int chroma_residual_ac[8][15], int chroma_dc[2][4], int non_zero_count[48], int *i_cbp_chroma) {
+    int i;
+    for (i = 0 ; i < 8 ; i++) {
+        const int nz = array_non_zero_count(chroma_residual_ac[i], 15);
+        non_zero_count[x264_scan8[16+i]] = nz;
+        if (nz > 0)
+            *i_cbp_chroma = 0x02;
+    }
+
+    if (*i_cbp_chroma == 0x00 && array_non_zero(chroma_dc[0], 8) )
+        *i_cbp_chroma = 0x01;
+}
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+STATIC    EncVLCPacket e;
+STATIC    EncDbkPacket d;
+STATIC    MEEncPacket m;
+
+STATIC int m_output[99];
+STATIC int sdfLoopCounter_16=0;
+STATIC SliceHeader m_o_msgSliceHeader;
+STATIC int m_o_intFrameType;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_p52 = PORT_INITIALIZE(TASK_ID, "p52");
+    port_p43 = PORT_INITIALIZE(TASK_ID, "p43");
+    port_p28 = PORT_INITIALIZE(TASK_ID, "p28");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    do_it_1438 = 0;
+    do_it_1439 = 0;
+    best_block_4x4_1440 = 15;
+    do_it_1441 = 0;
+    src_block_1442 = 0;
+    best_block_1443 = 0;
+    dct4x4_1444 = 0;
+    do_it_1445 = 0;
+    do_it_1446 = 0;
+    frame_type_1447_phase = 0;
+    frame_type_1447 = 0;
+    dct4x4_in_1448 = 0;
+    dct4x4_out_1449 = 0;
+    do_it_1450 = 0;
+    frame_type_1451_phase = 0;
+    dct4x4_in_1452 = 0;
+    do_it_1453 = 0;
+    do_it_1454 = 0;
+    frame_type_1455_phase = 0;
+    do_it_1456 = 0;
+    frame_type_1457_phase = 0;
+    frame_type_1457 = 0;
+    dct4x4_in_1458 = 0;
+    dct4x4_out_1459 = 0;
+    do_it_1460 = 0;
+    src_block_4x4_1461 = 0;
+    dc_block_4x4_1462_phase = 0;
+    do_it_1463 = 0;
+    best_block_1464 = 0;
+    dst_block_1465 = 0;
+    do_it_1466 = 0;
+    do_it_1467 = 0;
+    do_it_1468 = 0;
+    dct4x4_1469 = 0;
+    residual_ac_1470 = 0;
+    output_1320 = 0;
+    input_1471 = 0;
+    {int i; for(i=0;i<1584;i++) output_1326[i] = 0;}
+    output_1472 = 15;
+    {int i; for(i=0;i<16;i++) output_1346[i] = 0;}
+    do_it_1473 = 0;
+    dst_block_1474 = 0;
+    recon_block_U_1475 = 0;
+    recon_block_V_1476 = 0;
+    do_it_1477 = 0;
+    src_block_1478 = 0;
+    best_block_1479 = 0;
+    {int i; for(i=0;i<16;i++) output_1358[i] = 0;}
+    do_it_1480 = 0;
+    frame_type_1481_phase = 0;
+    frame_type_1481 = 0;
+    dct4x4_out_1482 = 0;
+    do_it_1483 = 0;
+    dct4x4_1484 = 0;
+    luma4x4_1485 = 0;
+    {int i; for(i=0;i<16;i++) output_1369[i] = 0;}
+    do_it_1486 = 0;
+    luma4x4_1487 = 0;
+    {int i; for(i=0;i<16;i++) i_decimate_1374[i] = 0;}
+    i_decimate_1488 = 0;
+    luma4x4_out_1489 = 15;
+    {int i; for(i=0;i<16;i++) do_it_out_1376[i] = 0;}
+    do_it_1490 = 0;
+    frame_type_1491_phase = 0;
+    frame_type_1491 = 0;
+    dct4x4_in_1492 = 0;
+    do_it_1493 = 0;
+    best_block_1494 = 0;
+    do_it_1495 = 0;
+    src_block_predct_1496 = 0;
+    src_block_1497 = 0;
+    output_1383 = 0;
+    output_1384 = 0;
+    do_it_1498 = 0;
+    i_mb_type_1499 = 0;
+    i_frame_type_1500_phase = 0;
+    chroma_pred_mode_1501 = 0;
+    src_block_U_1502 = 0;
+    src_block_V_1503 = 0;
+    recon_block_U_in_1504 = 0;
+    recon_block_V_in_1505 = 0;
+    preddata8_U_1506 = 0;
+    preddata8_V_1507 = 0;
+    i_frame_type_1508_phase = 0;
+    i_mb_type_1509 = 0;
+    luma4x4_4I_1510 = 15;
+    luma4x4_4P_1511 = 15;
+    residual_ac_16_1512 = 15;
+    luma4x4_Inter_1513 = 15;
+    non_zero_count_in_1514 = 0;
+    i_cbp_luma_1391 = 0;
+    i_cbp_chroma_1392 = 0;
+    {int i; for(i=0;i<99;i++) output_1404[i] = 0;}
+    output_1515 = 0;
+
+    output_1410 = 0;
+    output_1519_phase = 0;
+    output_1411 = 0;
+    output_1521_phase = 0;
+    output_1412 = 0;
+    output_1413 = 0;
+    output_1421 = 0;
+    output_1423 = 0;
+    output_1424 = 0;
+    output_1425 = 0;
+    {int i; for(i=0;i<99;i++) output_1426[i] = 0;}
+    output_1539 = 0;
+    output_1427 = 0;
+    output_1541_phase = 0;
+    {int i; for(i=0;i<99;i++) output_1428[i] = 0;}
+    output_1543 = 0;
+    output_1545 = 0;
+    output_1547 = 0;
+    output_1549 = 0;
+    output_1551 = 0;
+    output_1433 = 0;
+    output_1555_phase = 0;
+    {int i; for(i=0;i<99;i++ ) output_1434[i] = 0;}
+    output_1557 = 0;
+    output_1559 = 15;
+    output_1561 = 15;
+    output_1563 = 0;
+    {int i; for(i=0;i<64;i++) recon_block_U_1389.data[i] = 0;}
+    {int i; for(i=0;i<64;i++) recon_block_V_1390.data[i] = 0;}
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+TASK_GO
+{
+    // TODO: task main code
+    {
+        {
+            int nDataRead = 0;
+            int nDataWrite = 0;
+            uem_result result;
+		
+            result = UFPort_ReadFromQueue(port_p52, (unsigned char *) &m, sizeof(MEEncPacket), THIS_THREAD_ID, &nDataRead);
+            ERRIFGOTO(result, _EXIT);
+            
+            memcpy(&e_r_info, &m.e_s_info, sizeof(encoder_send_info));
+            memcpy(&i_to_e_info, &m.i_info, sizeof(init_info));
+
+            if(sdfLoopCounter_16 == 0){
+                output_1424 = m.o_intFrameType;
+                output_1412 = m.o_intFrameType;
+                m_o_intFrameType = m.o_intFrameType;
+                memcpy(&m_output, &m.output, sizeof(int)*99);
+                memcpy(&m_o_msgSliceHeader, &m.o_msgSliceHeader, sizeof(SliceHeader));
+
+                {  // encoder2I39.x264_v1_EncodeInterI9.RepeatI83 (class CGCRepeat)
+                    {
+                        int i;
+                        for (i = 0; i < 16; i++) {
+                            output_1369[(15-(i))] = output_1424;
+                        }
+                    }
+                }
+
+                {  // encoder2I39.x264_v1_Encode16x16I0.RepeatI150 (class CGCRepeat)
+                    {
+                        int i;
+                        for (i = 0; i < 16; i++) {
+                            output_1346[(15-(i))] = output_1412;
+                        }
+                    }
+                }
+            }
+
+            d.MB_index_Enc = sdfLoopCounter_16;
+            output_1423 = m_output[sdfLoopCounter_16];
+            
+            {  /* encoder2I39.x264_v1_EncodeInterI9.RepeatI56 (class CGCRepeat) */
+                {
+                    int i;
+                    for (i = 0; i < 16; i++) {
+                        output_1358[(15-(i))] = output_1423;
+                    }
+                }
+            }
+
+            {  /* encoder2I39.ConstIntI97 (class CGCConstInt) */
+                output_1404[output_1515] = 1.0;
+                output_1515 += 1;
+            }
+
+            {  /* encoder2I39.x264_v1_Encode16x16I0.RepeatI114 (class CGCRepeat) */
+                {
+                    int i;
+                    for (i = 0; i < 16; i++) {
+                        output_1326[(output_1472-(i))] = output_1404[input_1471];
+                    }
+                }
+                input_1471 += 1;
+                output_1472 += 16;
+                if (output_1472 >= 1584)
+                    output_1472 -= 1584;
+            }
+
+            memcpy((unsigned char *)&output_1426[output_1539],&e_r_info.mb_type, 4); // from ME MB type
+            memcpy((unsigned char *)&output_1428[output_1543],&e_r_info.chroma_pred_mode, 4); //  from ME chroma_pred_mode
+            memcpy((unsigned char *)&output_1431[output_1549],&e_r_info.preddata8_U,18); // from ME preddata8_U
+            memcpy((unsigned char *)&output_1432[output_1551],&e_r_info.preddata8_V ,18); // from ME preddata8_V
+            memcpy((unsigned char *)&output_1434[output_1557],&e_r_info.mb_type ,4); // from ME mb_type 
+            memcpy((unsigned char *)&output_1437[output_1563],&e_r_info.non_zero_count ,192);  // from ME non_zero_count
+   
+            output_1413 = m_output[sdfLoopCounter_16];
+
+            {  /* encoder2I39.x264_v1_EncodeInterI9.XmbmcI20 (class CGCXmbmc) */
+                if (output_1413) 
+                    x264_mb_mc(e_r_info.i_type, e_r_info.i_partition, e_r_info.i_sub_partition.data, 
+                            e_r_info.mv_mb.data, e_r_info.ref_mb.data, e_r_info.ME_ref.data, e_r_info.ME_ref_chroma.data, 
+                            recon_block_1350.data, recon_block_U_1351[recon_block_U_1475].data, recon_block_V_1352[recon_block_V_1476].data);
+                recon_block_U_1475 += 1;
+                recon_block_V_1476 += 1;
+            }
+
+            output_1421 = m_output[sdfLoopCounter_16];
+            {  /* encoder2I39.x264_v1_EncodeInterI9.XPre16x16DctI32 (class CGCXPre16x16Dct) */
+                if (output_1421) {
+                    int i;
+
+                    for (i = 0 ; i < 16 ; i++)			
+                        x264_pre_16x16_dct(i, i_to_e_info.src_block_Y.data, recon_block_1350.data, src_block_4x4_1353[(15-((15-i)))].data, best_block_4x4_1354[(15-((15-i)))].data);
+                }
+            }
+
+            {  /*encoder2I39.x264_v1_Encode16x16I0.Xpred16x16GetBestI0 (class CGCXpred16x16GetBest) */
+                if (output_1404[do_it_1438])
+                    predict_16x16_get_best(e_r_info.i_pred16x16, e_r_info.preddata16_Y.data, best_block_1299.data);
+                do_it_1438 += 1;
+            }
+
+            {  /* encoder2I39.x264_v1_Encode16x16I0.XPre16x16DctI5 (class CGCXPre16x16Dct) */
+                if (output_1404[do_it_1439]) {
+                    int i;
+
+                    for (i = 0 ; i < 16 ; i++)			
+                        x264_pre_16x16_dct(i, i_to_e_info.src_block_Y.data, best_block_1299.data, src_block_4x4_1300[(15-((15-i)))].data, best_block_4x4_1301[(best_block_4x4_1440-((15-i)))].data);
+                }
+                do_it_1439 += 1;
+                best_block_4x4_1440 += 16;
+                if (best_block_4x4_1440 >= 1584)
+                    best_block_4x4_1440 -= 1584;
+            }
+
+            memcpy ((unsigned char *)&output_1430[output_1547],i_to_e_info.src_block_V.data, 64); // from init now from ME V!
+
+            output_1547 += 1;
+            memcpy ((unsigned char *)&output_1429[output_1545],i_to_e_info.src_block_U.data, 64); // from init now from ME U!
+
+            output_1545 += 1;
+            output_1539 += 1;
+            output_1543 += 1;
+            if (output_1541_phase==0)
+                output_1427 = m_o_intFrameType;
+            output_1541_phase = (output_1541_phase+1)%99;
+
+            // preddata8_U,V fixed by jwlee 080518
+            output_1549 += 1;
+            output_1551 += 1;
+
+            {  /* encoder2I39.XEncodeChromaI26 (class CGCXEncodeChroma) */
+                if (output_1404[do_it_1498]) {
+                    int i_qscale = output_1427 ? QP_CONSTANT : QP_CONSTANT_I;
+
+                    if(IS_INTRA(output_1426[i_mb_type_1499]) ) {
+                        switch (output_1428[chroma_pred_mode_1501])
+                        {
+                            case I_PRED_CHROMA_DC :
+                                predict_8x8c_dc( recon_block_U_1389.data, output_1431[preddata8_U_1506].data);
+                                predict_8x8c_dc( recon_block_V_1390.data, output_1432[preddata8_V_1507].data );
+                                break;
+                            case I_PRED_CHROMA_H :
+                                predict_8x8c_h( recon_block_U_1389.data, output_1431[preddata8_U_1506].data );
+                                predict_8x8c_h( recon_block_V_1390.data, output_1432[preddata8_V_1507].data );
+                                break;
+                            case I_PRED_CHROMA_V :
+                                predict_8x8c_v( recon_block_U_1389.data, output_1431[preddata8_U_1506].data );
+                                predict_8x8c_v( recon_block_V_1390.data, output_1432[preddata8_V_1507].data );
+                                break;
+                            case I_PRED_CHROMA_P :
+                                predict_8x8c_p( recon_block_U_1389.data, output_1431[preddata8_U_1506].data );
+                                predict_8x8c_p( recon_block_V_1390.data, output_1432[preddata8_V_1507].data );
+                                break;
+                            case I_PRED_CHROMA_DC_LEFT :
+                                predict_8x8c_dc_left( recon_block_U_1389.data, output_1431[preddata8_U_1506].data );
+                                predict_8x8c_dc_left( recon_block_V_1390.data, output_1432[preddata8_V_1507].data );
+                                break;
+                            case I_PRED_CHROMA_DC_TOP :
+                                predict_8x8c_dc_top( recon_block_U_1389.data, output_1431[preddata8_U_1506].data );
+                                predict_8x8c_dc_top( recon_block_V_1390.data, output_1432[preddata8_V_1507].data );
+                                break;
+                            case I_PRED_CHROMA_DC_128 :
+                                predict_8x8c_dc_128( recon_block_U_1389.data);
+                                predict_8x8c_dc_128( recon_block_V_1390.data);
+                                break;
+                        }
+                    }
+                    else {
+                        memcpy(recon_block_U_1389.data, recon_block_U_1351[recon_block_U_in_1504].data, sizeof(uint8_t)*64);
+                        memcpy(recon_block_V_1390.data, recon_block_V_1352[recon_block_V_in_1505].data, sizeof(uint8_t)*64);
+                    }
+
+                    x264_mb_encode_8x8_chroma(output_1429[src_block_U_1502].data, output_1430[src_block_V_1503].data, recon_block_U_1389.data,  recon_block_V_1390.data, 
+                            !IS_INTRA(output_1426[i_mb_type_1499]), i_qscale, chroma_residual_ac_1387.data, chroma_dc_1388.data);
+
+                }
+                i_frame_type_1500_phase = (i_frame_type_1500_phase+1)%99;
+                do_it_1498 += 1;
+                i_mb_type_1499 += 1;
+                chroma_pred_mode_1501 += 1;
+                src_block_U_1502 += 1;
+                src_block_V_1503 += 1;
+                recon_block_U_in_1504 += 1;
+                recon_block_V_in_1505 += 1;
+                preddata8_U_1506 += 1;
+                preddata8_V_1507 += 1;
+            }
+ 
+            memcpy(&d.recon_block_U, &recon_block_U_1389.data, sizeof(uint8_t)*64);
+            memcpy(&d.recon_block_V, &recon_block_V_1390.data, sizeof(uint8_t)*64);
+ 
+            memcpy(&e.chroma_dc, &chroma_dc_1388, 32);
+            memcpy(&e.chroma_residual_ac, &chroma_residual_ac_1387, 480);
+
+            { 
+                int sdfLoopCounter_18;
+                for (sdfLoopCounter_18 = 0; sdfLoopCounter_18 < 16; sdfLoopCounter_18++) 
+                {
+
+                    {  /* star CIC_TM.Complete_galaxy_TMI0.Complete_galaxy_TMI0_Encoder_1.Complete_galaxy_TMI0_arm926ej_s_1.CIC_TM.Complete_galaxy_TMI0.Complete_galaxy_TM_GI0.encoder2I39.x264_v1_Encode16x16I0.Xsub4x4_dctI11 (class CGCXsub4x4_dct) */
+                        if (output_1326[do_it_1441]) 
+                            sub4x4_dct(dct4x4_1302[dct4x4_1444].data, src_block_4x4_1300[src_block_1442].data, 4, best_block_4x4_1301[best_block_1443].data, 4);
+                        do_it_1441 += 1;
+                        src_block_1442 += 1;
+                        if (src_block_1442 >= 16)
+                            src_block_1442 -= 16;
+                        best_block_1443 += 1;
+                        dct4x4_1444 += 1;
+                        if (dct4x4_1444 >= 16)
+                            dct4x4_1444 -= 16;
+                    }
+
+                    {  /*encoder2I39.x264_v1_Encode16x16I0.ConstIntI95 (class CGCConstInt) */
+                        output_1320 = 1.0;
+                    }
+
+                    {  /*encoder2I39.x264_v1_Encode16x16I0.Xquant_4x4I24 (class CGCXquant_4x4) */
+                        if (output_1326[do_it_1446]) {
+                            memcpy(dct4x4_out_1306[dct4x4_out_1449].data, dct4x4_1302[dct4x4_in_1448].data, sizeof(int16_t)*16);
+                            quant_4x4(dct4x4_out_1306[dct4x4_out_1449].data, output_1346[frame_type_1447] ? QP_CONSTANT : QP_CONSTANT_I, output_1320);
+                        }
+                        frame_type_1447_phase = (frame_type_1447_phase+1)%99;
+                        do_it_1446 += 1;
+                        if (frame_type_1447_phase == 0)
+                            frame_type_1447 += 1;
+                        if (frame_type_1447 >= 16)
+                            frame_type_1447 -= 16;
+                        dct4x4_in_1448 += 1;
+                        if (dct4x4_in_1448 >= 16)
+                            dct4x4_in_1448 -= 16;
+                        dct4x4_out_1449 += 1;
+                        if (dct4x4_out_1449 >= 16)
+                            dct4x4_out_1449 -= 16;
+                    }
+
+                    {  /* encoder2I39.x264_v1_Encode16x16I0.Xscan_zigzag_4x4I81 (class CGCXscan_zigzag_4x4) */
+                        if (output_1326[do_it_1468]) {
+                            scan_zigzag_4x4(residual_ac_1319[residual_ac_1470].data, dct4x4_out_1306[dct4x4_1469].data);
+                        }
+                        do_it_1468 += 1;
+                        dct4x4_1469 += 1;
+                        if (dct4x4_1469 >= 16)
+                            dct4x4_1469 -= 16;
+                        residual_ac_1470 += 1;
+                    }
+
+                }
+            } /* end repeat, depth 3*/
+
+            {  /* encoder2I39.x264_v1_Encode16x16I0.X16x16DcGenI16 (class CGCX16x16DcGen) */
+                if (output_1404[do_it_1445]) {
+                    int i;
+
+                    for (i = 0 ; i < 16 ; i++)			
+                        x264_16x16_dc_gen(i, dct4x4_1302[(15-((15-i)))].data, dc_block_4x4_1303.data);
+                }
+                do_it_1445 += 1;
+            }
+
+            {  /* encoder2I39.x264_v1_Encode16x16I0.Xdct4x4dcI157 (class CGCXdct4x4dc) */
+                if (output_1404[do_it_1473]) 
+                    dct4x4dc(dc_block_4x4_1303.data, dst_block_1349[dst_block_1474].data);
+                do_it_1473 += 1;
+                dst_block_1474 += 1;
+            }
+
+            if (output_1519_phase==0)
+                output_1410 = m_o_intFrameType;
+            output_1519_phase = (output_1519_phase+1)%99;
+            {  /* encoder2I39.x264_v1_Encode16x16I0.Xquant4x4dcI30 (class CGCXquant4x4dc) */
+                if (output_1404[do_it_1450]) {
+                    memcpy(dct4x4_out_1307.data, dst_block_1349[dct4x4_in_1452].data, sizeof(int16_t)*16);
+                    quant_4x4_dc(dct4x4_out_1307.data, output_1410 ? QP_CONSTANT : QP_CONSTANT_I);
+                }
+                frame_type_1451_phase = (frame_type_1451_phase+1)%99;
+                do_it_1450 += 1;
+                dct4x4_in_1452 += 1;
+            }
+
+            {  /* x264_v1_Encode16x16I0.Xidct4x4dcI35 (class CGCXidct4x4dc) */
+                if (output_1404[do_it_1453]) {
+                    memcpy(dst_block_1308.data, dct4x4_out_1307.data, sizeof(int16_t)*4*4);
+                    idct4x4dc(dst_block_1308.data);
+                }
+                do_it_1453 += 1;
+            }
+
+            if (output_1521_phase==0)
+                output_1411 = m_o_intFrameType;
+            output_1521_phase = (output_1521_phase+1)%99;
+            {  /* .encoder2I39.x264_v1_Encode16x16I0.Xdequant4x4dcI39 (class CGCXdequant4x4dc) */
+                if (output_1404[do_it_1454]) {
+                    memcpy(dct4x4_out_1309.data, dst_block_1308.data, sizeof(int16_t)*16);
+                    dequant_4x4_dc(dct4x4_out_1309.data, output_1411 ? QP_CONSTANT : QP_CONSTANT_I);
+                }
+                frame_type_1455_phase = (frame_type_1455_phase+1)%99;
+                do_it_1454 += 1;
+            }
+
+            {  /* encoder2I39.x264_v1_Encode16x16I0.Xscan_zigzag_4x4fullI69 (class CGCXscan_zigzag_4x4full) */
+                if (output_1404[do_it_1467]) {
+                    scan_zigzag_4x4full(luma4x4_1314.data, dct4x4_out_1307.data);
+                }
+                do_it_1467 += 1;
+            }
+
+            memcpy(&e.luma4x4, &luma4x4_1314, 64); 
+            { 
+                int sdfLoopCounter_19;
+                for (sdfLoopCounter_19 = 0; sdfLoopCounter_19 < 16; sdfLoopCounter_19++) 
+                {
+
+                    {  /* encoder2I39.x264_v1_EncodeInterI9.Xsub4x4_dctI38 (class CGCXsub4x4_dct) */
+                        if (output_1358[do_it_1477]) 
+                            sub4x4_dct(dct4x4_1355.data, src_block_4x4_1353[src_block_1478].data, 4, best_block_4x4_1354[best_block_1479].data, 4);
+                        do_it_1477 += 1;
+                        if (do_it_1477 >= 16)
+                            do_it_1477 -= 16;
+                        src_block_1478 += 1;
+                        if (src_block_1478 >= 16)
+                            src_block_1478 -= 16;
+                        best_block_1479 += 1;
+                        if (best_block_1479 >= 16)
+                            best_block_1479 -= 16;
+                    }
+
+                    {  /* encoder2I39.x264_v1_EncodeInterI9.ConstIntI129 (class CGCConstInt) */
+                        output_1384 = 0.0;
+                    }
+
+                    {  /* encoder2I39.x264_v1_EncodeInterI9.Xquant_4x4I64 (class CGCXquant_4x4) */
+                        if (output_1358[do_it_1480]) {
+                            memcpy(dct4x4_out_1362[dct4x4_out_1482].data, dct4x4_1355.data, sizeof(int16_t)*16);
+                            quant_4x4(dct4x4_out_1362[dct4x4_out_1482].data, output_1369[frame_type_1481] ? QP_CONSTANT : QP_CONSTANT_I, output_1384);
+                        }
+                        frame_type_1481_phase = (frame_type_1481_phase+1)%99;
+                        do_it_1480 += 1;
+                        if (do_it_1480 >= 16)
+                            do_it_1480 -= 16;
+                        if (frame_type_1481_phase == 0)
+                            frame_type_1481 += 1;
+                        if (frame_type_1481 >= 16)
+                            frame_type_1481 -= 16;
+                        dct4x4_out_1482 += 1;
+                        if (dct4x4_out_1482 >= 16)
+                            dct4x4_out_1482 -= 16;
+                    }
+
+                    {  /*encoder2I39.x264_v1_EncodeInterI9.Xscan_zigzag_4x4fullI74 (class CGCXscan_zigzag_4x4full) */
+                        if (output_1358[do_it_1483]) {
+                            scan_zigzag_4x4full(luma4x4_1365[luma4x4_1485].data, dct4x4_out_1362[dct4x4_1484].data);
+                        }
+                        do_it_1483 += 1;
+                        if (do_it_1483 >= 16)
+                            do_it_1483 -= 16;
+                        dct4x4_1484 += 1;
+                        if (dct4x4_1484 >= 16)
+                            dct4x4_1484 -= 16;
+                        luma4x4_1485 += 1;
+                        if (luma4x4_1485 >= 16)
+                            luma4x4_1485 -= 16;
+                    }
+
+                    {  /*encoder2I39.x264_v1_EncodeInterI9.ConstIntI127 (class CGCConstInt) */
+                        output_1383 = 16.0;
+                    }
+
+                    {  /* encoder2I39.x264_v1_EncodeInterI9.Xmb_decimate_scoreI94 (class CGCXmb_decimate_score) */
+                        if (output_1358[do_it_1486]) {
+                            i_decimate_1374[i_decimate_1488] = x264_mb_decimate_score(luma4x4_1365[luma4x4_1487].data, output_1383);
+                        }
+                        do_it_1486 += 1;
+                        if (do_it_1486 >= 16)
+                            do_it_1486 -= 16;
+                        luma4x4_1487 += 1;
+                        if (luma4x4_1487 >= 16)
+                            luma4x4_1487 -= 16;
+                        i_decimate_1488 += 1;
+                        if (i_decimate_1488 >= 16)
+                            i_decimate_1488 -= 16;
+                    }
+
+                    {  /* encoder2I39.x264_v1_Encode16x16I0.Xdequant_4x4I44 (class CGCXdequant_4x4) */
+                        if (output_1326[do_it_1456]) {
+                            memcpy(dct4x4_out_1310[dct4x4_out_1459].data, dct4x4_out_1306[dct4x4_in_1458].data, sizeof(int16_t)*16);
+                            dequant_4x4(dct4x4_out_1310[dct4x4_out_1459].data, output_1346[frame_type_1457] ? QP_CONSTANT : QP_CONSTANT_I);
+                        }
+                        frame_type_1457_phase = (frame_type_1457_phase+1)%99;
+                        do_it_1456 += 1;
+                        if (frame_type_1457_phase == 0)
+                            frame_type_1457 += 1;
+                        if (frame_type_1457 >= 16)
+                            frame_type_1457 -= 16;
+                        dct4x4_in_1458 += 1;
+                        if (dct4x4_in_1458 >= 16)
+                            dct4x4_in_1458 -= 16;
+                        dct4x4_out_1459 += 1;
+                        if (dct4x4_out_1459 >= 1569)
+                            dct4x4_out_1459 -= 1569;
+                    }
+
+                    {  /*encoder2I39.x264_v1_Encode16x16I0.X16x16DcMergeI49 (class CGCX16x16DcMerge) */
+                        if (output_1326[do_it_1460]) {
+                            x264_16x16_dc_merge(dct4x4_out_1310[src_block_4x4_1461].data, dct4x4_out_1309.data, dst_block_4x4_1311.data, dc_block_4x4_1462_phase);
+                        }
+                        dc_block_4x4_1462_phase = (dc_block_4x4_1462_phase+1)%16;
+                        do_it_1460 += 1;
+                        src_block_4x4_1461 += 1;
+                        if (src_block_4x4_1461 >= 1569)
+                            src_block_4x4_1461 -= 1569;
+                    }
+
+                    {  /*encoder2I39.x264_v1_Encode16x16I0.Xadd4x4_idctI54 (class CGCXadd4x4_idct) */
+                        if (output_1326[do_it_1463]) {
+                            memcpy(dst_block_1312[dst_block_1465].data, best_block_4x4_1301[best_block_1464].data, sizeof(uint8_t)*16);
+                            add4x4_idct(dst_block_1312[dst_block_1465].data, 4, dst_block_4x4_1311.data);
+                        }
+                        do_it_1463 += 1;
+                        best_block_1464 += 1;
+                        dst_block_1465 += 1;
+                        if (dst_block_1465 >= 16)
+                            dst_block_1465 -= 16;
+                    }
+                }
+            } /* end repeat, depth 3*/
+
+            {  /*encoder2I39.x264_v1_EncodeInterI9.XSetNNZI99 (class CGCXSetNNZ) */
+                x264_set_nnz(&i_decimate_1374[(15-(15))], &luma4x4_1365[(15-(15))], &luma4x4_out_1375[(luma4x4_out_1489-(15))], &do_it_out_1376[(15-(15))]);
+                luma4x4_out_1489 += 16;
+                if (luma4x4_out_1489 >= 1584)
+                    luma4x4_out_1489 -= 1584;
+            }
+            output_1557 += 1;
+            if (output_1555_phase==0)
+                output_1433 = m_o_intFrameType;
+            output_1555_phase = (output_1555_phase+1)%99;
+
+            // fixed by jwlee
+            output_1563 += 1;
+            {  /* encoder2I39.XNonZeroCountI41 (class CGCXNonZeroCount) */
+                memcpy(&non_zero_count_1393.data, output_1437[non_zero_count_in_1514].data, sizeof(int)*48);
+                i_cbp_luma_1391 = 0x00;
+                i_cbp_chroma_1392 = 0x00;
+
+                if (!output_1433 && output_1434[i_mb_type_1509] == I_4x4)
+                    calc_luma_patern_nzc(e_r_info.luma_4x4, non_zero_count_1393.data, luma4x4_out_1394.data, &i_cbp_luma_1391);
+                else if (output_1433 && output_1434[i_mb_type_1509] == I_4x4)
+                    calc_luma_patern_nzc(e_r_info.luma_4x4, non_zero_count_1393.data, luma4x4_out_1394.data, &i_cbp_luma_1391);			
+                else if (output_1434[i_mb_type_1509] == I_16x16)
+                    calc_luma_patern_nzc_16(&residual_ac_1319[(residual_ac_16_1512-(15))], non_zero_count_1393.data, luma_residual_ac_1395.data, &i_cbp_luma_1391);
+                else 
+                    calc_luma_patern_nzc(&luma4x4_out_1375[(luma4x4_Inter_1513-(15))], non_zero_count_1393.data, luma4x4_out_1394.data, &i_cbp_luma_1391);
+
+                calc_chroma_patern_nzc(chroma_residual_ac_1387.data, chroma_dc_1388.data, non_zero_count_1393.data, &i_cbp_chroma_1392);
+                i_frame_type_1508_phase = (i_frame_type_1508_phase+1)%99;
+                i_mb_type_1509 += 1;
+                luma4x4_4I_1510 += 16;
+                if (luma4x4_4I_1510 >= 1584)
+                    luma4x4_4I_1510 -= 1584;
+                luma4x4_4P_1511 += 16;
+                if (luma4x4_4P_1511 >= 1584)
+                    luma4x4_4P_1511 -= 1584;
+                residual_ac_16_1512 += 16;
+                if (residual_ac_16_1512 >= 1584)
+                    residual_ac_16_1512 -= 1584;
+                luma4x4_Inter_1513 += 16;
+                if (luma4x4_Inter_1513 >= 1584)
+                    luma4x4_Inter_1513 -= 1584;
+                non_zero_count_in_1514 += 1;
+            }
+ 
+            e.i_cbp_luma = i_cbp_luma_1391;
+            e.i_cbp_chroma = i_cbp_chroma_1392;
+            e.intFrameType = m_o_intFrameType;
+            memcpy(&e.luma4x4_out, &luma4x4_out_1394, 1024);
+            memcpy(&e.luma_residual_ac, &luma_residual_ac_1395, 960);
+            memcpy(&e.non_zero_count, &non_zero_count_1393, 192);
+            memcpy(&e.msgSliceHeader, &m_o_msgSliceHeader, 40);
+            memcpy(&e.e_s_info, &m.e_s_info, sizeof(encoder_send_info));
+            //if(count == 3)  printf("%d %d\n", i_cbp_luma_1391, i_cbp_chroma_1392);
+                      
+            result = UFPort_WriteToQueue(port_p43, (unsigned char *) &e, sizeof(EncVLCPacket), THIS_THREAD_ID, &nDataWrite);			
+            ERRIFGOTO(result, _EXIT);
+            
+            memcpy(&d.non_zero_count, &non_zero_count_1393, 192);
+            
+            {  /* star CIC_TM.Complete_galaxy_TMI0.Complete_galaxy_TMI0_Encoder_1.Complete_galaxy_TMI0_arm926ej_s_1.CIC_TM.Complete_galaxy_TMI0.Complete_galaxy_TM_GI0.encoder2I39.x264_v1_Encode16x16I0.XPost16x16DctI59 (class CGCXPost16x16Dct) */
+                if (output_1404[do_it_1466]) {
+                    int i;
+
+                    for (i = 0 ; i < 16 ; i++)			
+                        x264_post_16x16_dct(i, dst_block_1312[(15-((15-i)))].data, recon_block_1313.data);
+                }
+                do_it_1466 += 1;
+            }
+
+            memcpy(&d.recon_block_1313, &recon_block_1313, 256);
+
+            int sdfLoopCounter_20;
+            for (sdfLoopCounter_20 = 0; sdfLoopCounter_20 < 16; sdfLoopCounter_20++) 
+            {
+
+                {  /* encoder2I39.x264_v1_EncodeInterI9.Xdequant_4x4I108 (class CGCXdequant_4x4) */
+                    if (do_it_out_1376[do_it_1490]) {
+                        memcpy(dct4x4_out_1379.data, dct4x4_out_1362[dct4x4_in_1492].data, sizeof(int16_t)*16);
+                        dequant_4x4(dct4x4_out_1379.data, output_1369[frame_type_1491] ? QP_CONSTANT : QP_CONSTANT_I);
+                    }
+                    frame_type_1491_phase = (frame_type_1491_phase+1)%99;
+                    do_it_1490 += 1;
+                    if (do_it_1490 >= 16)
+                        do_it_1490 -= 16;
+                    if (frame_type_1491_phase == 0)
+                        frame_type_1491 += 1;
+                    if (frame_type_1491 >= 16)
+                        frame_type_1491 -= 16;
+                    dct4x4_in_1492 += 1;
+                    if (dct4x4_in_1492 >= 16)
+                        dct4x4_in_1492 -= 16;
+                }
+
+                {  /* encoder2I39.x264_v1_EncodeInterI9.Xadd4x4_idctI113 (class CGCXadd4x4_idct) */
+                    if (output_1358[do_it_1493]) {
+                        memcpy(dst_block_1380.data, best_block_4x4_1354[best_block_1494].data, sizeof(uint8_t)*16);
+                        add4x4_idct(dst_block_1380.data, 4, dct4x4_out_1379.data);
+                    }
+                    do_it_1493 += 1;
+                    if (do_it_1493 >= 16)
+                        do_it_1493 -= 16;
+                    best_block_1494 += 1;
+                    if (best_block_1494 >= 16)
+                        best_block_1494 -= 16;
+                }
+
+                {  /* encoder2I39.x264_v1_EncodeInterI9.XPostDctInterMuxI118 (class CGCXPostDctInterMux) */
+                    if (do_it_out_1376[do_it_1495]) {
+                        memcpy(src_block_1381[src_block_1497].data, dst_block_1380.data, sizeof(uint8_t)*16);
+                    }
+                    else {
+                        memcpy(src_block_1381[src_block_1497].data, best_block_4x4_1354[src_block_predct_1496].data, sizeof(uint8_t)*16);
+                    }
+                    do_it_1495 += 1;
+                    if (do_it_1495 >= 16)
+                        do_it_1495 -= 16;
+                    src_block_predct_1496 += 1;
+                    if (src_block_predct_1496 >= 16)
+                        src_block_predct_1496 -= 16;
+                    src_block_1497 += 1;
+                    if (src_block_1497 >= 16)
+                        src_block_1497 -= 16;
+                }
+            }
+
+            output_1425 = m_output[sdfLoopCounter_16];
+            {  /*encoder2I39.x264_v1_EncodeInterI9.XPost16x16DctI123 (class CGCXPost16x16Dct) */
+                if (output_1425) {
+                    int i;
+
+                    for (i = 0 ; i < 16 ; i++)			
+                        x264_post_16x16_dct(i, src_block_1381[(15-((15-i)))].data, recon_block_1382.data);
+                }
+            }
+
+            memcpy(&d.d_s_info, &m.d_s_info, sizeof(deblock_send_info));
+            memcpy(&d.recon_block_1382, &recon_block_1382, 256);
+            d.intFrameType = m_o_intFrameType;            
+            result = UFPort_WriteToQueue(port_p28, (unsigned char *) &d, sizeof(EncDbkPacket), THIS_THREAD_ID, &nDataWrite);			
+            ERRIFGOTO(result, _EXIT);
+        }
+    } /* end repeat, depth 2*/
+
+    sdfLoopCounter_16++;
+    if(sdfLoopCounter_16 == 99){
+        sdfLoopCounter_16 = 0;
+
+        output_1515 = 0;
+        input_1471 = 0;
+        recon_block_U_1475 = 0;
+        recon_block_V_1476 = 0;
+        do_it_1438 = 0;
+        do_it_1439 = 0;
+        output_1547 = 0;
+        output_1545 = 0;
+        output_1539 = 0;
+        output_1543 = 0;
+        output_1549 = 0;
+        output_1551 = 0;
+        do_it_1498 = 0;
+        i_mb_type_1499 = 0;
+        chroma_pred_mode_1501 = 0;
+        src_block_U_1502 = 0;
+        src_block_V_1503 = 0;
+        recon_block_U_in_1504 = 0;
+        recon_block_V_in_1505 = 0;
+        preddata8_U_1506 = 0;
+        preddata8_V_1507 = 0;
+        do_it_1441 = 0;
+        best_block_1443 = 0;
+        do_it_1446 = 0;
+        do_it_1468 = 0;
+        residual_ac_1470 = 0;
+        do_it_1445 = 0;
+        do_it_1473 = 0;
+        dst_block_1474 = 0;
+        do_it_1450 = 0;
+        dct4x4_in_1452 = 0;
+        do_it_1453 = 0;
+        do_it_1454 = 0;
+        do_it_1467 = 0;
+        do_it_1456 = 0;
+        do_it_1460 = 0;    
+        do_it_1463 = 0;
+        best_block_1464 = 0;
+        output_1557 = 0;
+        output_1563 = 0;
+        i_mb_type_1509 = 0;
+        non_zero_count_in_1514 = 0;
+        do_it_1466 = 0;
+    }
+_EXIT:
+    return;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

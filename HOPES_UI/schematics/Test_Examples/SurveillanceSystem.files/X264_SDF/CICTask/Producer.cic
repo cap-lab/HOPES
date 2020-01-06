@@ -1,0 +1,68 @@
+/************************************
+ *
+ * File : Producer.cic
+ * Date : Jul 22, 2009 1:26 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_output = init_task_port(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+STATIC int buffer = 0;
+
+TASK_GO
+{
+    // TODO: task main code
+    AC_SEND( port_output,(const char*)&buffer, 4, buffer);
+    buffer++;
+    printf("SEND\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

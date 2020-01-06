@@ -1,0 +1,107 @@
+/************************************
+ *
+ * File : Report.cic
+ * Date : Mar 18, 2019 5:19 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+//#include <opencv2/imgproc.hpp>
+#include <raspicam/raspicam_cv.h>
+#include <iostream>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#define CAP_HEIGHT 300
+#define CAP_WIDTH 300
+#define CAP_CHANNEL 3
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image;
+STATIC int port_velocity;
+STATIC int port_image_out;
+STATIC int port_velocity_out;
+// ##DEFINE_PORT_SECTION::END
+
+typedef struct _SontrolVelocity{
+    double linear_x;
+    double angular_z;
+
+} SControlVelocity;
+
+static SControlVelocity stControlVelocity = {0,0};
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image = PORT_INITIALIZE(TASK_ID, "image");
+    port_velocity = PORT_INITIALIZE(TASK_ID, "velocity");
+    port_image_out = PORT_INITIALIZE(TASK_ID, "image_out");
+    port_velocity_out = PORT_INITIALIZE(TASK_ID, "velocity_out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    //int image = -1;            
+    uem_result result;
+    CapMatColor inputMat;
+    int nDataRead = 0, nDataWrite = 0;
+    
+    if (MQ_AVAILABLE(port_image))
+    {                
+        result = UFPort_ReadFromQueue(port_image, (unsigned char *) &inputMat, sizeof(CapMatColor), 0, &nDataRead);
+        //DEBUG
+        cv:: Mat inputImage = cv::Mat(CAP_HEIGHT, CAP_WIDTH, CV_8UC3, inputMat.data);
+        result = UFPort_WriteToBuffer(port_image_out, (unsigned char *) &inputMat, sizeof(CapMatColor), 0, &nDataWrite);   
+    }
+    if (MQ_AVAILABLE(port_velocity))
+    {
+        result = UFPort_ReadFromQueue(port_velocity, (unsigned char *) &stControlVelocity, sizeof(SControlVelocity), 0, &nDataRead);
+        result = UFPort_WriteToBuffer(port_velocity_out, (unsigned char *) &stControlVelocity, sizeof(SControlVelocity), 0, &nDataRead);                 
+    }
+    
+    
+    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

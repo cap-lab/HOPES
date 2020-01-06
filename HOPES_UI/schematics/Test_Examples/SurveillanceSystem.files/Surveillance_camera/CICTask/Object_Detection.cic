@@ -1,0 +1,190 @@
+/************************************
+ *
+ * File : Obje.cic
+ * Date : Aug 10, 2019, 4:34 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <chrono>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+
+#include "edgetpu.h"
+#include "utils.h"
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/model.h"
+#include "tensorflow/lite/error_reporter.h"
+#include "tensorflow/lite/graph_info.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/kernels/internal/tensor.h"
+#include "tensorflow/lite/kernels/internal/tensor_utils.h"
+#include "tensor.h"
+
+/*** Model parameters ***/
+
+//mobilenet_ssd_v2 model location in NRFLabtop.
+#define MODEL_FILENAME "/home/caplab/dowhan1128/edgetpu-native/edgetpu/cpp/examples/examples/mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite" 
+#define MODEL_WIDTH  300
+#define MODEL_HEIGHT 300
+#define MODEL_CHANNEL 3
+ 
+#define CAP_HEIGHT 300
+#define CAP_WIDTH 300
+#define CAP_CHANNEL 3
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+ template<typename T>
+ T* TensorData(TfLiteTensor* tensor, int batch_index);
+ template<>
+ float* TensorData(TfLiteTensor* tensor, int batch_index) {
+         int nelems = 1;
+         for (int i = 1; i < tensor->dims->size; i++) nelems *= tensor->dims->data[i];
+         switch (tensor->type) {
+                 case kTfLiteFloat32:
+                         return tensor->data.f + nelems * batch_index;
+                 default:
+                         //LOG(FATAL) << "Should not reach here!";
+                         std::cout<< "sould not reach here!"<<std::endl;
+         }
+         return nullptr;
+}
+ 
+ template<>
+ uint8_t* TensorData(TfLiteTensor* tensor, int batch_index) {
+         int nelems = 1;
+         for (int i = 1; i < tensor->dims->size; i++) nelems *= tensor->dims->data[i];
+         switch (tensor->type) {
+                 case kTfLiteUInt8:
+                         return tensor->data.uint8 + nelems * batch_index;
+                 default:
+                         //LOG(FATAL) << "Should not reach here!";
+                         std::cout<< "sould not reach here!"<<std::endl;
+         }
+         return nullptr;
+ }
+ 
+ std::unique_ptr<tflite::Interpreter> interpreter;
+ 
+ void FeedInMat(const cv::Mat& mat, int batch_index) {
+         TfLiteTensor* input_tensor_ = interpreter->tensor(interpreter->inputs()[0]);
+         uint8_t* dst = TensorData<uint8_t>(input_tensor_, batch_index);
+         const int row_elems = MODEL_WIDTH * MODEL_CHANNEL ;
+         for (int row = 0; row < MODEL_HEIGHT; row++) {
+                 memcpy(dst, mat.ptr(row), row_elems);
+                 dst += row_elems;
+         }         
+ }
+ 
+std::unique_ptr<tflite::FlatBufferModel> model;
+edgetpu::EdgeTpuContext* edgetpu_context;
+
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image;
+STATIC int port_image_out;
+STATIC int port_detectionInfo_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+typedef struct _cvMatColorhalf
+{
+    unsigned char data[CAP_HEIGHT / 2 *CAP_WIDTH / 2 *CAP_CHANNEL];
+} CapMatColorhalf;
+
+
+STATIC CapMatColorhalf capMat;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image = PORT_INITIALIZE(TASK_ID, "image");
+    port_image_out = PORT_INITIALIZE(TASK_ID, "image_out");
+    port_detectionInfo_out = PORT_INITIALIZE(TASK_ID, "detectionInfo_out");
+// ##INIT_PORT_SECTION::END
+
+        /*** Create interpreter ***/
+
+}
+
+static int init = 1;
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    using namespace std;
+    using namespace cv; 
+    // TODO: task main code
+    Mat inputImage;
+    uem_result result;
+    int nDataRead = 0, nDataWrite = 0;
+    int nIsPersonDetected = 0;
+  
+	if(init == 1)
+	{	
+		/* read model */
+		model = tflite::FlatBufferModel::BuildFromFile(MODEL_FILENAME);
+
+		/* initialize edgetpu_context */
+		edgetpu_context = edgetpu::EdgeTpuManager::GetSingleton()->NewEdgeTpuContext().release();
+		/* create interpreter */
+		interpreter = coral::BuildEdgeTpuInterpreter(*model, edgetpu_context);
+		init = 0;
+	}
+	
+    /*** Read input image data ***/
+	CapMatColor inputMat;
+	result = UFPort_ReadFromQueue(port_image, (unsigned char *) &(inputMat), sizeof(CapMatColor), 0, &nDataRead);	
+	inputImage = cv::Mat(CAP_HEIGHT, CAP_WIDTH, CV_8UC3, inputMat.data);
+	cv::cvtColor(inputImage, inputImage, cv::COLOR_RGB2BGR);
+    FeedInMat(inputImage, 0);
+
+    /*** Run inference ***/
+    interpreter->Invoke();
+    nIsPersonDetected = isPersonDetected(interpreter.get());
+    
+    coral::AnnotateMat(inputImage, interpreter.get());
+    cv::cvtColor(inputImage, inputImage, CV_RGB2BGR);
+
+	//memcpy(capMat.data, inputImage.data, CAP_WIDTH*CAP_HEIGHT*CAP_CHANNEL);
+	cv::resize(inputImage, inputImage, cv::Size(CAP_HEIGHT / 2, CAP_WIDTH / 2));
+	memcpy(capMat.data, inputImage.data, CAP_HEIGHT / 2 * CAP_WIDTH / 2 *CAP_CHANNEL);
+    
+    result = UFPort_WriteToBuffer(port_image_out, (unsigned char *) &capMat, sizeof(CapMatColorhalf) /*size*/, 0/*threadId*/, &nDataWrite);
+    result = UFPort_WriteToBuffer(port_detectionInfo_out, (unsigned char *) &nIsPersonDetected, sizeof(int)/*size*/, 0/*threadId*/, &nDataWrite);
+ }
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

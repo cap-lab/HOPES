@@ -1,0 +1,85 @@
+/************************************
+ *
+ * File : L.cic
+ * Date : Mar 18, 2019 5:19 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define NO_COMMAND -1
+
+
+/*** COMMAND LIST ***/
+/*
+#define CMD_STOP 0 
+#define CMD_MOVE_FORWARD 1
+#define CMD_MOVE_BACKWARD  2
+#define CMD_TURN_LEFT 3
+#define CMD_TURN_RIGHT 4
+#define CMD_ACC_FORWARD 5
+#define CMD_ACC_BACKWARD  6
+#define CMD_ACC_LEFT 7
+#define CMD_ACC_RIGHT 8
+*/
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_detectionInfo;
+STATIC int port_detectionInfo_out;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_detectionInfo = PORT_INITIALIZE(TASK_ID, "detectionInfo");
+    port_detectionInfo_out = PORT_INITIALIZE(TASK_ID, "detectionInfo_out");
+// ##INIT_PORT_SECTION::END
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code 
+    uem_result result;
+    int nDataRead = 0, nDataWrite = 0;
+    int detectionInfo = -1;    
+    result = UFPort_ReadFromQueue(port_detectionInfo, (unsigned char *) &detectionInfo, sizeof(int), 0, &nDataRead);    
+    result = UFPort_WriteToBuffer(port_detectionInfo_out, (unsigned char *) &detectionInfo, sizeof(int) /*size*/, 0/*threadId*/, &nDataWrite);    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

@@ -1,0 +1,188 @@
+/************************************
+ *
+ * File : FuseHypothes.cic
+ * Date : Aug 18, 2015 8:44 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <opencv/cv.h>
+#include <cstdlib>
+#include "TLDUtil.h"
+#include "format.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_t_in;
+STATIC int port_d_in;
+STATIC int port_BB;
+STATIC int port_result;
+STATIC int port_cresult;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC TrackerResult trackerResult;
+STATIC DetectorResult detectorResult;
+
+STATIC int wasValid;
+STATIC cv::Rect *currBB;
+STATIC float currConf;
+STATIC int valid;
+STATIC cv::Mat currImg;
+STATIC FuseResult fuseResult;
+STATIC CapRect lastBB;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#ifdef CAP_GET_LOG
+STATIC int is_start; /// for log
+STATIC int x,y,w,h;
+#endif
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_t_in = PORT_INITIALIZE(TASK_ID, "t_in");
+    port_d_in = PORT_INITIALIZE(TASK_ID, "d_in");
+    port_BB = PORT_INITIALIZE(TASK_ID, "BB");
+    port_result = PORT_INITIALIZE(TASK_ID, "result");
+    port_cresult = PORT_INITIALIZE(TASK_ID, "cresult");
+// ##INIT_PORT_SECTION::END
+    currBB = NULL;
+    currConf = 0;
+    valid = false;
+    wasValid = false;
+#ifdef CAP_GET_LOG
+	is_start = true;
+#endif
+	lastBB.valid = false;
+	lastBB.value = cv::Rect();
+    // TODO: task initialize code
+#ifdef CAP_GET_LOG
+	char str[50];
+	int result;
+	FILE *fp = fopen("learningData/vInfo.txt","r");
+	result = fscanf(fp, "%s %d %d %d %d ", str, &x, &y, &w, &h);
+	fclose(fp);
+#endif
+    //MQ_SEND(port_BB, (unsigned char*)&lastBB, sizeof(CapRect));
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+    // TODO: task main code
+    MQ_RECEIVE(port_t_in, (unsigned char*)&trackerResult, sizeof(trackerResult));
+    MQ_RECEIVE(port_d_in, (unsigned char*)&detectorResult, sizeof(detectorResult));
+
+#ifdef CAP_DEBUG
+    printf("FuseHypothesis_Go function _ MQ_RECEIVE succeed\n");
+	clock_t t = clock();
+#endif
+    if(currBB!=NULL) delete currBB;
+	currBB = NULL;
+    currConf = 0;
+    valid = false;
+
+	currImg = cv::Mat(imgHeight,imgWidth,CV_8UC1, trackerResult.mat.data);
+    
+    float confDetector = 0;
+    float confTracker = 0;
+
+    if(detectorResult.numClusters == 1)
+    {
+        confDetector = LIBCALL(NC, classifyBB, currImg, &detectorResult.BB.value);
+    }
+
+    if(trackerResult.BB.valid)
+    {
+        confTracker = LIBCALL(NC, classifyBB, currImg, &trackerResult.BB.value);
+        
+        if(detectionResult->numClusters == 1 && confDetector > confTracker && tldOverlapRectRect(trackerResult.BB.value, detectorResult.BB.value) < 0.5)
+        {
+            currBB = tldCopyRect(&detectorResult.BB.value);
+            currConf = confDetector;
+        }
+        else
+        {
+            currBB = tldCopyRect(&trackerResult.BB.value);
+            currConf = confTracker;
+
+            if(confTracker > LIBCALL(NC,getThetaTP))
+            {
+                valid = true;
+            }
+            else if(wasValid && confTracker > LIBCALL(NC,getThetaFP))
+            {
+                valid = true;
+            }
+        }
+    }
+
+    else if(detectorResult.numClusters == 1)
+    {
+#ifdef CAP_DEBUG_R
+		printf("Detector Succeed!!\n");
+#endif
+        currBB = tldCopyRect(&detectorResult.BB.value);
+        currConf = confDetector;
+		valid = true;
+    }
+#ifdef CAP_GET_LOG
+	if(is_start)
+	{
+		is_start = false;
+		valid = true;
+		currBB = new cv::Rect(x,y,w,h); 
+	}
+#endif
+	lastBB.valid = valid;
+    if(currBB!=NULL){
+		lastBB.value = *currBB;
+	}
+    fuseResult.mat = trackerResult.mat;
+	fuseResult.BB = lastBB;
+    wasValid = valid;
+
+#ifdef CAP_DEBUG_R
+	printf("MedTracker result is valid? conf value: %f\n", confTracker);
+	printf("Detector result: numClusters, confDetector\n%d %f\n", detectionResult->numClusters, confDetector);
+#endif
+
+#ifdef CAP_DEBUG
+    printf("FuseHypothesis_Go function succeed - spent time: %f\n", (float)(clock()-t)/CLOCKS_PER_SEC);
+#endif
+	MQ_SEND(port_BB, (unsigned char*)&lastBB, sizeof(CapRect));
+    MQ_SEND(port_result, (unsigned char*)&fuseResult, sizeof(FuseResult));
+    MQ_SEND(port_cresult, (unsigned char*)&fuseResult, sizeof(FuseResult));
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

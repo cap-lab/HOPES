@@ -1,0 +1,68 @@
+/************************************
+ *
+ * File : wheel_.cic
+ * Date : Mar 19, 2019 10:39 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+
+
+
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_signal_out;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_signal_out = PORT_INITIALIZE(TASK_ID, "signal_out");
+// ##INIT_PORT_SECTION::END
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int signal = -1;
+    signal = SYS_REQ(GET_PARAM_INT, "LED_control_waffle", "signal");
+    BUF_SEND(port_signal_out, (unsigned char *)&signal, sizeof(int));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

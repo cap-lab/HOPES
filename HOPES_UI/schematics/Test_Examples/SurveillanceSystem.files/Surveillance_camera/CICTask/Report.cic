@@ -1,0 +1,110 @@
+/************************************
+ *
+ * File : Report.cic
+ * Date : Aug 10, 2019, 4:35 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <chrono>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image;
+STATIC int port_detectionInfo;
+STATIC int port_image_out;
+STATIC int port_detectionInfo_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+#define CAP_HEIGHT 300
+#define CAP_WIDTH 300
+#define CAP_CHANNEL 3
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+
+typedef struct _cvMatColorhalf
+{
+    unsigned char data[CAP_HEIGHT / 2 *CAP_WIDTH / 2 *CAP_CHANNEL];
+} CapMatColorhalf;
+
+
+
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image = PORT_INITIALIZE(TASK_ID, "image");
+    port_detectionInfo = PORT_INITIALIZE(TASK_ID, "detectionInfo");
+    port_image_out = PORT_INITIALIZE(TASK_ID, "image_out");
+    port_detectionInfo_out = PORT_INITIALIZE(TASK_ID, "detectionInfo_out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static int countwrite = 0;
+TASK_GO
+{      
+       using namespace std;
+       using namespace cv; 
+       // TODO: task main code
+       Mat inputImage;
+       uem_result result;
+       int nDataRead = 0, nDataWrite = 0;
+       int isPersonDetected = 0;
+	   CapMatColorhalf inputMat;
+	   int nIsPersonDetected = 0;    
+   
+	   //result = UFPort_ReadFromQueue(port_image, (unsigned char *) &inputMat, sizeof(CapMatColor), 0, &nDataRead);
+	   result = UFPort_ReadFromQueue(port_image, (unsigned char *) &inputMat, sizeof(CapMatColorhalf), 0, &nDataRead);
+	   result = UFPort_ReadFromQueue(port_detectionInfo, (unsigned char *) &isPersonDetected, sizeof(int), 0, &nDataRead);
+	   
+	   inputImage = cv::Mat(CAP_HEIGHT / 2, CAP_WIDTH / 2, CV_8UC3, inputMat.data);
+       
+	   result = UFPort_WriteToBuffer(port_image_out, (unsigned char *) &inputMat, sizeof(CapMatColorhalf) /*size*/, 0/*threadId*/, &nDataWrite);	   
+	   result = UFPort_WriteToBuffer(port_detectionInfo_out, (unsigned char *) &isPersonDetected, sizeof(int)/*size*/, 0/*threadId*/, &nDataWrite);	   	   
+	   printf("sent !%d\n",countwrite);
+	   countwrite++;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

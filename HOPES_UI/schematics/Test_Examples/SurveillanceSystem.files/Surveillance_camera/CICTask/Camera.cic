@@ -1,0 +1,101 @@
+/************************************
+ *
+ * File : Camera.cic
+ * Date : Aug 10, 2019, 4:34 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_image_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+cv::VideoCapture cap;
+
+#define CAP_HEIGHT 300
+#define CAP_WIDTH 300
+#define CAP_CHANNEL 3
+
+typedef struct _cvMatColor
+{
+    unsigned char data[CAP_HEIGHT*CAP_WIDTH*CAP_CHANNEL];
+} CapMatColor;
+STATIC CapMatColor capMat;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_image_out = PORT_INITIALIZE(TASK_ID, "image_out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+	// open camera
+	int CAM_ID = 1; //usb connected cam
+	cap.open(CAM_ID); //Generate Camera
+    if(!cap.isOpened()){ //Check if Camera Opened
+            printf("Can't open the CAM(%d)\n",CAM_ID);          
+    }
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code    
+    using namespace std;
+    using namespace cv;             
+   
+    //int CAM_ID = 0; //notebook cam
+    Mat inputImage;
+    cap >> inputImage;
+    int nDataWrite = 0;
+	cv::resize(inputImage, inputImage, cv::Size(300, 300));	
+
+	if(CAP_WIDTH != inputImage.cols || CAP_HEIGHT != inputImage.rows)	
+	{
+		cv::resize(inputImage, inputImage, cv::Size(CAP_WIDTH, CAP_HEIGHT));
+	}
+
+	memcpy(capMat.data, inputImage.data, CAP_WIDTH*CAP_HEIGHT*CAP_CHANNEL);
+    
+    uem_result result = UFPort_WriteToBuffer(port_image_out, (unsigned char *) &capMat, sizeof(CapMatColor) /*size*/, 0/*threadId*/, &nDataWrite);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END
