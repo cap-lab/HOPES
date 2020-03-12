@@ -1,4 +1,3 @@
 [submodule "Public"]
 	path = Public
-	url = git@github.com:cap-lab/CodeGeneration.git
-	branch = 0.7.1_github_release
+	url = https://github.com/cap-lab/CodeGeneration.git
