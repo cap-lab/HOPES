@@ -1,0 +1,125 @@
+/************************************
+ *
+ * File : Fan1.cic
+ * Date : Mar 23, 2020 1:31 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include "cuda.h"
+#include <string.h>
+#include <math.h>
+
+#ifdef RD_WG_SIZE_0_0
+        #define MAXBLOCKSIZE RD_WG_SIZE_0_0
+#elif defined(RD_WG_SIZE_0)
+        #define MAXBLOCKSIZE RD_WG_SIZE_0
+#elif defined(RD_WG_SIZE)
+        #define MAXBLOCKSIZE RD_WG_SIZE
+#else
+        #define MAXBLOCKSIZE 512
+#endif
+
+//2D defines. Go from specific to general                                                
+#ifdef RD_WG_SIZE_1_0
+        #define BLOCK_SIZE_XY RD_WG_SIZE_1_0
+#elif defined(RD_WG_SIZE_1)
+        #define BLOCK_SIZE_XY RD_WG_SIZE_1
+#elif defined(RD_WG_SIZE)
+        #define BLOCK_SIZE_XY RD_WG_SIZE
+#else
+        #define BLOCK_SIZE_XY 4
+#endif
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+STATIC int port_in_a;
+STATIC int port_in_m;
+STATIC int port_out_a;
+STATIC int port_out_m;
+STATIC int port_in_a2;
+
+STATIC int Size = 4;
+STATIC float *m_cuda,*a_cuda;
+STATIC int t = 0;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    UFPort_Initialize(TASK_ID, "in_a", &port_in_a);
+    UFPort_Initialize(TASK_ID, "in_m", &port_in_m);
+    UFPort_Initialize(TASK_ID, "out_a", &port_out_a);
+    UFPort_Initialize(TASK_ID, "out_m", &port_out_m);
+    UFPort_Initialize(TASK_ID, "in_a2", &port_in_a2);
+
+	cudaMalloc((void **) &m_cuda, Size * Size * sizeof(float));     
+    cudaMalloc((void **) &a_cuda, Size * Size * sizeof(float));    
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+/*-------------------------------------------------------
+ ** Fan1() -- Calculate multiplier matrix
+ ** Pay attention to the index.  Index i give the range
+ ** which starts from 0 to range-1.  The real values of
+ ** the index should be adjust and related with the value
+ ** of t which is defined on the ForwardSub().
+ **-------------------------------------------------------
+ */
+__global__ void Fan1(float *m_cuda, float *a_cuda, int Size, int t)
+{   
+	//if(threadIdx.x + blockIdx.x * blockDim.x >= Size-1-t) printf(".");
+	//printf("blockIDx.x:%d,threadIdx.x:%d,Size:%d,t:%d,Size-1-t:%d\n",blockIdx.x,threadIdx.x,Size,t,Size-1-t);
+
+	if(threadIdx.x + blockIdx.x * blockDim.x >= Size-1-t) return;
+	*(m_cuda+Size*(blockDim.x*blockIdx.x+threadIdx.x+t+1)+t) = *(a_cuda+Size*(blockDim.x*blockIdx.x+threadIdx.x+t+1)+t) / *(a_cuda+Size*t+t);
+}
+
+TASK_GO
+{
+    int nDataRead = 0;
+    
+    UFPort_ReadFromQueue(port_in_a2, (unsigned char *)a_cuda, Size*Size*sizeof(float), 0, &nDataRead);
+    if(t == 0) {
+        UFPort_ReadFromQueue(port_in_a, (unsigned char *)a_cuda, Size*Size*sizeof(float), 0, &nDataRead);
+        UFPort_ReadFromQueue(port_in_m, (unsigned char *)m_cuda, Size*Size*sizeof(float), 0, &nDataRead);
+    }   
+        
+    KERNEL_CALL(Fan1, m_cuda, a_cuda, Size, t);
+    cudaThreadSynchronize();
+    t += 1;
+    
+    int nDataWrite = 0;
+    UFPort_WriteToQueue(port_out_a, (unsigned char *)a_cuda, Size*Size*sizeof(float), 0, &nDataWrite);
+    UFPort_WriteToQueue(port_out_m, (unsigned char *)m_cuda, Size*Size*sizeof(float), 0, &nDataWrite);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    cudaFree(a_cuda);
+    cudaFree(m_cuda);
+}
+
+TASK_CODE_END

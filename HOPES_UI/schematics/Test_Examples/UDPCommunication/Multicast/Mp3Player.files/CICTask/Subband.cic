@@ -1,0 +1,967 @@
+/************************************
+ *
+ * File : Subband.cic
+ * Date : Sep 18, 2012 1:48 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <math.h>
+#include "mp3_struct.h"
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC int channel_55;
+STATIC int output_56;
+
+#ifndef INT_MATH
+    typedef REAL        NN[64][32];
+    static NN FAR       filter_57;
+    typedef REAL        BB[2][2*HAN_SIZE];
+    static BB FAR       buf_58;
+    static REAL FAR     window_59[HAN_SIZE];
+#else /*INT_MATH*/
+    typedef REAL         RNN[64][32];
+    static RNN FAR      Rfilter_60;
+    typedef int          NN[64][32];
+    static NN FAR       filter_57;
+    typedef int          BB[2][2*HAN_SIZE];
+    static BB FAR       buf_58;
+    static int          window_59[HAN_SIZE];
+    static REAL FAR     realWindow_61[HAN_SIZE];
+#endif
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+static void create_syn_filter(REAL FAR filter[64][SBLIMIT])
+{
+    int i, k;
+#ifdef NO_MODFF
+    double temp;
+#endif
+
+    for (i = 0; i < 64; i++)
+        for (k = 0; k < 32; k++) {
+#ifdef FSINGLE
+            filter[i][k] = 1e9 * cos((PI64*i+PI4)*(2.0*k+1.0));
+            if (filter[i][k] >= 0) {
+                /*modff(filter[i][k]+0.5, &filter[i][k]);*/
+                filter[i][k] = floor(filter[i][k] + 0.5);
+            } else {
+                /*modff(filter[i][k]-0.5, &filter[i][k]);*/
+                filter[i][k] = floor(filter[i][k] - 0.5);
+            }
+#else /* FSINGLE */
+            filter[i][k] = 1e9*cos((PI64*i+PI4)*(2*k+1));
+            if (filter[i][k] >= 0)
+                /*modf(filter[i][k]+0.5, &filter[i][k]);*/
+                filter[i][k] = floor(filter[i][k] + 0.5);
+            else
+                /*modf(filter[i][k]-0.5, &filter[i][k]);*/
+                filter[i][k] = floor(filter[i][k] - 0.5);
+#endif
+            filter[i][k] *= 1e-9;
+        }
+        /*
+         * filter[][] is now filled with values between -1 and 1.
+         */
+}
+
+
+
+/***************************************************************
+ *
+ *   Window the restored sample
+ *
+ ***************************************************************/
+
+/* read in synthesis window */
+/*----------------------------------------------------------------------*/
+
+/* Table Dewindow*/
+/**/
+/* The floating point numbers have been extracted from the dewindow file*/
+/* using the command "cut -c8-20,28-40,48-60,68- < dewindow"*/
+
+#define DEWINTAB_SIZE 512
+
+static REAL dewindow_tab[DEWINTAB_SIZE] = {
+ 0.000000000, -0.000015259, -0.000015259, -0.000015259,
+-0.000015259, -0.000015259, -0.000015259, -0.000030518,
+-0.000030518, -0.000030518, -0.000030518, -0.000045776,
+-0.000045776, -0.000061035, -0.000061035, -0.000076294,
+-0.000076294, -0.000091553, -0.000106812, -0.000106812,
+-0.000122070, -0.000137329, -0.000152588, -0.000167847,
+-0.000198364, -0.000213623, -0.000244141, -0.000259399,
+-0.000289917, -0.000320435, -0.000366211, -0.000396729,
+-0.000442505, -0.000473022, -0.000534058, -0.000579834,
+-0.000625610, -0.000686646, -0.000747681, -0.000808716,
+-0.000885010, -0.000961304, -0.001037598, -0.001113892,
+-0.001205444, -0.001296997, -0.001388550, -0.001480103,
+-0.001586914, -0.001693726, -0.001785278, -0.001907349,
+-0.002014160, -0.002120972, -0.002243042, -0.002349854,
+-0.002456665, -0.002578735, -0.002685547, -0.002792358,
+-0.002899170, -0.002990723, -0.003082275, -0.003173828,
+ 0.003250122,  0.003326416,  0.003387451,  0.003433228,
+ 0.003463745,  0.003479004,  0.003479004,  0.003463745,
+ 0.003417969,  0.003372192,  0.003280640,  0.003173828,
+ 0.003051758,  0.002883911,  0.002700806,  0.002487183,
+ 0.002227783,  0.001937866,  0.001617432,  0.001266479,
+ 0.000869751,  0.000442505, -0.000030518, -0.000549316,
+-0.001098633, -0.001693726, -0.002334595, -0.003005981,
+-0.003723145, -0.004486084, -0.005294800, -0.006118774,
+-0.007003784, -0.007919312, -0.008865356, -0.009841919,
+-0.010848999, -0.011886597, -0.012939453, -0.014022827,
+-0.015121460, -0.016235352, -0.017349243, -0.018463135,
+-0.019577026, -0.020690918, -0.021789551, -0.022857666,
+-0.023910522, -0.024932861, -0.025909424, -0.026840210,
+-0.027725220, -0.028533936, -0.029281616, -0.029937744,
+-0.030532837, -0.031005859, -0.031387329, -0.031661987,
+-0.031814575, -0.031845093, -0.031738281, -0.031478882,
+ 0.031082153,  0.030517578,  0.029785156,  0.028884888,
+ 0.027801514,  0.026535034,  0.025085449,  0.023422241,
+ 0.021575928,  0.019531250,  0.017257690,  0.014801025,
+ 0.012115479,  0.009231567,  0.006134033,  0.002822876,
+-0.000686646, -0.004394531, -0.008316040, -0.012420654,
+-0.016708374, -0.021179199, -0.025817871, -0.030609131,
+-0.035552979, -0.040634155, -0.045837402, -0.051132202,
+-0.056533813, -0.061996460, -0.067520142, -0.073059082,
+-0.078628540, -0.084182739, -0.089706421, -0.095169067,
+-0.100540161, -0.105819702, -0.110946655, -0.115921021,
+-0.120697021, -0.125259399, -0.129562378, -0.133590698,
+-0.137298584, -0.140670776, -0.143676758, -0.146255493,
+-0.148422241, -0.150115967, -0.151306152, -0.151962280,
+-0.152069092, -0.151596069, -0.150497437, -0.148773193,
+-0.146362305, -0.143264771, -0.139450073, -0.134887695,
+-0.129577637, -0.123474121, -0.116577148, -0.108856201,
+ 0.100311279,  0.090927124,  0.080688477,  0.069595337,
+ 0.057617187,  0.044784546,  0.031082153,  0.016510010,
+ 0.001068115, -0.015228271, -0.032379150, -0.050354004,
+-0.069168091, -0.088775635, -0.109161377, -0.130310059,
+-0.152206421, -0.174789429, -0.198059082, -0.221984863,
+-0.246505737, -0.271591187, -0.297210693, -0.323318481,
+-0.349868774, -0.376800537, -0.404083252, -0.431655884,
+-0.459472656, -0.487472534, -0.515609741, -0.543823242,
+-0.572036743, -0.600219727, -0.628295898, -0.656219482,
+-0.683914185, -0.711318970, -0.738372803, -0.765029907,
+-0.791213989, -0.816864014, -0.841949463, -0.866363525,
+-0.890090942, -0.913055420, -0.935195923, -0.956481934,
+-0.976852417, -0.996246338, -1.014617920, -1.031936646,
+-1.048156738, -1.063217163, -1.077117920, -1.089782715,
+-1.101211548, -1.111373901, -1.120223999, -1.127746582,
+-1.133926392, -1.138763428, -1.142211914, -1.144287109,
+ 1.144989014,  1.144287109,  1.142211914,  1.138763428,
+ 1.133926392,  1.127746582,  1.120223999,  1.111373901,
+ 1.101211548,  1.089782715,  1.077117920,  1.063217163,
+ 1.048156738,  1.031936646,  1.014617920,  0.996246338,
+ 0.976852417,  0.956481934,  0.935195923,  0.913055420,
+ 0.890090942,  0.866363525,  0.841949463,  0.816864014,
+ 0.791213989,  0.765029907,  0.738372803,  0.711318970,
+ 0.683914185,  0.656219482,  0.628295898,  0.600219727,
+ 0.572036743,  0.543823242,  0.515609741,  0.487472534,
+ 0.459472656,  0.431655884,  0.404083252,  0.376800537,
+ 0.349868774,  0.323318481,  0.297210693,  0.271591187,
+ 0.246505737,  0.221984863,  0.198059082,  0.174789429,
+ 0.152206421,  0.130310059,  0.109161377,  0.088775635,
+ 0.069168091,  0.050354004,  0.032379150,  0.015228271,
+-0.001068115, -0.016510010, -0.031082153, -0.044784546,
+-0.057617187, -0.069595337, -0.080688477, -0.090927124,
+ 0.100311279,  0.108856201,  0.116577148,  0.123474121,
+ 0.129577637,  0.134887695,  0.139450073,  0.143264771,
+ 0.146362305,  0.148773193,  0.150497437,  0.151596069,
+ 0.152069092,  0.151962280,  0.151306152,  0.150115967,
+ 0.148422241,  0.146255493,  0.143676758,  0.140670776,
+ 0.137298584,  0.133590698,  0.129562378,  0.125259399,
+ 0.120697021,  0.115921021,  0.110946655,  0.105819702,
+ 0.100540161,  0.095169067,  0.089706421,  0.084182739,
+ 0.078628540,  0.073059082,  0.067520142,  0.061996460,
+ 0.056533813,  0.051132202,  0.045837402,  0.040634155,
+ 0.035552979,  0.030609131,  0.025817871,  0.021179199,
+ 0.016708374,  0.012420654,  0.008316040,  0.004394531,
+ 0.000686646, -0.002822876, -0.006134033, -0.009231567,
+-0.012115479, -0.014801025, -0.017257690, -0.019531250,
+-0.021575928, -0.023422241, -0.025085449, -0.026535034,
+-0.027801514, -0.028884888, -0.029785156, -0.030517578,
+ 0.031082153,  0.031478882,  0.031738281,  0.031845093,
+ 0.031814575,  0.031661987,  0.031387329,  0.031005859,
+ 0.030532837,  0.029937744,  0.029281616,  0.028533936,
+ 0.027725220,  0.026840210,  0.025909424,  0.024932861,
+ 0.023910522,  0.022857666,  0.021789551,  0.020690918,
+ 0.019577026,  0.018463135,  0.017349243,  0.016235352,
+ 0.015121460,  0.014022827,  0.012939453,  0.011886597,
+ 0.010848999,  0.009841919,  0.008865356,  0.007919312,
+ 0.007003784,  0.006118774,  0.005294800,  0.004486084,
+ 0.003723145,  0.003005981,  0.002334595,  0.001693726,
+ 0.001098633,  0.000549316,  0.000030518, -0.000442505,
+-0.000869751, -0.001266479, -0.001617432, -0.001937866,
+-0.002227783, -0.002487183, -0.002700806, -0.002883911,
+-0.003051758, -0.003173828, -0.003280640, -0.003372192,
+-0.003417969, -0.003463745, -0.003479004, -0.003479004,
+-0.003463745, -0.003433228, -0.003387451, -0.003326416,
+ 0.003250122,  0.003173828,  0.003082275,  0.002990723,
+ 0.002899170,  0.002792358,  0.002685547,  0.002578735,
+ 0.002456665,  0.002349854,  0.002243042,  0.002120972,
+ 0.002014160,  0.001907349,  0.001785278,  0.001693726,
+ 0.001586914,  0.001480103,  0.001388550,  0.001296997,
+ 0.001205444,  0.001113892,  0.001037598,  0.000961304,
+ 0.000885010,  0.000808716,  0.000747681,  0.000686646,
+ 0.000625610,  0.000579834,  0.000534058,  0.000473022,
+ 0.000442505,  0.000396729,  0.000366211,  0.000320435,
+ 0.000289917,  0.000259399,  0.000244141,  0.000213623,
+ 0.000198364,  0.000167847,  0.000152588,  0.000137329,
+ 0.000122070,  0.000106812,  0.000106812,  0.000091553,
+ 0.000076294,  0.000076294,  0.000061035,  0.000061035,
+ 0.000045776,  0.000045776,  0.000030518,  0.000030518,
+ 0.000030518,  0.000030518,  0.000015259,  0.000015259,
+ 0.000015259,  0.000015259,  0.000015259,  0.000015259
+};
+
+/***************************************************************
+ *
+ *   Window the restored sample
+ *
+ ***************************************************************/
+
+/* read in synthesis window */
+
+static void read_syn_window(REAL FAR window[HAN_SIZE])
+{
+/*#define SCALEFACTOR 1.144989014*/
+    int   i;
+
+    for (i = 0; i < DEWINTAB_SIZE; i++)
+        /*window[i] = dewindow_tab[i] / SCALEFACTOR;*/
+        window[i] = dewindow_tab[i];
+}
+
+#ifndef INT_MATH
+
+/* Set to 1 for the optimization level from version 0.9.3 and earlier */
+#define OPTIMIZE_093    0
+/* Set to 1 for the "fuzzy zero detection" optimization in version 0.9.5 */
+#define OPTIMIZE_095    0
+
+static int SubBandSynthesis(
+    REAL        *bandPtr,
+    int          channel,
+    short       *samples)
+{
+    int                  i, j;
+    static int          bufOffset[2] = {64,64};
+    REAL                *bufOffsetPtr, sum;
+    int                  clip = 0;   /* count & return # samples clipped */
+    //int                  offset;
+    long                 foo;
+    int                  k;
+#ifdef OPTIMIZE
+    REAL                *filterp;
+    REAL                *bandp;
+# if OPTIMIZE_095
+    int                  nzbcount, nzbands[32]; /* non-zero band detection */
+# endif
+#endif
+
+
+    bufOffset[channel] = (bufOffset[channel] - 64) & 0x3ff;
+    bufOffsetPtr = &((buf_58)[channel][bufOffset[channel]]);
+
+#ifdef OPTIMIZE
+
+# if OPTIMIZE_093
+
+    filterp = (REAL *)((filter_57)[0]);
+    bandp = bandPtr;
+
+    i = 64;
+    while (i--) {
+
+        *bufOffsetPtr++ =
+            bandp[0] * filterp[0] +
+            bandp[1] * filterp[1] +
+            bandp[2] * filterp[2] +
+            bandp[3] * filterp[3] +
+            bandp[4] * filterp[4] +
+            bandp[5] * filterp[5] +
+            bandp[6] * filterp[6] +
+            bandp[7] * filterp[7] +
+            bandp[8] * filterp[8] +
+            bandp[9] * filterp[9] +
+            bandp[10] * filterp[10] +
+            bandp[11] * filterp[11] +
+            bandp[12] * filterp[12] +
+            bandp[13] * filterp[13] +
+            bandp[14] * filterp[14] +
+            bandp[15] * filterp[15] +
+            bandp[16] * filterp[16] +
+            bandp[17] * filterp[17] +
+            bandp[18] * filterp[18] +
+            bandp[19] * filterp[19] +
+            bandp[20] * filterp[20] +
+            bandp[21] * filterp[21] +
+            bandp[22] * filterp[22] +
+            bandp[23] * filterp[23] +
+            bandp[24] * filterp[24] +
+            bandp[25] * filterp[25] +
+            bandp[26] * filterp[26] +
+            bandp[27] * filterp[27] +
+            bandp[28] * filterp[28] +
+            bandp[29] * filterp[29] +
+            bandp[30] * filterp[30] +
+            bandp[31] * filterp[31];
+
+        filterp += 32;
+    }
+
+# elif OPTIMIZE_095
+
+    filterp = (REAL *)((filter_57)[0]);
+    bandp = bandPtr;
+
+    /* Analyze input */
+    for (i = 0, nzbcount = 0; i < 32; i++)
+        /* Fuzzy zero detection */
+        if (bandp[i] < -0.00035 || bandp[i] > 0.00035)
+            nzbands[nzbcount++] = i;
+
+    for (i = 0; i < 64; i++, filterp += 32) {
+
+        /* Only add non-zero bands */
+        for (j = 0, sum = 0.0; j < nzbcount; j++)
+            sum += bandp[nzbands[j]] * filterp[nzbands[j]];
+
+        *bufOffsetPtr++ = sum;
+    }
+
+# else /*optimize using a fast cosine transform */
+
+#define cos1_64  0.500602998235196
+#define cos3_64  0.505470959897544
+#define cos5_64  0.515447309922625
+#define cos7_64  0.531042591089784
+#define cos9_64  0.553103896034445
+#define cos11_64 0.582934968206134
+#define cos13_64 0.622504123035665
+#define cos15_64 0.674808341455006
+#define cos17_64 0.744536271002299
+#define cos19_64 0.839349645415527
+#define cos21_64 0.972568237861961
+#define cos23_64 1.169439933432885
+#define cos25_64 1.484164616314166
+#define cos27_64 2.057781009953411
+#define cos29_64 3.407608418468719
+#define cos31_64 10.190008123548033
+#define cos1_32  0.502419286188156
+#define cos3_32  0.522498614939689
+#define cos5_32  0.566944034816358
+#define cos7_32  0.646821783359990
+#define cos9_32  0.788154623451250
+#define cos11_32 1.060677685990347
+#define cos13_32 1.722447098238334
+#define cos15_32 5.101148618689155
+#define cos1_16  0.509795579104159
+#define cos3_16  0.601344886935045
+#define cos5_16  0.899976223136416
+#define cos7_16  2.562915447741505
+#define cos1_8   0.541196100146197
+#define cos3_8   1.306562964876376
+#define cos1_4   0.707106781186547
+
+  {
+    int i;
+    register REAL tmp;
+    REAL p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15;
+    REAL pp0,pp1,pp2,pp3,pp4,pp5,pp6,pp7,pp8,pp9,pp10,pp11,pp12,pp13,pp14,pp15;
+
+    /* Compute new values via a fast cosine transform */
+    p0  = bandPtr[0] + bandPtr[31];
+    p1  = bandPtr[1] + bandPtr[30];
+    p2  = bandPtr[2] + bandPtr[29];
+    p3  = bandPtr[3] + bandPtr[28];
+    p4  = bandPtr[4] + bandPtr[27];
+    p5  = bandPtr[5] + bandPtr[26];
+    p6  = bandPtr[6] + bandPtr[25];
+    p7  = bandPtr[7] + bandPtr[24];
+    p8  = bandPtr[8] + bandPtr[23];
+    p9  = bandPtr[9] + bandPtr[22];
+    p10 = bandPtr[10]+ bandPtr[21];
+    p11 = bandPtr[11]+ bandPtr[20];
+    p12 = bandPtr[12]+ bandPtr[19];
+    p13 = bandPtr[13]+ bandPtr[18];
+    p14 = bandPtr[15]+ bandPtr[17];
+    p15 = bandPtr[16]+ bandPtr[16];
+
+    pp0 = p0 + p15;
+    pp1 = p1 + p14;
+    pp2 = p2 + p13;
+    pp3 = p3 + p12;
+    pp4 = p4 + p11;
+    pp5 = p5 + p10;
+    pp6 = p6 + p9;
+    pp7 = p7 + p8;
+    pp8 = cos1_32  * (p0 - p15);
+    pp9 = cos3_32  * (p1 - p14);
+    pp10= cos5_32  * (p2 - p13);
+    pp11= cos7_32  * (p3 - p12);
+    pp12= cos9_32  * (p4 - p11);
+    pp13= cos11_32 * (p5 - p10);
+    pp14= cos13_32 * (p6 - p9);
+    pp15= cos15_32 * (p7 - p8);
+
+    p0 = pp0 + pp7;
+    p1 = pp1 + pp6;
+    p2 = pp2 + pp5;
+    p3 = pp3 + pp4;
+    p4 = cos1_16 * (pp0 - pp7);
+    p5 = cos3_16 * (pp1 - pp6);
+    p6 = cos5_16 * (pp2 - pp5);
+    p7 = cos7_16 * (pp3 - pp4);
+    p8 = pp8 + pp15;
+    p9 = pp9 + pp14;
+    p10= pp10 + pp13;
+    p11= pp11 + pp12;
+    p12= cos1_16 * (pp8  - pp15);
+    p13= cos3_16 * (pp9  - pp14);
+    p14= cos5_16 * (pp10 - pp13);
+    p15= cos7_16 * (pp11 - pp12);
+
+    pp0 = p0 + p3;
+    pp1 = p1 + p2;
+    pp2 = cos1_8 * (p0 - p3);
+    pp3 = cos3_8 * (p1 - p2);
+    pp4 = p4 + p7;
+    pp5 = p5 + p6;
+    pp6 = cos1_8 * (p4 - p7);
+    pp7 = cos3_8 * (p5 - p6);
+    pp8 = p8 + p11;
+    pp9 = p9 + p10;
+    pp10= cos1_8 * (p8 - p11);
+    pp11= cos3_8 * (p9 - p10);
+    pp12= p12 + p15;
+    pp13 = p13 + p14;
+    pp14= cos1_8 * (p12 - p15);
+    pp15= cos3_8 * (p13 - p14);
+
+    p0 = pp0 + pp1;
+    p1 = cos1_4 * (pp0 - pp1);
+    p2 = pp2 + pp3;
+    p3 = cos1_4 * (pp2 - pp3);
+    p4 = pp4 + pp5;
+    p5 = cos1_4 * (pp4 - pp5);
+    p6 = pp6 + pp7;
+    p7 = cos1_4 * (pp6 - pp7);
+    p8 = pp8 + pp9;
+    p9 = cos1_4 * (pp8 - pp9);
+    p10= pp10 + pp11;
+    p11= cos1_4 * (pp10 - pp11);
+    p12= pp12 + pp13;
+    p13= cos1_4 * (pp12 - pp13);
+    p14= pp14 + pp15;
+    p15= cos1_4 * (pp14 - pp15);
+
+    tmp              = p6 + p7;
+    bufOffsetPtr[36] = -(p5 + tmp);
+    bufOffsetPtr[44] = -(p4 + tmp);
+    tmp              = p11 + p15;
+    bufOffsetPtr[10] = tmp;
+    bufOffsetPtr[6]  = p13 + tmp;
+    tmp              = p14 + p15;
+    bufOffsetPtr[46] = -(p8  + p12 + tmp);
+    bufOffsetPtr[34] = -(p9  + p13 + tmp);
+    tmp             += p10 + p11;
+    bufOffsetPtr[38] = -(p13 + tmp);
+    bufOffsetPtr[42] = -(p12 + tmp);
+    bufOffsetPtr[2]  = p9 + p13 + p15;
+    bufOffsetPtr[4]  = p5 + p7;
+    bufOffsetPtr[48] = -p0;
+    bufOffsetPtr[0]  = p1;
+    bufOffsetPtr[8]  = p3;
+    bufOffsetPtr[12] = p7;
+    bufOffsetPtr[14] = p15;
+    bufOffsetPtr[40] = -(p2  + p3);
+
+    p0  = cos1_64  * (bandPtr[0] - bandPtr[31]);
+    p1  = cos3_64  * (bandPtr[1] - bandPtr[30]);
+    p2  = cos5_64  * (bandPtr[2] - bandPtr[29]);
+    p3  = cos7_64  * (bandPtr[3] - bandPtr[28]);
+    p4  = cos9_64  * (bandPtr[4] - bandPtr[27]);
+    p5  = cos11_64 * (bandPtr[5] - bandPtr[26]);
+    p6  = cos13_64 * (bandPtr[6] - bandPtr[25]);
+    p7  = cos15_64 * (bandPtr[7] - bandPtr[24]);
+    p8  = cos17_64 * (bandPtr[8] - bandPtr[23]);
+    p9  = cos19_64 * (bandPtr[9] - bandPtr[22]);
+    p10 = cos21_64 * (bandPtr[10]- bandPtr[21]);
+    p11 = cos23_64 * (bandPtr[11]- bandPtr[20]);
+    p12 = cos25_64 * (bandPtr[12]- bandPtr[19]);
+    p13 = cos27_64 * (bandPtr[13]- bandPtr[18]);
+    p14 = cos29_64 * (bandPtr[14]- bandPtr[17]);
+    p15 = cos31_64 * (bandPtr[15]- bandPtr[16]);
+
+    pp0 = p0 + p15;
+    pp1 = p1 + p14;
+    pp2 = p2 + p13;
+    pp3 = p3 + p12;
+    pp4 = p4 + p11;
+    pp5 = p5 + p10;
+    pp6 = p6 + p9;
+    pp7 = p7 + p8;
+    pp8 = cos1_32  * (p0 - p15);
+    pp9 = cos3_32  * (p1 - p14);
+    pp10= cos5_32  * (p2 - p13);
+    pp11= cos7_32  * (p3 - p12);
+    pp12= cos9_32  * (p4 - p11);
+    pp13= cos11_32 * (p5 - p10);
+    pp14= cos13_32 * (p6 - p9);
+    pp15= cos15_32 * (p7 - p8);
+
+    p0 = pp0 + pp7;
+    p1 = pp1 + pp6;
+    p2 = pp2 + pp5;
+    p3 = pp3 + pp4;
+    p4 = cos1_16 * (pp0 - pp7);
+    p5 = cos3_16 * (pp1 - pp6);
+    p6 = cos5_16 * (pp2 - pp5);
+    p7 = cos7_16 * (pp3 - pp4);
+    p8 = pp8  + pp15;
+    p9 = pp9  + pp14;
+    p10= pp10 + pp13;
+    p11= pp11 + pp12;
+    p12= cos1_16 * (pp8  - pp15);
+    p13= cos3_16 * (pp9  - pp14);
+    p14= cos5_16 * (pp10 - pp13);
+    p15= cos7_16 * (pp11 - pp12);
+
+    pp0 = p0 + p3;
+    pp1 = p1 + p2;
+    pp2 = cos1_8 * (p0 - p3);
+    pp3 = cos3_8 * (p1 - p2);
+    pp4 = p4 + p7;
+    pp5 = p5 + p6;
+    pp6 = cos1_8 * (p4 - p7);
+    pp7 = cos3_8 * (p5 - p6);
+    pp8 = p8 + p11;
+    pp9 = p9 + p10;
+    pp10= cos1_8 * (p8 - p11);
+    pp11= cos3_8 * (p9 - p10);
+    pp12= p12 + p15;
+    pp13= p13 + p14;
+    pp14= cos1_8 * (p12 - p15);
+    pp15= cos3_8 * (p13 - p14);
+
+    p0 = pp0 + pp1;
+    p1 = cos1_4 * (pp0 - pp1);
+    p2 = pp2 + pp3;
+    p3 = cos1_4 * (pp2 - pp3);
+    p4 = pp4 + pp5;
+    p5 = cos1_4 * (pp4 - pp5);
+    p6 = pp6 + pp7;
+    p7 = cos1_4 * (pp6 - pp7);
+    p8 = pp8 + pp9;
+    p9 = cos1_4 * (pp8 - pp9);
+    p10= pp10 + pp11;
+    p11= cos1_4 * (pp10 - pp11);
+    p12= pp12 + pp13;
+    p13= cos1_4 * (pp12 - pp13);
+    p14= pp14 + pp15;
+    p15= cos1_4 * (pp14 - pp15);
+
+    tmp              = p13 + p15;
+    bufOffsetPtr[1]  = p1 + p9 + tmp;
+    bufOffsetPtr[5]  = p5 + p7 + p11 + tmp;
+    tmp             += p9;
+    bufOffsetPtr[33] = -(p1 + p14 + tmp);
+    tmp             += p5 + p7;
+    bufOffsetPtr[3]  = tmp;
+    bufOffsetPtr[35] = -(p6 + p14 + tmp);
+    tmp              = p10 + p11 + p12 + p13 + p14 + p15;
+    bufOffsetPtr[39] = -(p2 + p3 + tmp - p12);
+    bufOffsetPtr[43] = -(p4 + p6 + p7 + tmp - p13);
+    bufOffsetPtr[37] = -(p5 + p6 + p7 + tmp - p12);
+    bufOffsetPtr[41] = -(p2 + p3 + tmp - p13);
+    tmp              = p8 + p12 + p14 + p15;
+    bufOffsetPtr[47] = -(p0 + tmp);
+    bufOffsetPtr[45] = -(p4 + p6 + p7 + tmp);
+    tmp              = p11 + p15;
+    bufOffsetPtr[11] = p7  + tmp;
+    tmp             += p3;
+    bufOffsetPtr[9]  = tmp;
+    bufOffsetPtr[7]  = p13 + tmp;
+    bufOffsetPtr[13] = p7 + p15;
+    bufOffsetPtr[15] = p15;
+
+    bufOffsetPtr[16] = 0.0;
+    for (i = 0; i < 16; i++) {
+        bufOffsetPtr[32-i] = -bufOffsetPtr[i];
+        bufOffsetPtr[63-i] = bufOffsetPtr[33+i];
+    }
+  }
+
+# endif /* OPTIMIZE_093 & OPTIMIZE_095 */
+
+#else /* original code */
+
+    for (i = 0; i < 64; i++) {
+        sum = 0.0;
+        for (k = 0; k < 32; k++)
+            sum += bandPtr[k] * (filter_57)[i][k];
+        bufOffsetPtr[i] = sum;
+    }
+#endif /* OPTIMIZE */
+
+
+# if OPTIMIZE_095 /* code in version 0.9.5 and earlier */
+
+#  ifdef DETECT_CLIP
+    /* Detects and "smooths" clipping
+     *
+     *  S(i,j) = D(j+32i) * U(j+32i+((i+1)>>1)*64)
+     *  samples(i,j) = MWindow(j+32i) * bufPtr(j+32i+((i+1)>>1)*64)
+     */
+
+    for (j = 0; j < 32; j++) {  /* for each subband... */
+        offset = bufOffset[channel] + j;
+        /*
+         * -1.144989014 <= window[x] <= 1.144989014  for all x
+         */
+        sum = window_59[j] * (buf_58)[channel][offset] +
+            window_59[j + 32] * (buf_58)[channel][(96 + offset) & 0x3ff] +
+            window_59[j + 64] * (buf_58)[channel][(128 + offset) & 0x3ff] +
+            window_59[j + 96] * (buf_58)[channel][(224 + offset) & 0x3ff] +
+            window_59[j + 128] * (buf_58)[channel][(256 + offset) & 0x3ff] +
+            window_59[j + 160] * (buf_58)[channel][(352 + offset) & 0x3ff] +
+            window_59[j + 192] * (buf_58)[channel][(384 + offset) & 0x3ff] +
+            window_59[j + 224] * (buf_58)[channel][(480 + offset) & 0x3ff] +
+            window_59[j + 256] * (buf_58)[channel][(512 + offset) & 0x3ff] +
+            window_59[j + 288] * (buf_58)[channel][(608 + offset) & 0x3ff] +
+            window_59[j + 320] * (buf_58)[channel][(640 + offset) & 0x3ff] +
+            window_59[j + 352] * (buf_58)[channel][(736 + offset) & 0x3ff] +
+            window_59[j + 384] * (buf_58)[channel][(768 + offset) & 0x3ff] +
+            window_59[j + 416] * (buf_58)[channel][(864 + offset) & 0x3ff] +
+            window_59[j + 448] * (buf_58)[channel][(896 + offset) & 0x3ff] +
+            window_59[j + 480] * (buf_58)[channel][(992 + offset) & 0x3ff];
+
+        /*
+         * At this point we hope we have -1 <= sum <= 1 otherwise, it'll
+         * have to be clipped anyway, so it's no big deal to clip it earlier
+         * or something.
+         */
+
+        /*
+         * Casting truncates towards zero for both positive and negative
+         * numbers, the result is cross-over distortion,  1995-07-12 shn
+         */
+
+        if (sum > 0) {
+            foo = (long)(sum * SCALE + 0.5);
+        } else {
+            foo = (long)(sum * SCALE - 0.5);
+        }
+
+        if (foo >= (long)SCALE) {
+            samples[j] = (short)(SCALE-1);
+            ++clip;
+        } else if (foo < (long)-SCALE) {
+            samples[j] = (short)(-SCALE);
+            ++clip;
+        } else
+            samples[j] = (short)foo;
+    }
+
+#  else /* !DETECT_CLIP */
+
+    /* Faster, but does not detect clipping
+     *
+     *  S(i,j) = D(j+32i) * U(j+32i+((i+1)>>1)*64)
+     *  samples(i,j) = MWindow(j+32i) * bufPtr(j+32i+((i+1)>>1)*64)
+     */
+    for (j = 0; j < 32; j++) {
+        sum = 0.0;
+
+        for (i = 0; i < 16; i++) {
+            k = j + (i << 5);
+            sum += window_59[k] * (buf_58)[channel]
+                    [((k + (((i+1) >> 1) << 6)) + bufOffset[channel]) & 0x3ff];
+        }
+        samples[j] = sum * SCALE;
+    }
+
+#  endif /* DETECT_CLIP */
+
+# else /* most optimized */
+
+  {
+    REAL* dt[16];
+    for (i = 0; i < 16; i++) {
+        k = (i << 5);
+        dt[i]=(buf_58)[channel] + ( ((k + (((i+1) >> 1) << 6)) +
+                                bufOffset[channel]) & 0x3ff);
+    }
+
+    for (j = 0; j < 32; j++) {
+        /* Unroll loop
+         * Here we multiply every subband by the appropriate scale
+         * factor and add 'em all up, so we get one sample.
+         */
+        sum =
+            window_59[j] * dt[0][j]+
+            window_59[j + 32] * dt[1][j]+
+            window_59[j + 64] * dt[2][j]+
+            window_59[j + 96] * dt[3][j]+
+            window_59[j + 128] * dt[4][j]+
+            window_59[j + 160] * dt[5][j]+
+            window_59[j + 192] * dt[6][j]+
+            window_59[j + 224] * dt[7][j]+
+            window_59[j + 256] * dt[8][j]+
+            window_59[j + 288] * dt[9][j]+
+            window_59[j + 320] * dt[10][j]+
+            window_59[j + 352] * dt[11][j]+
+            window_59[j + 384] * dt[12][j]+
+            window_59[j + 416] * dt[13][j]+
+            window_59[j + 448] * dt[14][j]+
+            window_59[j + 480] * dt[15][j];
+
+        /*foo = floor(sum * SCALE);*/
+        if (sum > 0) {
+            foo = (long)(sum * SCALE + 0.5);
+        } else {
+            foo = (long)(sum * SCALE - 0.5);
+        }
+
+#  ifdef DETECT_CLIP
+        if (foo >= (long)SCALE) {
+            samples[j] = (short)(SCALE-1);
+            ++clip;
+        } else if (foo < (long)-SCALE) {
+            samples[j] = (short)(-SCALE);
+            ++clip;
+        } else
+#  endif
+          samples[j] = foo;
+      }
+    }
+
+# endif /* OPTIMIZE_095 */
+
+    return clip;
+}
+
+#else /* INT_MATH */
+
+static int SubBandSynthesis(
+    REAL        *bandPtr,
+    int          channel,
+    short       *samples)
+{
+    int                  i, j, k;
+    int                  sum;
+    int                 *bufOffsetPtr;
+    static int           bufOffset[2] = {64,64};
+    int                  clip = 0;   /* count & return # samples clipped */
+    long                 foo;
+    int                  offset;
+    int                 *filterp;
+    REAL                *bandp;
+
+
+    bufOffset[channel] = (bufOffset[channel] - 64) & 0x3ff;
+    bufOffsetPtr = &((buf_58)[channel][bufOffset[channel]]);
+
+    filterp = (int *)((filter_57)[0]);
+    bandp = bandPtr;
+
+    i = 64;
+
+    while (i--) {
+        /*
+         * -1 <= filter <= 1
+         */
+        *bufOffsetPtr++ =
+            bandp[0] * filterp[0] +
+            bandp[1] * filterp[1] +
+            bandp[2] * filterp[2] +
+            bandp[3] * filterp[3] +
+            bandp[4] * filterp[4] +
+            bandp[5] * filterp[5] +
+            bandp[6] * filterp[6] +
+            bandp[7] * filterp[7] +
+            bandp[8] * filterp[8] +
+            bandp[9] * filterp[9] +
+            bandp[10] * filterp[10] +
+            bandp[11] * filterp[11] +
+            bandp[12] * filterp[12] +
+            bandp[13] * filterp[13] +
+            bandp[14] * filterp[14] +
+            bandp[15] * filterp[15] +
+            bandp[16] * filterp[16] +
+            bandp[17] * filterp[17] +
+            bandp[18] * filterp[18] +
+            bandp[19] * filterp[19] +
+            bandp[20] * filterp[20] +
+            bandp[21] * filterp[21] +
+            bandp[22] * filterp[22] +
+            bandp[23] * filterp[23] +
+            bandp[24] * filterp[24] +
+            bandp[25] * filterp[25] +
+            bandp[26] * filterp[26] +
+            bandp[27] * filterp[27] +
+            bandp[28] * filterp[28] +
+            bandp[29] * filterp[29] +
+            bandp[30] * filterp[30] +
+            bandp[31] * filterp[31];
+        filterp += 32;
+    }
+
+    /* Detects and "smooths" clipping
+     *
+     *  S(i,j) = D(j+32i) * U(j+32i+((i+1)>>1)*64)
+     *  samples(i,j) = MWindow(j+32i) * bufPtr(j+32i+((i+1)>>1)*64)
+     */
+
+    for (j = 0; j < 32; j++) {  /* for each subband... */
+        offset = bufOffset[channel] + j;
+        sum =
+           (window_59[j] * (buf_58)[channel][offset] +
+            window_59[j + 32] * (buf_58)[channel][(96 + offset) & 0x3ff] +
+            window_59[j + 64] * (buf_58)[channel][(128 + offset) & 0x3ff] +
+            window_59[j + 96] * (buf_58)[channel][(224 + offset) & 0x3ff] +
+            window_59[j + 128] * (buf_58)[channel][(256 + offset) & 0x3ff] +
+            window_59[j + 160] * (buf_58)[channel][(352 + offset) & 0x3ff] +
+            window_59[j + 192] * (buf_58)[channel][(384 + offset) & 0x3ff] +
+            window_59[j + 224] * (buf_58)[channel][(480 + offset) & 0x3ff] +
+            window_59[j + 256] * (buf_58)[channel][(512 + offset) & 0x3ff] +
+            window_59[j + 288] * (buf_58)[channel][(608 + offset) & 0x3ff] +
+            window_59[j + 320] * (buf_58)[channel][(640 + offset) & 0x3ff] +
+            window_59[j + 352] * (buf_58)[channel][(736 + offset) & 0x3ff] +
+            window_59[j + 384] * (buf_58)[channel][(768 + offset) & 0x3ff] +
+            window_59[j + 416] * (buf_58)[channel][(864 + offset) & 0x3ff] +
+            window_59[j + 448] * (buf_58)[channel][(896 + offset) & 0x3ff] +
+            window_59[j + 480] * (buf_58)[channel][(992 + offset) & 0x3ff]) / 32768;
+
+        /*
+         * Casting truncates towards zero for both positive and negative
+         * numbers, the result is cross-over distortion,  1995-07-12 shn
+         */
+
+        if (sum >= (long)SCALE) {
+            samples[j] = (short)(SCALE-1);
+            ++clip;
+        } else if (sum < (long)-SCALE) {
+            samples[j] = (short)(-SCALE);
+            ++clip;
+        } else
+            samples[j] = (short)sum;
+    }
+
+    return clip;
+}
+
+#endif /* INT_MATH */
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+#ifndef INT_MATH
+        create_syn_filter(filter_57);
+        read_syn_window(window_59);
+        
+#else /*INT_MATH*/
+    {
+    int i,j;
+        create_syn_filter(Rfilter_60);
+        for (i = 0; i < 64; i++) {
+            for (j = 0; j < 32; j++) {
+                filter_57[i][j] = Rfilter_60[i][j] * 32768;
+            }
+        }
+
+        read_syn_window(realWindow_61);
+        /*
+         * Let's now convert those nasty REALs to nice 'n fast ints.
+         * This should really be done in read_syn_window() but for now this
+         * at least keeps all the bugs in one place.
+         */
+        for (i = 0; i < HAN_SIZE; i++) {
+            window_59[i] = realWindow_61[i] * 32768;
+        }
+    }
+#endif
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+STATIC Packet3 inPacket[2];
+STATIC Packet4 outPacket;
+STATIC struct MP3SampleData output_10[2];
+STATIC int channel_4[2];
+
+TASK_GO
+{
+    // TODO: task main code
+    int i=0;
+
+    MQ_RECEIVE(port_input, (unsigned char*)&inPacket, sizeof(Packet3)*2);
+    for(i=0; i<2;i++){
+        channel_4[channel_55] = inPacket[i].channel;
+
+        REAL polyPhaseIn[SBLIMIT];
+        int ss, sb;
+        for (ss = 0; ss < SSLIMIT; ss++) {  // Polyphase synthesis
+            for (sb = 0; sb < SBLIMIT; sb++) {
+                // Perform frequency inversion for polyphase
+                if ((ss % 2) && (sb % 2))
+                    polyPhaseIn[sb] = -inPacket[i].output.data[sb][ss];
+                else
+                    polyPhaseIn[sb] = inPacket[i].output.data[sb][ss];
+            }
+            SubBandSynthesis(polyPhaseIn, channel_4[channel_55], output_10[output_56].data[ss]);
+        }
+        channel_55 += 1;
+        output_56 += 1;
+    }
+   
+    memcpy(&outPacket.output, &output_10, sizeof(struct MP3SampleData)*2);
+    memcpy(&outPacket.frameHeader, &inPacket[0].frameHeader, sizeof(frame_params));
+    MQ_SEND(port_output, (unsigned char*)&outPacket, sizeof(Packet4));
+
+    channel_55 = 0;
+    output_56 = 0;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

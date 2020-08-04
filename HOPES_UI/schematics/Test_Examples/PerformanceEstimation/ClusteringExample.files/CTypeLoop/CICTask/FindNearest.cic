@@ -1,0 +1,194 @@
+/************************************
+ *
+ * File : F.cic
+ * Date : Nov 15, 2016 5:31 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#include<UKChannel.h>
+
+#define RANDOM_MAX 2147483647
+
+#ifndef FLT_MAX
+#define FLT_MAX 3.40282347e+38
+#endif
+
+//application specific
+#define NUM_OBJECTS 100
+#define NUM_ATTRIBUTES 34
+#define NUM_CLUSTER 5
+#define THRESHOLD 0.001
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_f;
+STATIC int port_out_delta;
+STATIC int port_out_len;
+STATIC int port_in_fb;
+// ##DEFINE_PORT_SECTION::END
+typedef struct outPacket_t{
+    float feature[NUM_OBJECTS * NUM_ATTRIBUTES];
+    float out_clusters[NUM_CLUSTER * NUM_ATTRIBUTES];
+} OutPacket;
+
+static float feature[NUM_OBJECTS][NUM_ATTRIBUTES];
+#if THIS_THREAD_ID == 0
+int membership[NUM_OBJECTS];
+#else
+extern int membership[NUM_OBJECTS];
+#endif
+
+static float out_clusters[NUM_CLUSTER * NUM_ATTRIBUTES];     /* out: [nclusters][nfeatures] */
+OutPacket outPacket;
+ 
+static int partial_new_centers_len[NUM_CLUSTER];
+static float partial_new_centers[NUM_CLUSTER * NUM_ATTRIBUTES];
+
+//static float delta;
+//static float delta_array[NUM_OBJECTS];
+static float delta_array;
+static int loop = 0; 
+
+static int thread_id = 0;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT {
+  // ##INIT_PORT_SECTION::START
+  port_out_f = PORT_INITIALIZE(TASK_ID, "out_f");
+  port_out_delta = PORT_INITIALIZE(TASK_ID, "out_delta");
+  port_out_len = PORT_INITIALIZE(TASK_ID, "out_len");
+  port_in_fb = PORT_INITIALIZE(TASK_ID, "in_fb");
+  // ##INIT_PORT_SECTION::END
+  // TODO: task initialize code
+#if THIS_THREAD_ID == 0
+    {
+       int i = 0;
+       for (i = 0; i < NUM_OBJECTS; i++)
+           membership[i] = -1;
+    }
+#endif
+
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+/*----< euclid_dist_2() >----------------------------------------------------*/
+/* multi-dimensional spatial Euclid distance square */
+static float euclid_dist(float pt1, float pt2) {
+  float ans = 0.0;
+
+  ans += (pt1 - pt2) * (pt1 - pt2);
+
+  return (ans);
+}
+
+static int find_nearest_point(float *pt,                  /* [nfeatures] */
+                       float *pts) /* [NUM_CLUSTER * NUM_ATTRIBUTES] */
+{
+  int cluster_index, i, j;
+  float min_dist = FLT_MAX;
+
+  /* find the cluster center id with min distance to pt */
+  for (i = 0; i < NUM_CLUSTER; i++) {
+    float dist = 0.0;
+    for (j = 0; j < NUM_ATTRIBUTES; j++){
+      dist += euclid_dist(pt[j], pts[i* NUM_ATTRIBUTES + j]); /* no need square root */
+    }
+    if (dist < min_dist) {
+      min_dist = dist;
+      cluster_index = i;
+    }
+  }
+  return (cluster_index);
+}
+TASK_GO {
+  // TODO: task main code
+  int i, j, k, n = 0, cluster_index;  
+  int loop_iteration;
+
+  
+  //HS_SET_MQ_COUNT(port_in_fb, 100);
+  UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &loop_iteration);  
+  MQ_RECEIVE(port_in_fb, (unsigned char*)&outPacket, sizeof(OutPacket));
+  
+  memcpy(feature, outPacket.feature, sizeof(float) * NUM_OBJECTS * NUM_ATTRIBUTES); //thereiss no feature update, so just use it. 
+  memcpy(out_clusters, outPacket.out_clusters, sizeof(float)*NUM_CLUSTER*NUM_ATTRIBUTES);  //just reveive them.
+    
+    for(j = 0; j < NUM_CLUSTER; j++){
+      partial_new_centers_len[/*i * NUM_CLUSTER +*/ j] = 0;
+    }
+
+//   for(i = 0; i < NUM_OBJECTS; i++){
+    for(j = 0; j < NUM_CLUSTER; j++){
+      for(k = 0; k < NUM_ATTRIBUTES; k++){
+        partial_new_centers[/*i * NUM_CLUSTER * NUM_ATTRIBUTES +*/ j * NUM_ATTRIBUTES +k] = 0;
+      }
+    }
+ //  }
+  
+ // do {
+    //delta = 0.0;
+    {
+//      for (i = 0; i < NUM_OBJECTS; i++) {
+        /* find the cluster_index of nestest cluster centers */
+        cluster_index = find_nearest_point(feature[loop_iteration], out_clusters);
+        /* if membership changes, increase delta by 1 */
+        if (membership[loop_iteration] != cluster_index){
+//          delta += 1.0;
+          //delta_array[loop_iterationeration] = 1.0;
+          delta_array = 1.0;
+          //printf("membership[%d](%d) != index(%d)\n", loop_iteration, membership[loop_iteration], cluster_index);
+        }
+        else
+        {
+          //delta_array[loop_iteration] = 0;
+          delta_array = 0;
+          //printf("membership[%d](%d) == index(%d)\n", loop_iteration, membership[loop_iteration], cluster_index);
+        }
+        /* assign the membership to object i */
+        membership[loop_iteration] = cluster_index;
+
+        /* update new cluster centers : sum of all objects located
+               within */
+        partial_new_centers_len[/*loop_iteration * NUM_CLUSTER +*/cluster_index]++;
+        for (j = 0; j < NUM_ATTRIBUTES; j++)
+          partial_new_centers[/*loop_iteration * NUM_CLUSTER * NUM_ATTRIBUTES + */cluster_index * NUM_ATTRIBUTES +j] += feature[loop_iteration][j];
+  //    }
+    } /* end of #pragma omp parallel */
+	
+	AC_SEND(port_out_f, (unsigned char*)&partial_new_centers[0], sizeof(float)*NUM_CLUSTER*NUM_ATTRIBUTES, loop_iteration);
+	AC_SEND(port_out_delta, (unsigned char*)&delta_array, sizeof(float), loop_iteration);
+	AC_SEND(port_out_len, (unsigned char*)&partial_new_centers_len[0], sizeof(int)*NUM_CLUSTER, loop_iteration);
+}
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP {
+  // TODO: task wrapup code
+}
+
+TASK_CODE_END

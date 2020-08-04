@@ -1,0 +1,108 @@
+/************************************
+ *
+ * File : Lud1.cic
+ * Date : Apr 11, 2020 3:17 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define SIZE 256
+
+typedef enum _FUNC_RETURN_CODE { RET_SUCCESS, RET_FAILURE } func_ret_t;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+STATIC int port_in;
+STATIC int port_in2;
+STATIC int port_out;
+
+STATIC float *m;
+STATIC int i;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    UFPort_Initialize(TASK_ID, "in", &port_in);
+    UFPort_Initialize(TASK_ID, "in2", &port_in2);
+    UFPort_Initialize(TASK_ID, "out", &port_out);
+
+    m = (float*)malloc(sizeof(float) * SIZE * SIZE);
+    i = 0;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+void lud1(float **m, int size) {
+    int j, k;
+    float sum;
+    float *a;
+
+    a = *m;
+    for (j = i; j < size; j++) {
+        sum = a[i * size + j];
+        for (k = 0; k < i; k++)
+            sum -= a[i * size + k] * a[k * size + j];
+        a[i * size + j] = sum;
+    }
+    
+    i += 1;
+}
+
+TASK_GO
+{
+    // TODO: task main code
+    int result, nDataRead = 0, nDataWrite = 0;
+    
+    result = UFPort_ReadFromQueue(port_in2, (unsigned char *)m, sizeof(float)*SIZE*SIZE, THIS_THREAD_ID, &nDataRead);
+    if(i == 0) {
+        result = UFPort_ReadFromQueue(port_in, (unsigned char *)m, sizeof(float)*SIZE*SIZE, THIS_THREAD_ID, &nDataRead);
+    }
+    
+    lud1(&m, SIZE);
+    
+    result = UFPort_WriteToQueue(port_out, (unsigned char *)m, sizeof(float)*SIZE*SIZE, THIS_THREAD_ID, &nDataWrite);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(m);
+}
+
+TASK_CODE_END

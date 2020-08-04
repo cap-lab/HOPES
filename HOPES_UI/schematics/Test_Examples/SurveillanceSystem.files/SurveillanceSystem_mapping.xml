@@ -2,62 +2,62 @@
 <CIC_Mapping xmlns="http://peace.snu.ac.kr/CICXMLSchema">
     <task name="Turtlebot_Waffle_LDS_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_Controller_tank">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_Camera_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_LDS_tank">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_tld_Learning">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_tld_Preprocess">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_tld_TLDController">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_OpenCR_LED_waffle">
         <device name="Turtlebot_waffle_OpenCR">
-            <processor pool="ARM_cortex-m7_0" localId="0"/>
+            <processor pool="ARM_cortex-m7_12" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_OpenCR_PIR10_motion_waffle">
         <device name="Turtlebot_waffle_OpenCR">
-            <processor pool="ARM_cortex-m7_0" localId="0"/>
+            <processor pool="ARM_cortex-m7_12" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_OpenCR_DMS10_distance_waffle">
         <device name="Turtlebot_waffle_OpenCR">
-            <processor pool="ARM_cortex-m7_0" localId="0"/>
+            <processor pool="ARM_cortex-m7_12" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_LED_control_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_Listen_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="PC_Listen_from_waffle">
@@ -77,62 +77,62 @@
     </task>
     <task name="Turtlebot_Waffle_wheel_control_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="Surveillance_camera_Camera">
         <device name="NRFLabtop">
-            <processor pool="i7_1" localId="0"/>
+            <processor pool="i7_4" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_tld_DetectorCascade">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Surveillance_camera_Report">
         <device name="NRFLabtop">
-            <processor pool="i7_1" localId="0"/>
+            <processor pool="i7_4" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_tld_Tracker">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_wheel_control_tank">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_Controller_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_Report_tank">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_tld_FuseHypothesis">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_OpenCR_wheel_tank">
         <device name="Turtlebot_tank_OpenCR">
-            <processor pool="ARM_cortex-m7_1" localId="0"/>
+            <processor pool="ARM_cortex-m7_20" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_Camera_tank">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Tank_Listen_tank">
         <device name="Turtlebot_tank_pi">
-            <processor pool="i7_3" localId="0"/>
+            <processor pool="i7_16" localId="0"/>
         </device>
     </task>
     <task name="PC_keyboard">
@@ -142,17 +142,17 @@
     </task>
     <task name="Turtlebot_Waffle_Report_waffle">
         <device name="Turletbot_waffle_pi">
-            <processor pool="i7_2" localId="0"/>
+            <processor pool="i7_8" localId="0"/>
         </device>
     </task>
     <task name="Turtlebot_Waffle_OpenCR_wheel_waffle">
         <device name="Turtlebot_waffle_OpenCR">
-            <processor pool="ARM_cortex-m7_0" localId="0"/>
+            <processor pool="ARM_cortex-m7_12" localId="0"/>
         </device>
     </task>
     <task name="Surveillance_camera_Object_Detection">
         <device name="NRFLabtop">
-            <processor pool="i7_1" localId="0"/>
+            <processor pool="i7_4" localId="0"/>
         </device>
     </task>
     <task name="PC_X264_SDF_Deblock_2">
@@ -181,10 +181,10 @@
         </device>
     </task>
     <library name="Turtlebot_Tank_tld_NNClassfier">
-        <processor pool="ARM_cortex-m7_1" localId="0"/>
+        <processor pool="ARM_cortex-m7_20" localId="0"/>
     </library>
     <library name="Turtlebot_Tank_tld_EnsembleClassfier">
-        <processor pool="ARM_cortex-m7_1" localId="0"/>
+        <processor pool="ARM_cortex-m7_20" localId="0"/>
     </library>
 </CIC_Mapping>
 

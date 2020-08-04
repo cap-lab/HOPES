@@ -1,0 +1,87 @@
+/************************************
+ *
+ * File : Unpa.cic
+ * Date : Sep 16, 2014 1:49 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <string.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+typedef struct PacketType{
+    unsigned char name[255];
+    unsigned char msg[255];
+}Packet;
+
+STATIC unsigned char buf[1024];
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    Packet packet;
+    unsigned char* ptr;
+    int len = 0;
+
+    len = MQ_RECEIVE(port_in, (unsigned char*)buf, sizeof(unsigned char) * 1024);
+    if(len == 0) return;
+
+    ptr = strtok(buf, "///");
+    memcpy(packet.name, ptr, strlen(ptr));
+    packet.name[strlen(ptr)]='\0';
+    ptr = strtok(NULL, "///");
+    memcpy(packet.msg, ptr, strlen(ptr));
+    packet.msg[strlen(ptr)]='\0';
+
+    MQ_SEND(port_out, (unsigned char*)&packet, sizeof(packet));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

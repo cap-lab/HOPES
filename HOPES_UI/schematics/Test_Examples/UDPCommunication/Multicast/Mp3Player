@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project>
+  <project_type>ManualCICDesignFlow</project_type>
+  <name>codesignFlow.xml</name>
+  <version>0.2</version>
+  <step_list>
+    <step>
+      <title>Func.</title>
+      <selected>no</selected>
+      <name>sim</name>
+      <target_list>
+        <target>
+          <name>CIC-TaskEditor</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-TaskEditor"
+TargetParameter "SimulationTarget" STRING "PThread ##PThread-C++,PThread,NONE"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>H/W Platform</title>
+      <selected>no</selected>
+      <name>arch</name>
+      <target_list>
+        <target>
+          <name>platform</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:CIC_Architecture target="server" xmlns:ns2="http://peace.snu.ac.kr/CICXMLSchema">
+    <ns2:elementTypes>
+        <ns2:elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <ns2:elementType name="SHARED_MEMORY_2" category="memory">
+            <ns2:slavePort size="8000" name="Slave" metric="MiB"/>
+        </ns2:elementType>
+        <ns2:elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_4" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <ns2:elementType name="SHARED_MEMORY_6" category="memory">
+            <ns2:slavePort size="8000" name="Slave" metric="MiB"/>
+        </ns2:elementType>
+    </ns2:elementTypes>
+    <ns2:devices>
+        <ns2:device runtime="native" platform="linux" name="server" architecture="x86_64">
+            <ns2:elements>
+                <ns2:element type="i7_0" poolSize="4" name="i7_0"/>
+                <ns2:element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
+            </ns2:elements>
+            <ns2:connections>
+                <ns2:UDPConnection network="Ethernet/Wi-Fi" multicast="true"/>
+            </ns2:connections>
+            <ns2:modules/>
+            <ns2:environmentVariables/>
+        </ns2:device>
+        <ns2:device runtime="native" platform="linux" name="client" architecture="x86_64">
+            <ns2:elements>
+                <ns2:element type="i7_4" poolSize="4" name="i7_4"/>
+                <ns2:element type="SHARED_MEMORY_6" name="SHARED_MEMORY_6"/>
+            </ns2:elements>
+            <ns2:connections>
+                <ns2:UDPConnection network="Ethernet/Wi-Fi" multicast="true"/>
+            </ns2:connections>
+            <ns2:modules/>
+            <ns2:environmentVariables/>
+        </ns2:device>
+    </ns2:devices>
+    <ns2:connections/>
+</ns2:CIC_Architecture>
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Xml-Gen</title>
+      <selected>yes</selected>
+      <name>codegen</name>
+      <target_list>
+        <target>
+          <name>CIC-ManualGen</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-ManualGen"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>DSE</title>
+      <selected>no</selected>
+      <name>dse</name>
+      <target_list>
+        <target>
+          <name>CIC-DSE</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-DSE"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Synthesis</title>
+      <selected>no</selected>
+      <name>cosim</name>
+      <target_list>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>HSim</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "HSim"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+  </step_list>
+</project>
+

@@ -1,0 +1,118 @@
+/************************************
+ *
+ * File : Pr.cic
+ * Date : Mar 23, 2020 12:04 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <string.h>
+#include <math.h>
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+STATIC int port_in_a;
+STATIC int port_in_b;
+STATIC int port_in_m;
+STATIC int port_in_f;
+
+STATIC int Size = 4;
+STATIC float *m, *a, *b, *finalVec;
+STATIC int t = 0;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    UFPort_Initialize(TASK_ID, "in_a", &port_in_a);
+    UFPort_Initialize(TASK_ID, "in_b", &port_in_b);
+    UFPort_Initialize(TASK_ID, "in_m", &port_in_m);
+    UFPort_Initialize(TASK_ID, "in_f", &port_in_f);
+    
+    a = (float *) malloc(Size * Size * sizeof(float));
+    b = (float *) malloc(Size * sizeof(float));
+    m = (float *) malloc(Size * Size * sizeof(float));
+    finalVec = (float *) malloc(Size * sizeof(float));
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+/*------------------------------------------------------
+ ** PrintMat() -- Print the contents of the matrix
+ **------------------------------------------------------
+ */
+void PrintMat(float *ary, int nrow, int ncol)
+{
+	int i, j;
+	
+	for (i=0; i<nrow; i++) {
+		for (j=0; j<ncol; j++) {
+			printf("%8.2f ", *(ary+Size*i+j));
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+/*------------------------------------------------------
+ ** PrintAry() -- Print the contents of the array (vector)
+ **------------------------------------------------------
+ */
+void PrintAry(float *ary, int ary_size)
+{
+	int i;
+	for (i=0; i<ary_size; i++) {
+		printf("%.2f ", ary[i]);
+	}
+	printf("\n\n");
+}
+
+TASK_GO
+{
+    int nDataRead = 0;
+    UFPort_ReadFromQueue(port_in_a, (unsigned char *)a, Size*Size*sizeof(float), 0, &nDataRead);
+    UFPort_ReadFromQueue(port_in_b, (unsigned char *)b, Size*sizeof(float), 0, &nDataRead);
+    UFPort_ReadFromQueue(port_in_m, (unsigned char *)m, Size*Size*sizeof(float), 0, &nDataRead);
+    UFPort_ReadFromQueue(port_in_f, (unsigned char *)finalVec, Size*sizeof(float), 0, &nDataRead);
+    
+    printf("Matrix m is: \n");
+    PrintMat(m, Size, Size);
+
+    printf("Matrix a is: \n");
+    PrintMat(a, Size, Size);
+
+    printf("Array b is: \n");
+    PrintAry(b, Size);
+    
+    printf("The final solution is: \n");
+    PrintAry(finalVec,Size);
+}
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    free(a);
+    free(b);
+    free(m);
+    free(finalVec);
+}
+
+TASK_CODE_END

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_GPUSetup xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <tasks>
+        <task pipelining="No" name="ForwardSub_Fan2" maxStream="0" clustering="No">
+            <globalWorkSize width="1" height="1" depth="1"/>
+            <localWorkSize width="4" height="4" depth="1"/>
+        </task>
+        <task pipelining="No" name="ForwardSub_Fan1" maxStream="0" clustering="No">
+            <globalWorkSize width="1" height="1" depth="1"/>
+            <localWorkSize width="512" height="1" depth="1"/>
+        </task>
+    </tasks>
+</CIC_GPUSetup>

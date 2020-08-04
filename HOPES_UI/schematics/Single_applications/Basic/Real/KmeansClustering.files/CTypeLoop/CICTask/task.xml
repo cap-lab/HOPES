@@ -47,9 +47,9 @@
       </outport_list>
       <portMap_list>
         <portMap macroNode="FindNearest" macroNodePort="in_fb" direction="In" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
-        <portMap macroNode="FindNearest" macroNodePort="out_f" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
-        <portMap macroNode="FindNearest" macroNodePort="out_delta" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
-        <portMap macroNode="FindNearest" macroNodePort="out_len" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="FindNearest" macroNodePort="out_f" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="normal" />
+        <portMap macroNode="FindNearest" macroNodePort="out_delta" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="normal" />
+        <portMap macroNode="FindNearest" macroNodePort="out_len" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="normal" />
       </portMap_list>
       <libraryPort_list />
       <multicast_port_list />
@@ -162,31 +162,31 @@
   </task_list>
   <library_list />
   <channel_list>
-    <channel src_task="FindNearest" src_port="out_delta" dst_task="Replace" dst_port="in_delta" size="400" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="FindNearest" src_port="out_delta" dst_task="Replace" dst_port="in_delta" size="100" init_size="0" sampleType="" sampleSize="4">
       <edge_list>
         <edge id="0" x="508" y="200" />
         <edge id="1" x="704" y="200" />
       </edge_list>
     </channel>
-    <channel src_task="FindNearest" src_port="out_f" dst_task="Replace" dst_port="in_rp" size="68000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="FindNearest" src_port="out_f" dst_task="Replace" dst_port="in_rp" size="100" init_size="0" sampleType="" sampleSize="680">
       <edge_list>
         <edge id="0" x="508" y="180" />
         <edge id="1" x="704" y="180" />
       </edge_list>
     </channel>
-    <channel src_task="FindNearest" src_port="out_len" dst_task="Replace" dst_port="in_len" size="2000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="FindNearest" src_port="out_len" dst_task="Replace" dst_port="in_len" size="100" init_size="0" sampleType="" sampleSize="20">
       <edge_list>
         <edge id="0" x="508" y="220" />
         <edge id="1" x="704" y="220" />
       </edge_list>
     </channel>
-    <channel src_task="InputProcess" src_port="out_fb" dst_task="FindNearest" dst_port="in_fb" size="14280" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="InputProcess" src_port="out_fb" dst_task="FindNearest" dst_port="in_fb" size="1" init_size="0" sampleType="" sampleSize="14280">
       <edge_list>
         <edge id="0" x="296" y="180" />
         <edge id="1" x="428" y="180" />
       </edge_list>
     </channel>
-    <channel src_task="Replace" src_port="out_fb" dst_task="InputProcess" dst_port="in_fb" size="680" init_size="1" sampleType="" sampleSize="1">
+    <channel src_task="Replace" src_port="out_fb" dst_task="InputProcess" dst_port="in_fb" size="1" init_size="1" sampleType="" sampleSize="680">
       <edge_list>
         <edge id="0" x="784" y="200" />
         <edge id="1" x="872" y="200" />

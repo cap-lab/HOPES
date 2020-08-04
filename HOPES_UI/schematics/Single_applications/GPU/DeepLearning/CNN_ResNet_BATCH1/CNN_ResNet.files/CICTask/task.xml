@@ -14,7 +14,7 @@
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="1" />
-        <parameter name="PeriodUnit" value="us" />
+        <parameter name="PeriodUnit" value="s" />
         <parameter name="Priority" value="1" />
         <parameter name="Language" value="C" />
         <parameter name="CompileFlags" value="-I/home/sindong008/cuda/include" />
@@ -27,7 +27,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list />
       <outport_list>
@@ -46,10 +46,11 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Layer" type="Loop">
       <config>
-        <location x="376" y="220" width="80" height="60" />
+        <location x="396" y="220" width="80" height="60" />
         <parameter name="CICFile" value="Layer/CICTask/task.xml" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
@@ -69,7 +70,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="in_imgpath" type="fifo" sample_size="100" sample_rate="Fixed" description="">
@@ -119,7 +120,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="in_result" type="fifo" sample_size="4" sample_rate="Fixed" description="">
@@ -135,25 +136,26 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
   </task_list>
   <library_list />
   <channel_list>
-    <channel src_task="ReadImage" src_port="out_imgpath" dst_task="Layer" dst_port="in_imgpath" size="100000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="ReadImage" src_port="out_imgpath" dst_task="Layer" dst_port="in_imgpath" size="1000" init_size="0" sampleType="" sampleSize="100">
       <edge_list>
         <edge id="0" x="160" y="240" />
-        <edge id="1" x="376" y="240" />
+        <edge id="1" x="396" y="240" />
       </edge_list>
     </channel>
-    <channel src_task="ReadImage" src_port="out_label" dst_task="Layer" dst_port="in_label" size="4000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="ReadImage" src_port="out_label" dst_task="Layer" dst_port="in_label" size="1000" init_size="0" sampleType="" sampleSize="4">
       <edge_list>
         <edge id="0" x="160" y="260" />
-        <edge id="1" x="376" y="260" />
+        <edge id="1" x="396" y="260" />
       </edge_list>
     </channel>
-    <channel src_task="Layer" src_port="out_result" dst_task="PrintResult" dst_port="in_result" size="4000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="Layer" src_port="out_result" dst_task="PrintResult" dst_port="in_result" size="1000" init_size="0" sampleType="" sampleSize="4">
       <edge_list>
-        <edge id="0" x="456" y="240" />
+        <edge id="0" x="476" y="240" />
         <edge id="1" x="648" y="240" />
       </edge_list>
     </channel>

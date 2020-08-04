@@ -1,0 +1,105 @@
+/************************************
+ *
+ * File : InputProcess.cic
+ * Date : May 16, 2019 3:10 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <string.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#define NUM_OBJECTS 100
+#define NUM_ATTRIBUTES 34
+#define NUM_CLUSTER 5
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_f;
+STATIC int port_in_fb;
+STATIC int port_out_fb;
+// ##DEFINE_PORT_SECTION::END
+typedef struct outPacket_t{
+    float feature[NUM_OBJECTS * NUM_ATTRIBUTES];
+    float out_clusters[NUM_CLUSTER * NUM_ATTRIBUTES];
+} OutPacket;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+static int isInitialCondition;
+static float feature[NUM_OBJECTS][NUM_ATTRIBUTES];
+static float out_clusters[NUM_CLUSTER * NUM_ATTRIBUTES];     
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_f = PORT_INITIALIZE(TASK_ID, "in_f");
+    port_in_fb = PORT_INITIALIZE(TASK_ID, "in_fb");
+    port_out_fb = PORT_INITIALIZE(TASK_ID, "out_fb");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int taskIterationCount;
+	int i = 0, j = 0;
+    UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &taskIterationCount);
+	//always consume port_in_fb
+	MQ_RECEIVE(port_in_fb, (unsigned char *)&out_clusters, sizeof(float) * NUM_CLUSTER * NUM_ATTRIBUTES);
+	MQ_RECEIVE(port_in_f, (unsigned char *)&feature, sizeof(float) * NUM_OBJECTS * NUM_ATTRIBUTES);
+    if(taskIterationCount < 1) //if port_in_f has item.
+    {
+		isInitialCondition = 1;
+		
+		for (i = 0; i < NUM_CLUSTER; i++) {
+			for (j = 0; j < NUM_ATTRIBUTES; j++){
+				out_clusters[i * NUM_ATTRIBUTES + j] = feature[i][j];
+			}
+		}				
+    }else{
+        isInitialCondition = 0;
+    }    
+    //send Packet
+    OutPacket outPacket;
+      memcpy(outPacket.feature, feature, sizeof(feature));
+      memcpy(outPacket.out_clusters, out_clusters, sizeof(out_clusters));       
+	/////////////////print debug start
+	//for(i=0;i<NUM_OBJECTS*NUM_ATTRIBUTES;i++){
+	//	printf("%f ",feature[i/NUM_ATTRIBUTES][i%NUM_ATTRIBUTES]);
+	//}
+	//printf("\n");
+	/////////////////print debug end
+    MQ_SEND(port_out_fb, (unsigned char *)&outPacket, sizeof(OutPacket));    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

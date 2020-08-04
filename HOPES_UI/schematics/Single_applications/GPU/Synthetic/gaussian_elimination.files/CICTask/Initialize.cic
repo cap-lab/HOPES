@@ -1,0 +1,136 @@
+/************************************
+ *
+ * File : In.cic
+ * Date : Mar 23, 2020 12:02 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <string.h>
+#include <math.h>
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+STATIC int port_out_a;
+STATIC int port_out_b;
+STATIC int port_out_m;
+
+STATIC int Size = 4;
+STATIC float *a, *b, *m;
+FILE *fp;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    UFPort_Initialize(TASK_ID, "out_a", &port_out_a);
+    UFPort_Initialize(TASK_ID, "out_b", &port_out_b);
+    UFPort_Initialize(TASK_ID, "out_m", &port_out_m);
+    
+    a = (float *) malloc(Size * Size * sizeof(float));
+    b = (float *) malloc(Size * sizeof(float));
+    m = (float *) malloc(Size * Size * sizeof(float));
+}
+
+void InitMat(float *ary, int nrow, int ncol)
+{
+	int i, j;
+	
+	for (i=0; i<nrow; i++) {
+		for (j=0; j<ncol; j++) {
+			fscanf(fp, "%f",  ary+Size*i+j);
+		}
+	}  
+}
+
+void InitAry(float *ary, int ary_size)
+{
+	int i;
+	
+	for (i=0; i<ary_size; i++) {
+		fscanf(fp, "%f",  &ary[i]);
+	}
+}
+
+/*------------------------------------------------------
+ ** InitProblemOnce -- Initialize all of matrices and
+ ** vectors by opening a data file specified by the user.
+ **
+ ** We used dynamic array *a, *b, and *m to allocate
+ ** the memory storages.
+ **------------------------------------------------------
+ */
+void InitProblemOnce(char *filename)
+{
+	//char *filename = argv[1];
+	
+	//printf("Enter the data file name: ");
+	//scanf("%s", filename);
+	//printf("The file name is: %s\n", filename);
+	
+	fp = fopen(filename, "r");
+	
+	fscanf(fp, "%d", &Size);		 
+	 
+	InitMat(a, Size, Size);
+	InitAry(b, Size);	 
+}
+
+/*------------------------------------------------------
+ ** InitPerRun() -- Initialize the contents of the
+ ** multipier matrix **m
+ **------------------------------------------------------
+ */
+void InitPerRun() 
+{
+	int i;
+	for (i=0; i<Size*Size; i++)
+			*(m+i) = 0.0;
+}
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    int nDataWrite = 0;
+    
+    InitProblemOnce("matrix4.txt");
+    InitPerRun();
+    
+    UFPort_WriteToQueue(port_out_a, (unsigned char *)a, Size*Size*sizeof(float), 0, &nDataWrite);
+    UFPort_WriteToQueue(port_out_b, (unsigned char *)b, Size*sizeof(float), 0, &nDataWrite);
+    UFPort_WriteToQueue(port_out_m, (unsigned char *)m, Size*Size*sizeof(float), 0, &nDataWrite);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(a);
+    free(b);
+    free(m);
+}
+
+TASK_CODE_END

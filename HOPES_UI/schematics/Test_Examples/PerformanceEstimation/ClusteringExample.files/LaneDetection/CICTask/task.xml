@@ -1,0 +1,738 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="SDFBenchmarks1">
+  <setting_list>
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="LoadImage" type="Computational">
+      <config>
+        <location x="204" y="80" width="80" height="40" />
+        <parameter name="CICFile" value="LoadImage.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="200" />
+        <parameter name="PeriodUnit" value="ms" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="Yes" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+      <HardwareDependency>
+        <hardware Architecture="ALL" Platform="ALL" Runtime="ALL" ProcessorType="CPU" />
+      </HardwareDependency>
+    </task>
+    <task name="StoreImage" type="Computational">
+      <config>
+        <location x="1100" y="408" width="80" height="40" />
+        <parameter name="CICFile" value="StoreImage.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="13" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="Yes" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+      <HardwareDependency>
+        <hardware Architecture="ALL" Platform="ALL" Runtime="ALL" ProcessorType="CPU" />
+      </HardwareDependency>
+    </task>
+    <task name="YUVtoRGB" type="Computational">
+      <config>
+        <location x="272" y="356" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_YUVtoRGB.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="2" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="RGBtoYUV" type="Computational">
+      <config>
+        <location x="892" y="408" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_RGBtoYUV.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="11" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="KNN" type="Computational">
+      <config>
+        <location x="516" y="216" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_KNN_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="4" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="-lm" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="NLM" type="Computational">
+      <config>
+        <location x="516" y="312" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_NLM_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="5" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="-lm" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Blending" type="Computational">
+      <config>
+        <location x="724" y="256" width="80" height="60" />
+        <parameter name="CICFile" value="GPU_Blending_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="7" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input_knn" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="input_nlm" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Sharpen" type="Computational">
+      <config>
+        <location x="924" y="256" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_Sharpen_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="10" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Gaussian" type="Computational">
+      <config>
+        <location x="516" y="128" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_Gaussian_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="3" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Sobel" type="Computational">
+      <config>
+        <location x="724" y="128" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_Sobel_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="6" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="NonMax" type="Computational">
+      <config>
+        <location x="936" y="128" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_NonMax_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="9" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="-lm" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Hough" type="Computational">
+      <config>
+        <location x="1128" y="128" width="80" height="40" />
+        <parameter name="CICFile" value="GPU_Hough_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="12" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="DrawLane" type="Computational">
+      <config>
+        <location x="1144" y="256" width="80" height="40" />
+        <parameter name="CICFile" value="CPU_Draw_Lane.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="14" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="Yes" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+      <HardwareDependency>
+        <hardware Architecture="ALL" Platform="ALL" Runtime="ALL" ProcessorType="CPU" />
+      </HardwareDependency>
+    </task>
+    <task name="Merge" type="Computational">
+      <config>
+        <location x="652" y="408" width="80" height="60" />
+        <parameter name="CICFile" value="GPU_Merge_Filter.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="8" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="input_origin" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="input_hough" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="output" type="fifo" sample_size="1" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="YUVtoRGB" src_port="output" dst_task="KNN" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="352" y="376" />
+        <edge id="1" x="516" y="236" />
+      </edge_list>
+    </channel>
+    <channel src_task="YUVtoRGB" src_port="output" dst_task="NLM" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="352" y="376" />
+        <edge id="1" x="516" y="332" />
+      </edge_list>
+    </channel>
+    <channel src_task="KNN" src_port="output" dst_task="Blending" dst_port="input_knn" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="596" y="236" />
+        <edge id="1" x="724" y="276" />
+      </edge_list>
+    </channel>
+    <channel src_task="NLM" src_port="output" dst_task="Blending" dst_port="input_nlm" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="596" y="332" />
+        <edge id="1" x="724" y="296" />
+      </edge_list>
+    </channel>
+    <channel src_task="Blending" src_port="output" dst_task="Sharpen" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="804" y="276" />
+        <edge id="1" x="924" y="276" />
+      </edge_list>
+    </channel>
+    <channel src_task="RGBtoYUV" src_port="output" dst_task="StoreImage" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="1382400">
+      <edge_list>
+        <edge id="0" x="972" y="428" />
+        <edge id="1" x="1100" y="428" />
+      </edge_list>
+    </channel>
+    <channel src_task="YUVtoRGB" src_port="output" dst_task="Gaussian" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="352" y="376" />
+        <edge id="1" x="516" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="Gaussian" src_port="output" dst_task="Sobel" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="596" y="148" />
+        <edge id="1" x="724" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="Sobel" src_port="output" dst_task="NonMax" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="804" y="148" />
+        <edge id="1" x="936" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="NonMax" src_port="output" dst_task="Hough" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="1016" y="148" />
+        <edge id="1" x="1128" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="Merge" src_port="output" dst_task="RGBtoYUV" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="732" y="428" />
+        <edge id="1" x="892" y="428" />
+      </edge_list>
+    </channel>
+    <channel src_task="LoadImage" src_port="output" dst_task="YUVtoRGB" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="1382400">
+      <edge_list>
+        <edge id="0" x="284" y="100" />
+        <edge id="1" x="380" y="100" />
+        <edge id="2" x="232" y="292" />
+        <edge id="3" x="180" y="292" />
+        <edge id="4" x="272" y="376" />
+      </edge_list>
+    </channel>
+    <channel src_task="DrawLane" src_port="output" dst_task="Merge" dst_port="input_hough" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="1224" y="276" />
+        <edge id="1" x="1196" y="236" />
+        <edge id="2" x="520" y="440" />
+        <edge id="3" x="652" y="448" />
+      </edge_list>
+    </channel>
+    <channel src_task="Sharpen" src_port="output" dst_task="Merge" dst_port="input_origin" size="1" init_size="0" sampleType="" sampleSize="2764800">
+      <edge_list>
+        <edge id="0" x="1004" y="276" />
+        <edge id="1" x="1004" y="236" />
+        <edge id="2" x="516" y="348" />
+        <edge id="3" x="652" y="428" />
+      </edge_list>
+    </channel>
+    <channel src_task="Hough" src_port="output" dst_task="DrawLane" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="2990880">
+      <edge_list>
+        <edge id="0" x="1208" y="148" />
+        <edge id="1" x="1228" y="108" />
+        <edge id="2" x="1040" y="196" />
+        <edge id="3" x="1144" y="276" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

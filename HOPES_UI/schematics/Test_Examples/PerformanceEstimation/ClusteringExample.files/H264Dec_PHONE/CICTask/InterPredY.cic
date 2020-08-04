@@ -1,0 +1,820 @@
+/************************************
+ *
+ * File : PredY.cic
+ * Date : Sep 9, 2012 3:49 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include "h264decoder.h"
+#include "h264dec_struct.h"
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_inMB_Y;
+STATIC int port_inPrevFrame;
+STATIC int port_outFrame_Y;
+// ##DEFINE_PORT_SECTION::END
+
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+struct Block4x4 {
+	int data[4][4];
+};
+
+struct intarr2x17 {
+    int data[2][17];
+};
+
+#define mmax(a, b)      ((a) > (b) ? (a) : (b)) //!< Macro returning max value
+#define mmin(a, b)      ((a) < (b) ? (a) : (b)) //!< Macro returning min value
+
+STATIC MacroBlockPacket_Y mbY;
+STATIC FramePacket_Y frameY;
+STATIC ResultFrame outFrame;
+
+STATIC int outBlock[4][4];
+STATIC struct Block4x4 predBlock_0;
+STATIC struct Block4x4 predBlock_1;
+STATIC struct Block4x4 predBlock_2;
+STATIC struct Block4x4 predBlock;
+
+STATIC int MB_phase;
+STATIC int Block_phase;
+
+STATIC int tmp16Block[16][16];
+STATIC byte mrefY[6][IMG_HEIGHT][IMG_WIDTH];
+STATIC int currPosY;
+
+STATIC int predData_0[13];
+STATIC struct intarr2x17 predData_1[3];
+STATIC int Pred_phase;
+STATIC int Pred_idx;
+STATIC int Pred_phase_1;
+STATIC int Pred_idx_1;
+
+STATIC Frame prevFrame;
+
+STATIC int midBuf[4][4];
+
+STATIC unsigned char YFrame[144][176];
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_inMB_Y = PORT_INITIALIZE(TASK_ID, "inMB_Y");
+    port_inPrevFrame = PORT_INITIALIZE(TASK_ID, "inPrevFrame");
+    port_outFrame_Y = PORT_INITIALIZE(TASK_ID, "outFrame_Y");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+   memset(predData_0, 0, sizeof(int)*13);
+   memset(&prevFrame, 0, sizeof(Frame));
+
+   Pred_idx=2;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+STATIC void itransform(int input[4][4], int output[4][4]){
+ register int i,j,i1,j1;
+//  int m5[4];
+  int m6[4];
+
+  // horizontal
+  for (j=0;j<4;j++)
+  {
+/*    for (i=0;i<4;i++)
+    {
+      m5[i]=input[i][j];
+    }
+    m6[0]=(m5[0]+m5[2]);
+    m6[1]=(m5[0]-m5[2]);
+    m6[2]=(m5[1]>>1)-m5[3];
+    m6[3]=m5[1]+(m5[3]>>1);
+*/
+    
+    m6[0]=(input[0][j]+input[2][j]);
+    m6[1]=(input[0][j]-input[2][j]);
+    m6[2]=(input[1][j]>>1)-input[3][j];
+    m6[3]=input[1][j]+(input[3][j]>>1);
+    for (i=0;i<2;i++)
+    {
+      i1=3-i;
+      output[i][j]=m6[i]+m6[i1];
+      output[i1][j]=m6[i]-m6[i1];
+    }
+  }
+  // vertical
+  for (i=0;i<4;i++)
+  {
+/*    for (j=0;j<4;j++)
+      m5[j]=output[i][j];
+
+    m6[0]=(m5[0]+m5[2]);
+    m6[1]=(m5[0]-m5[2]);
+    m6[2]=(m5[1]>>1)-m5[3];
+    m6[3]=m5[1]+(m5[3]>>1);
+*/
+    
+    m6[0]=(output[i][0]+output[i][2]);
+    m6[1]=(output[i][0]-output[i][2]);
+    m6[2]=(output[i][1]>>1)-output[i][3];
+    m6[3]=output[i][1]+(output[i][3]>>1);
+   
+    for (j=0;j<2;j++)
+    {
+      j1=3-j;
+      output[i][j]  = m6[j] + m6[j1];
+      output[i][j1] = m6[j] - m6[j1];
+    }
+  }
+}
+
+// Predictor array index definitions
+#define P_X (PredPel[0])
+#define P_A (PredPel[1])
+#define P_B (PredPel[2])
+#define P_C (PredPel[3])
+#define P_D (PredPel[4])
+#define P_E (PredPel[5])
+#define P_F (PredPel[6])
+#define P_G (PredPel[7])
+#define P_H (PredPel[8])
+#define P_I (PredPel[9])
+#define P_J (PredPel[10])
+#define P_K (PredPel[11])
+#define P_L (PredPel[12])
+
+
+STATIC int intrapred(
+  int predmode,
+  int available[4],
+  int PredPel[13],
+  int PredBlock[4][4])
+{
+  int i,j;
+  int s0;
+  const int ioff = 0;
+  const int joff = 0;
+
+  int block_available_up = available[0];
+  int block_available_left = available[2];
+
+  switch (predmode)
+  {
+  case DC_PRED:                         /* DC prediction */
+
+    s0 = 0;
+    if (block_available_up && block_available_left)
+    {   
+      // no edge
+      s0 = (P_A + P_B + P_C + P_D + P_I + P_J + P_K + P_L + 4)/(2*BLOCK_SIZE);
+    }
+    else if (!block_available_up && block_available_left)
+    {
+      // upper edge
+      s0 = (P_I + P_J + P_K + P_L + 2)/BLOCK_SIZE;             
+    }
+    else if (block_available_up && !block_available_left)
+    {
+      // left edge
+      s0 = (P_A + P_B + P_C + P_D + 2)/BLOCK_SIZE;             
+    }
+    else //if (!block_available_up && !block_available_left)
+    {
+      // top left corner, nothing to predict from
+      s0 = 128;                           
+    }
+
+    for (j=0; j < BLOCK_SIZE; j++)
+    {
+      for (i=0; i < BLOCK_SIZE; i++)
+      {
+        // store DC prediction
+        PredBlock[i+ioff][j+joff] = s0;
+      }
+    }
+    break;
+
+  case VERT_PRED:           /* vertical prediction from block above */
+    for(j=0;j<BLOCK_SIZE;j++)
+      for(i=0;i<BLOCK_SIZE;i++)
+        PredBlock[i+ioff][j+joff]=PredPel[i+1];/* store predicted 4x4 block */
+    break;
+
+  case HOR_PRED:             /* horisontal prediction from left block */
+    for(j=0;j<BLOCK_SIZE;j++)
+      for(i=0;i<BLOCK_SIZE;i++)
+        PredBlock[i+ioff][j+joff]=PredPel[j+9]; /* store predicted 4x4 block */
+    break;
+
+  case DIAG_DOWN_RIGHT_PRED:
+    PredBlock[0+ioff][3+joff] = (P_L + 2*P_K + P_J + 2) / 4; 
+    PredBlock[0+ioff][2+joff] =
+    PredBlock[1+ioff][3+joff] = (P_K + 2*P_J + P_I + 2) / 4; 
+    PredBlock[0+ioff][1+joff] =
+    PredBlock[1+ioff][2+joff] = 
+    PredBlock[2+ioff][3+joff] = (P_J + 2*P_I + P_X + 2) / 4; 
+    PredBlock[0+ioff][0+joff] =
+    PredBlock[1+ioff][1+joff] =
+    PredBlock[2+ioff][2+joff] =
+    PredBlock[3+ioff][3+joff] = (P_I + 2*P_X + P_A + 2) / 4; 
+    PredBlock[1+ioff][0+joff] =
+    PredBlock[2+ioff][1+joff] =
+    PredBlock[3+ioff][2+joff] = (P_X + 2*P_A + P_B + 2) / 4;
+    PredBlock[2+ioff][0+joff] =
+    PredBlock[3+ioff][1+joff] = (P_A + 2*P_B + P_C + 2) / 4;
+    PredBlock[3+ioff][0+joff] = (P_B + 2*P_C + P_D + 2) / 4;
+    break;
+
+  case DIAG_DOWN_LEFT_PRED:
+    PredBlock[0+ioff][0+joff] = (P_A + P_C + 2*(P_B) + 2) / 4;
+    PredBlock[1+ioff][0+joff] = 
+    PredBlock[0+ioff][1+joff] = (P_B + P_D + 2*(P_C) + 2) / 4;
+    PredBlock[2+ioff][0+joff] =
+    PredBlock[1+ioff][1+joff] =
+    PredBlock[0+ioff][2+joff] = (P_C + P_E + 2*(P_D) + 2) / 4;
+    PredBlock[3+ioff][0+joff] = 
+    PredBlock[2+ioff][1+joff] = 
+    PredBlock[1+ioff][2+joff] = 
+    PredBlock[0+ioff][3+joff] = (P_D + P_F + 2*(P_E) + 2) / 4;
+    PredBlock[3+ioff][1+joff] = 
+    PredBlock[2+ioff][2+joff] = 
+    PredBlock[1+ioff][3+joff] = (P_E + P_G + 2*(P_F) + 2) / 4;
+    PredBlock[3+ioff][2+joff] = 
+    PredBlock[2+ioff][3+joff] = (P_F + P_H + 2*(P_G) + 2) / 4;
+    PredBlock[3+ioff][3+joff] = (P_G + 3*(P_H) + 2) / 4;
+    break;
+
+  case  VERT_RIGHT_PRED:/* diagonal prediction -22.5 deg to horizontal plane */
+    PredBlock[0+ioff][0+joff] = 
+    PredBlock[1+ioff][2+joff] = (P_X + P_A + 1) / 2;
+    PredBlock[1+ioff][0+joff] = 
+    PredBlock[2+ioff][2+joff] = (P_A + P_B + 1) / 2;
+    PredBlock[2+ioff][0+joff] = 
+    PredBlock[3+ioff][2+joff] = (P_B + P_C + 1) / 2;
+    PredBlock[3+ioff][0+joff] = (P_C + P_D + 1) / 2;
+    PredBlock[0+ioff][1+joff] = 
+    PredBlock[1+ioff][3+joff] = (P_I + 2*P_X + P_A + 2) / 4;
+    PredBlock[1+ioff][1+joff] = 
+    PredBlock[2+ioff][3+joff] = (P_X + 2*P_A + P_B + 2) / 4;
+    PredBlock[2+ioff][1+joff] = 
+    PredBlock[3+ioff][3+joff] = (P_A + 2*P_B + P_C + 2) / 4;
+    PredBlock[3+ioff][1+joff] = (P_B + 2*P_C + P_D + 2) / 4;
+    PredBlock[0+ioff][2+joff] = (P_X + 2*P_I + P_J + 2) / 4;
+    PredBlock[0+ioff][3+joff] = (P_I + 2*P_J + P_K + 2) / 4;
+    break;
+
+  case  VERT_LEFT_PRED:/* diagonal prediction -22.5 deg to horizontal plane */
+    PredBlock[0+ioff][0+joff] = (P_A + P_B + 1) / 2;
+    PredBlock[1+ioff][0+joff] = 
+    PredBlock[0+ioff][2+joff] = (P_B + P_C + 1) / 2;
+    PredBlock[2+ioff][0+joff] = 
+    PredBlock[1+ioff][2+joff] = (P_C + P_D + 1) / 2;
+    PredBlock[3+ioff][0+joff] = 
+    PredBlock[2+ioff][2+joff] = (P_D + P_E + 1) / 2;
+    PredBlock[3+ioff][2+joff] = (P_E + P_F + 1) / 2;
+    PredBlock[0+ioff][1+joff] = (P_A + 2*P_B + P_C + 2) / 4;
+    PredBlock[1+ioff][1+joff] = 
+    PredBlock[0+ioff][3+joff] = (P_B + 2*P_C + P_D + 2) / 4;
+    PredBlock[2+ioff][1+joff] = 
+    PredBlock[1+ioff][3+joff] = (P_C + 2*P_D + P_E + 2) / 4;
+    PredBlock[3+ioff][1+joff] = 
+    PredBlock[2+ioff][3+joff] = (P_D + 2*P_E + P_F + 2) / 4;
+    PredBlock[3+ioff][3+joff] = (P_E + 2*P_F + P_G + 2) / 4;
+    break;
+
+  case  HOR_UP_PRED:/* diagonal prediction -22.5 deg to horizontal plane */
+    PredBlock[0+ioff][0+joff] = (P_I + P_J + 1) / 2;
+    PredBlock[1+ioff][0+joff] = (P_I + 2*P_J + P_K + 2) / 4;
+    PredBlock[2+ioff][0+joff] = 
+    PredBlock[0+ioff][1+joff] = (P_J + P_K + 1) / 2;
+    PredBlock[3+ioff][0+joff] = 
+    PredBlock[1+ioff][1+joff] = (P_J + 2*P_K + P_L + 2) / 4;
+    PredBlock[2+ioff][1+joff] = 
+    PredBlock[0+ioff][2+joff] = (P_K + P_L + 1) / 2;
+    PredBlock[3+ioff][1+joff] = 
+    PredBlock[1+ioff][2+joff] = (P_K + 2*P_L + P_L + 2) / 4;
+    PredBlock[3+ioff][2+joff] = 
+    PredBlock[1+ioff][3+joff] = 
+    PredBlock[0+ioff][3+joff] = 
+    PredBlock[2+ioff][2+joff] = 
+    PredBlock[2+ioff][3+joff] = 
+    PredBlock[3+ioff][3+joff] = P_L;
+    break;
+
+  case  HOR_DOWN_PRED:/* diagonal prediction -22.5 deg to horizontal plane */
+    PredBlock[0+ioff][0+joff] = 
+    PredBlock[2+ioff][1+joff] = (P_X + P_I + 1) / 2;
+    PredBlock[1+ioff][0+joff] = 
+    PredBlock[3+ioff][1+joff] = (P_I + 2*P_X + P_A + 2) / 4;
+    PredBlock[2+ioff][0+joff] = (P_X + 2*P_A + P_B + 2) / 4;
+    PredBlock[3+ioff][0+joff] = (P_A + 2*P_B + P_C + 2) / 4;
+    PredBlock[0+ioff][1+joff] = 
+    PredBlock[2+ioff][2+joff] = (P_I + P_J + 1) / 2;
+    PredBlock[1+ioff][1+joff] = 
+    PredBlock[3+ioff][2+joff] = (P_X + 2*P_I + P_J + 2) / 4;
+    PredBlock[0+ioff][2+joff] = 
+    PredBlock[2+ioff][3+joff] = (P_J + P_K + 1) / 2;
+    PredBlock[1+ioff][2+joff] = 
+    PredBlock[3+ioff][3+joff] = (P_I + 2*P_J + P_K + 2) / 4;
+    PredBlock[0+ioff][3+joff] = (P_K + P_L + 1) / 2;
+    PredBlock[1+ioff][3+joff] = (P_J + 2*P_K + P_L + 2) / 4;
+    break;
+
+  default:
+    printf("Error: illegal prediction mode input: %d\n",predmode);
+    exit(1);
+    return SEARCH_SYNC;
+    break;
+  }
+
+  return DECODING_OK;
+}
+
+
+STATIC int intrapred_luma_16x16(int predmode, int mb_nr, int predData[2][17], int output[16][16]) 
+{
+  int s0=0,s1,s2;
+
+  int i,j;
+
+  int ih,iv;
+  int ib,ic,iaa;
+
+  int mb_y = mb_nr / (IMG_WIDTH/16);
+  int mb_x = mb_nr % (IMG_WIDTH/16);
+  int mb_available_up = (mb_y != 0);
+  int mb_available_left = (mb_x != 0);
+
+  s1=s2=0;
+
+  switch (predmode)
+  {
+  case VERT_PRED_16:             // vertical prediction from block above
+    for(j=0;j<MB_BLOCK_SIZE;j++)
+      for(i=0;i<MB_BLOCK_SIZE;i++)
+        output[i][j]=predData[0][i+1];// store predicted 16x16 block
+        //output[i][j]=imgY[field_y-1][pix_x+i];// store predicted 16x16 block
+    break;
+
+  case HOR_PRED_16:              // horisontal prediction from left block
+    for(j=0;j<MB_BLOCK_SIZE;j++)
+      for(i=0;i<MB_BLOCK_SIZE;i++)
+        output[i][j]=predData[1][j+1]; // store predicted 16x16 block
+    break;
+
+  case DC_PRED_16:                         // DC prediction
+    s1=s2=0;
+    for (i=0; i < MB_BLOCK_SIZE; i++)
+    {
+      if (mb_available_up)
+        s1 += predData[0][i+1];    // sum hor pix
+        //s1 += imgY[field_y-1][pix_x+i];    // sum hor pix
+      if (mb_available_left)
+        s2 += predData[1][i+1];    // sum vert pix
+        //s2 += imgY[field_y+i][pix_x-1];    // sum vert pix
+    }
+    if (mb_available_up && mb_available_left)
+      s0=(s1+s2+16)/(2*MB_BLOCK_SIZE);       // no edge
+    if (!mb_available_up && mb_available_left)
+      s0=(s2+8)/MB_BLOCK_SIZE;              // upper edge
+    if (mb_available_up && !mb_available_left)
+      s0=(s1+8)/MB_BLOCK_SIZE;              // left edge
+    if (!mb_available_up && !mb_available_left)
+      s0=128;                            // top left corner, nothing to predict from
+    for(i=0;i<MB_BLOCK_SIZE;i++)
+      for(j=0;j<MB_BLOCK_SIZE;j++)
+      {
+        output[i][j]=s0;
+      }
+    break;
+  case PLANE_16:// 16 bit integer plan pred
+    ih=0;
+    iv=0;
+    for (i=1;i<9;i++)
+    {
+      ih += i*(predData[0][i+8] - predData[0][8-i]);
+      iv += i*(predData[1][i+8] - predData[1][8-i]);
+      //ih += i*(imgY[field_y-1][pix_x+7+i] - imgY[field_y-1][pix_x+7-i]);
+      //iv += i*(imgY[field_y+7+i][pix_x-1] - imgY[field_y+7-i][pix_x-1]);
+    }
+    ib=(5*ih+32)>>6;
+    ic=(5*iv+32)>>6;
+
+    iaa=16*(predData[0][16]+predData[1][16]);
+    //iaa=16*(imgY[field_y-1][pix_x+15]+imgY[field_y+15][pix_x-1]);
+    for (j=0;j< MB_BLOCK_SIZE;j++)
+    {
+      for (i=0;i< MB_BLOCK_SIZE;i++)
+      {
+        output[i][j]=max(0,min((iaa+(i-7)*ib +(j-7)*ic + 16)/32,255));
+      }
+    }// store plane prediction
+    break;
+
+  default:
+    {                                    // indication of fault in bitstream,exit
+      printf("!Error: illegal prediction mode input: %d\n",predmode);
+      return SEARCH_SYNC;
+    }
+  }
+
+  return DECODING_OK;
+}
+
+
+STATIC void intra16pred( int mode, int predData[2][17], int output[4][4] , int mb_phase, int block_phase, int tmp16Block[16][16])
+{
+
+  const byte decode_block_scan[16] = {0,1,4,5,2,3,6,7,8,9,12,13,10,11,14,15};
+  int i, j, ioff, joff;
+  int ii, jj;
+
+
+  if(block_phase == 0) {
+
+    // get prediction for INTRA_MB_16x16
+      intrapred_luma_16x16(mode, mb_phase, predData, tmp16Block);
+
+  }
+
+  i = (decode_block_scan[block_phase] & 3);         // 0 --> 3
+  j = ((decode_block_scan[block_phase] >> 2) & 3);  // 0 --> 3
+  ioff=i*4;
+  joff=j*4;
+
+  for (jj = 0; jj < 4; jj++)
+      for (ii = 0; ii < 4; ii++)
+        output[ii][jj] = tmp16Block[ii+ioff][jj+joff];
+
+}
+
+
+STATIC void insertYFrame(byte inY[(IMG_HEIGHT)][(IMG_WIDTH)])
+{
+	int i, j;
+
+	for(i = 0; i < IMG_HEIGHT; i++)
+		for(j = 0; j < IMG_WIDTH; j++) 
+			mrefY[(currPosY)][i][j] = inY[i][j];
+	if((currPosY) >= 5) currPosY = 0;
+	else currPosY++;
+}
+
+STATIC int get_prev_Yblock(byte inY[IMG_HEIGHT][IMG_WIDTH], int refframe, int x_pos, int y_pos, int block[4][4])
+{
+	int i, j;
+	int x, y;
+	int ref_frame;
+	static const int COEF[6] = { 1, -5, 20, 20, -5, 1 };
+	static int phase = 0;
+
+	const int maxold_x = IMG_WIDTH - 1;
+	const int maxold_y = IMG_HEIGHT - 1;
+
+	int result;
+	int pres_x, pres_y;
+	int tmp_res[4][9];
+
+	const int dx = x_pos & 3;
+	const int dy = y_pos & 3;
+
+	x_pos = (x_pos-dx) / 4;
+	y_pos = (y_pos-dy) / 4;
+
+	if(phase == 0) insertYFrame(inY);
+	phase++;
+	if(phase == IMG_WIDTH * IMG_HEIGHT / 16) phase = 0;
+
+	ref_frame = (5 + (currPosY) - refframe) % 6;
+
+    if (dx == 0 && dy == 0) {  /* fullpel position */
+        for(j = 0; j < 4; j++) {
+            for(i = 0; i < 4; i++) {
+                y = max(0, min(maxold_y, y_pos+j));
+                x = max(0, min(maxold_x, x_pos+i));
+                block[i][j] = mrefY[ref_frame][y][x];
+            }
+	}
+        return ref_frame;
+    }
+
+    if (dy == 0) { /* No vertical interpolation */
+
+//	    printf("dy == 0\n");
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++) {
+	      for (result = 0, x = -2; x < 4; x++)
+	        result += mrefY[ref_frame][max(0,min(maxold_y,y_pos+j))][max(0,min(maxold_x,x_pos+i+x))]*COEF[x+2];
+//	      printf(" result = %d\n", result);
+	      block[i][j] = max(0, min(255, (result+16)/32));
+//	      printf(" tmp result = %d\n", block[i][j]);
+        }
+      }
+
+      if ((dx&1) == 1) {
+        for (j = 0; j < BLOCK_SIZE; j++)
+          for (i = 0; i < BLOCK_SIZE; i++)
+            block[i][j] = (block[i][j] + mrefY[ref_frame][max(0,min(maxold_y,y_pos+j))][max(0,min(maxold_x,x_pos+i+dx/2))] +1 )/2;
+//	      printf(" final result = %d\n", block[i][j]);
+      }
+    }
+
+    else if (dx == 0) {  /* No horizontal interpolation */
+
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++) {
+          for (result = 0, y = -2; y < 4; y++)
+            result += mrefY[ref_frame][max(0,min(maxold_y,y_pos+j+y))][max(0,min(maxold_x,x_pos+i))]*COEF[y+2];
+          block[i][j] = max(0, min(255, (result+16)/32));
+        }
+      }
+
+      if ((dy&1) == 1) {
+        for (j = 0; j < BLOCK_SIZE; j++)
+          for (i = 0; i < BLOCK_SIZE; i++)
+             block[i][j] = (block[i][j] + mrefY[ref_frame][max(0,min(maxold_y,y_pos+j+dy/2))][max(0,min(maxold_x,x_pos+i))] +1 )/2;
+      }
+    }
+
+    else if (dx == 2) {  /* Vertical & horizontal interpolation */
+
+      for (j = -2; j < BLOCK_SIZE+3; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++)
+          for (tmp_res[i][j+2] = 0, x = -2; x < 4; x++)
+            tmp_res[i][j+2] += mrefY[ref_frame][max(0,min(maxold_y,y_pos+j))][max(0,min(maxold_x,x_pos+i+x))]*COEF[x+2];
+      }
+
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++) {
+          for (result = 0, y = -2; y < 4; y++)
+            result += tmp_res[i][j+y+2]*COEF[y+2];
+          block[i][j] = max(0, min(255, (result+512)/1024));
+        }
+      }
+
+      if ((dy&1) == 1) {
+        for (j = 0; j < BLOCK_SIZE; j++)
+          for (i = 0; i < BLOCK_SIZE; i++)
+            block[i][j] = (block[i][j] + max(0, min(255, (tmp_res[i][j+2+dy/2]+16)/32)) +1 )/2;
+      }
+    }
+    else if (dy == 2) {  /* Horizontal & vertical interpolation */
+
+
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = -2; i < BLOCK_SIZE+3; i++)
+          for (tmp_res[j][i+2] = 0, y = -2; y < 4; y++)
+            tmp_res[j][i+2] += mrefY[ref_frame][max(0,min(maxold_y,y_pos+j+y))][max(0,min(maxold_x,x_pos+i))]*COEF[y+2];
+      }
+
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++) {
+          for (result = 0, x = -2; x < 4; x++)
+            result += tmp_res[j][i+x+2]*COEF[x+2];
+          block[i][j] = max(0, min(255, (result+512)/1024));
+        }
+      }
+
+      if ((dx&1) == 1) {
+        for (j = 0; j < BLOCK_SIZE; j++)
+          for (i = 0; i < BLOCK_SIZE; i++)
+            block[i][j] = (block[i][j] + max(0, min(255, (tmp_res[j][i+2+dx/2]+16)/32))+1)/2;
+      }
+    }
+    else {  /* Diagonal interpolation */
+
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++) {
+          pres_y = dy == 1 ? y_pos+j : y_pos+j+1;
+          pres_y = max(0,min(maxold_y,pres_y));
+          for (result = 0, x = -2; x < 4; x++)
+            result += mrefY[ref_frame][pres_y][max(0,min(maxold_x,x_pos+i+x))]*COEF[x+2];
+            block[i][j] = max(0, min(255, (result+16)/32));
+        }
+      }
+
+      for (j = 0; j < BLOCK_SIZE; j++) {
+        for (i = 0; i < BLOCK_SIZE; i++) {
+          pres_x = dx == 1 ? x_pos+i : x_pos+i+1;
+          pres_x = max(0,min(maxold_x,pres_x));
+          for (result = 0, y = -2; y < 4; y++)
+            result += mrefY[ref_frame][max(0,min(maxold_y,y_pos+j+y))][pres_x]*COEF[y+2];
+            block[i][j] = (block[i][j] + max(0, min(255, (result+16)/32)) +1 ) / 2;
+        }
+      }
+
+    }
+    return ref_frame;
+
+}
+
+
+STATIC void makeYFrame(int input[4][4],
+	int intrapred[13], int intra16pred[2][17],
+	unsigned char YFrame[IMG_HEIGHT][IMG_WIDTH],
+	byte output[IMG_HEIGHT][IMG_WIDTH])
+{
+	static int mb_phase = 0;
+	static int block_phase = 0;
+	const byte decode_block_scan[16] = {0,1,4,5,2,3,6,7,8,9,12,13,10,11,14,15};
+	int i,j, mb_x, mb_y, x, y;
+	int ii, jj;
+	int block_available_up_right = 1;
+
+	i = (decode_block_scan[block_phase] & 3);         // 0 --> 3
+	j = ((decode_block_scan[block_phase] >> 2) & 3);  // 0 --> 3
+	mb_x = mb_phase % (IMG_WIDTH/16);
+	mb_y = mb_phase / (IMG_WIDTH/16);
+
+	x = mb_x*16 + i*4;
+	y = mb_y*16 + j*4;
+
+	for(ii = 0; ii < 4; ii++)
+		for(jj = 0; jj < 4; jj++)
+			YFrame[y +jj][x+ii] = input[ii][jj];
+
+
+	/// next phase
+	if(block_phase >= 15) {
+		if(mb_phase >= (IMG_WIDTH/16)*(IMG_HEIGHT/16)-1) {
+			mb_phase = 0;
+			for(jj = 0; jj < IMG_HEIGHT; jj++)
+				for(ii = 0; ii < IMG_WIDTH; ii++)
+					output[jj][ii] = YFrame[jj][ii];
+		}
+		else
+			mb_phase++;
+
+		// compute next intra16 prediction data
+		mb_x = mb_phase % (IMG_WIDTH/16);
+		mb_y = mb_phase / (IMG_WIDTH/16);
+
+		x = mb_x*16;
+		y = mb_y*16;
+		for(ii = 1; ii < 17; ii++) {
+			if (y)
+				intra16pred[0][ii] = YFrame[y-1][x+ii-1];
+			if (x)
+				intra16pred[1][ii] = YFrame[y+ii-1][x-1];
+		}
+		if(x && y)
+			intra16pred[0][0] = intra16pred[1][0] = YFrame[y-1][x-1];
+
+		block_phase = 0;
+	} else {
+		block_phase++;
+	}
+
+	// compute next intra prediction data
+	i = (decode_block_scan[block_phase] & 3);         // 0 --> 3
+	j = ((decode_block_scan[block_phase] >> 2) & 3);  // 0 --> 3
+	mb_x = mb_phase % (IMG_WIDTH/16);
+	mb_y = mb_phase / (IMG_WIDTH/16);
+
+	x = mb_x*16 + i*4;
+	y = mb_y*16 + j*4;
+
+	if ((i == 1  && j == 1) || (i == 3 && j == 1) ||
+		(i == 3 && j == 2) || (i == 1  && j == 3) ||
+		(i == 3 && j == 3))
+	{
+		block_available_up_right = 0;
+	}
+
+	if (x+4 == IMG_WIDTH) block_available_up_right = 0;
+
+	for(ii = 0; ii < 13; ii++) intrapred[ii] = 128;
+	if (y) {
+		intrapred[1] = YFrame[y-1][x+0];
+		intrapred[2] = YFrame[y-1][x+1];
+		intrapred[3] = YFrame[y-1][x+2];
+		intrapred[4] = YFrame[y-1][x+3];
+
+		if (block_available_up_right) {
+			intrapred[5] = YFrame[y-1][x+4];
+			intrapred[6] = YFrame[y-1][x+5];
+			intrapred[7] = YFrame[y-1][x+6];
+			intrapred[8] = YFrame[y-1][x+7];
+		} else {
+			intrapred[5] = intrapred[4];
+			intrapred[6] = intrapred[4];
+			intrapred[7] = intrapred[4];
+			intrapred[8] = intrapred[4];
+		}
+	}
+	if (x) {
+		intrapred[9]  = YFrame[y+0][x-1];
+		intrapred[10] = YFrame[y+1][x-1];
+		intrapred[11] = YFrame[y+2][x-1];
+		intrapred[12] = YFrame[y+3][x-1];
+	}
+	if (x && y) intrapred[0] = YFrame[y-1][x-1];
+
+}
+
+TASK_GO
+{
+    int i=0;
+    // TODO: task main code 
+	 
+  	char* mode_name = SYS_REQ(GET_CURRENT_MODE_NAME);
+  	if(strcmp(mode_name, "I_Frame")==0){
+    	MQ_RECEIVE(port_inPrevFrame, (unsigned char*)&prevFrame, sizeof(Frame));
+		insertYFrame(prevFrame.data);  
+	}
+    else{
+        MQ_RECEIVE(port_inMB_Y, (unsigned char*)&frameY, sizeof(FramePacket_Y));
+        MQ_RECEIVE(port_inPrevFrame, (unsigned char*)&prevFrame, sizeof(Frame));
+    
+        for(i=0; i<4*396; i++){
+        memcpy(&mbY, &frameY.blocks[i], sizeof(MacroBlockPacket_Y));
+        itransform(mbY.block, outBlock);
+        
+        {
+            intrapred(mbY.mode, mbY.available, predData_0, predBlock_0.data);
+        }
+        {
+            get_prev_Yblock(prevFrame.data, mbY.mv.refframe, mbY.mv.x, mbY.mv.y, predBlock_1.data);
+        }
+        {
+        
+            MB_phase = Block_phase / 16;
+            intra16pred(mbY.mode16, predData_1[Pred_idx].data, predBlock_2.data, MB_phase, Pred_phase, tmp16Block);
+            Block_phase++;
+            if ((Block_phase) >= (IMG_WIDTH * IMG_HEIGHT)/16)
+                Block_phase = 0;
+            Pred_phase = (Pred_phase+1)%16;
+            if(Pred_phase == 0)   Pred_idx += 1;
+            if(Pred_idx >= 3)    Pred_idx -= 3;
+       
+        }
+        switch(mbY.ret){
+            case 0:
+            predBlock = predBlock_0;
+            break;
+            case 1:
+            predBlock = predBlock_1;
+            break;
+            case 2:
+            predBlock = predBlock_2;
+            break;
+            default:
+            printf("InterPredY: Something wrong!\n");
+            exit(-1);
+        }
+    
+        int ii, jj;
+        for(ii = 0; ii < 4; ii++)
+            for(jj = 0; jj < 4; jj++)
+                midBuf[ii][jj] = mmax(0, mmin(255, (outBlock[ii][jj] + (predBlock.data[ii][jj] << 6) + (1 << 5) ) >> 6));
+    
+        makeYFrame(midBuf, predData_0, predData_1[Pred_idx_1].data, YFrame, outFrame.frame.data);
+        Pred_phase_1 = (Pred_phase_1+1)%16;
+        if(Pred_phase_1 == 0)   Pred_idx_1 += 1;
+        if(Pred_idx_1 >=3)    Pred_idx_1 -= 3;
+        
+      }
+     
+      memcpy(&outFrame.frameinfo, &frameY.frameinfo, sizeof(FrameInfo));
+      memcpy(&outFrame.deblockparams, &frameY.deblockparams, sizeof(DeblockParams));
+      MQ_SEND(port_outFrame_Y, (unsigned char*)&outFrame, sizeof(ResultFrame));
+  }
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

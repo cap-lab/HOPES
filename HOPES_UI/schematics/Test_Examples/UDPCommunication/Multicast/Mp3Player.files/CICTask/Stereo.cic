@@ -1,0 +1,463 @@
+/************************************
+ *
+ * File : Stereo.cic
+ * Date : Sep 18, 2012 1:46 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <math.h>
+#include "mp3_struct.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC struct MP3DeQData output_6[2];
+
+struct  {
+    int l[23];
+    int s[14];} sfBandIndex_45[6] =
+{{{0,6,12,18,24,30,36,44,54,66,80,96,116,140,168,200,238,284,336,396,464,522,576},
+    {0,4,8,12,18,24,32,42,56,74,100,132,174,192}},
+{{0,6,12,18,24,30,36,44,54,66,80,96,114,136,162,194,232,278,330,394,464,540,576},
+    {0,4,8,12,18,26,36,48,62,80,104,136,180,192}},
+{{0,6,12,18,24,30,36,44,54,66,80,96,116,140,168,200,238,284,336,396,464,522,576},
+    {0,4,8,12,18,26,36,48,62,80,104,134,174,192}},
+
+{{0,4,8,12,16,20,24,30,36,44,52,62,74,90,110,134,162,196,238,288,342,418,576},
+    {0,4,8,12,16,22,30,40,52,66,84,106,136,192}},
+{{0,4,8,12,16,20,24,30,36,42,50,60,72,88,106,128,156,190,230,276,330,384,576},
+    {0,4,8,12,16,22,28,38,50,64,80,100,126,192}},
+{{0,4,8,12,16,20,24,30,36,44,54,66,82,102,126,156,194,240,296,364,448,550,576},
+    {0,4,8,12,16,22,30,42,58,78,104,138,180,192}}};
+
+
+static void III_i_stereo_k_values(
+    int         is_pos,
+    REAL        io,
+    int         i,
+    REAL FAR    k[2][576])
+{
+#ifdef OPTIMIZE
+    if (is_pos == 0) {
+        k[0][i] = k[1][i] = 1.0;
+    } else if (is_pos & 1) {
+        k[1][i] = 1.0;
+        if (is_pos == 1)
+            k[0][i] = io;               /* pow(n,1) */
+        else if (is_pos == 3)
+            k[0][i] = io * io;          /* pow(n,2) */
+        else if (is_pos == 5)
+            k[0][i] = io * io * io;     /* pow(n,3) */
+        else {
+            k[0][i] = pow(io, (float)(is_pos + 1)/2.0);
+            /*printf("pow(%4.2f, %4.2f) ", io, (float)(is_pos + 1)/2.0);
+            fflush(stdout);*/
+        }
+    } else {
+        k[0][i] = 1.0;
+        if (is_pos == 2)
+            k[1][i] = io;               /* pow(n,1) */
+        else if (is_pos == 4)
+            k[1][i] = io * io;          /* pow(n,2) */
+        else if (is_pos == 6)
+            k[1][i] = io * io * io;     /* pow(n,3) */
+        else {
+            k[1][i] = pow(io, (float)is_pos/2.0);
+            /*printf("pow(%4.2f, %4.2f) ", io, (float)is_pos/2.0);
+            fflush(stdout);*/
+        }
+    }
+
+#else /* the orginal code */
+
+    if (is_pos == 0) {
+        k[0][i] = 1.0;
+        k[1][i] = 1.0;
+    } else if ((is_pos % 2) == 1) {
+        k[0][i] = pow(io, (float)(is_pos + 1)/2.0);
+        k[1][i] = 1.0;
+    } else {
+        k[0][i] = 1.0;
+        k[1][i] = pow(io, (float)is_pos/2.0);
+    }
+#endif /* OPTIMIZE */
+}
+
+
+static void III_stereo(
+    REAL                 xrl[SBLIMIT][SSLIMIT],
+    REAL                 xrh[SBLIMIT][SSLIMIT],
+    REAL                 lrr[SBLIMIT][SSLIMIT],
+    REAL                 lrl[SBLIMIT][SSLIMIT],
+    III_scalefac_t      *scalefac,
+    gr_info_s    *gr_info,
+    frame_params        *fr_ps)
+{
+    int                 sfreq;
+    int                 stereo = fr_ps->stereo;
+    int                 ms_stereo =
+                                (fr_ps->header.mode == MPG_MD_JOINT_STEREO) &&
+                                (fr_ps->header.mode_ext & 0x2);
+    int                 i_stereo =
+                                (fr_ps->header.mode == MPG_MD_JOINT_STEREO) &&
+                                (fr_ps->header.mode_ext & 0x1);
+    int                 sfb;
+    //int                 i, j, sb, ss, ch;
+    int                 i, j, sb, ss;
+    REAL                io;
+#ifdef OPTIMIZE
+    static short        is_pos[SBLIMIT*SSLIMIT];
+    static REAL         is_ratio[SBLIMIT*SSLIMIT];
+    static REAL FAR     k[2][SBLIMIT*SSLIMIT];
+
+#define QUICKTAN(dest, src) \
+        if (((src)) == 1) \
+            (dest) = 0.267949192431; \
+        else if (((src)) == 2) \
+            (dest) = 0.577350269189; \
+        else if (((src)) == 3) \
+            (dest) = 1.0; \
+        else if (((src)) == 4) \
+            (dest) = 1.73205080758; \
+        else { \
+            (dest)= tan((float)(src) * (PI / 12)); \
+            /*printf("tan(%d) ", (src)); fflush(stdout);*/ \
+        }
+#else
+    short               is_pos[SBLIMIT*SSLIMIT];
+    REAL                is_ratio[SBLIMIT*SSLIMIT];
+    REAL FAR            k[2][SBLIMIT*SSLIMIT];
+#endif
+
+    int lsf = (fr_ps->header.version == MPEG_PHASE2_LSF);
+
+    if ((gr_info->scalefac_compress % 2) == 1)
+        io = 0.707106781188;
+    else
+        io = 0.840896415256;
+
+    sfreq = fr_ps->header.sampling_frequency + (fr_ps->header.version * 3);
+
+    /* Intialization */
+    for (i = 0; i < SBLIMIT*SSLIMIT; i++ )
+        is_pos[i] = 7;
+
+    if ((stereo == 2) && i_stereo ) {
+        if (gr_info->window_switching_flag && (gr_info->block_type == 2)) {
+            if( gr_info->mixed_block_flag ) {
+                int max_sfb = 0;
+
+                for ( j=0; j<3; j++ ) {
+                    int sfbcnt;
+                    sfbcnt = 2;
+                    for (sfb=12; sfb >=3; sfb--) {
+                        int lines;
+                        lines = sfBandIndex_45[sfreq].s[sfb+1] -
+                                sfBandIndex_45[sfreq].s[sfb];
+                        i = 3*sfBandIndex_45[sfreq].s[sfb] + (j+1) * lines - 1;
+                        while (lines > 0) {
+                            if (xrh[i/SSLIMIT][i%SSLIMIT] != 0.0) {
+                                sfbcnt = sfb;
+                                sfb = -10;
+                                lines = -10;
+                            }
+                            lines--;
+                            i--;
+                        }
+                    }
+                    sfb = sfbcnt + 1;
+
+                    if ( sfb > max_sfb )
+                        max_sfb = sfb;
+
+                    while (sfb<12) {
+                        sb = sfBandIndex_45[sfreq].s[sfb+1] -
+                                sfBandIndex_45[sfreq].s[sfb];
+                        i = 3*sfBandIndex_45[sfreq].s[sfb] + j * sb;
+                        for ( ; sb > 0; sb--) {
+                            is_pos[i] = (*scalefac)[1].s[j][sfb];
+                            if ( is_pos[i] != 7 ){
+                                if (lsf) {
+                                    III_i_stereo_k_values(is_pos[i],io,i,k);
+                                } else {
+#ifdef OPTIMIZE
+                                    QUICKTAN(is_ratio[i], is_pos[i])
+#else
+                                    is_ratio[i] = tan((float)is_pos[i] *
+                                                (PI / 12));
+#endif
+                                }
+                            }
+                            i++;
+                        }
+                        sfb++;
+                    }
+
+                    sb = sfBandIndex_45[sfreq].s[12]-sfBandIndex_45[sfreq].s[11];
+                    sfb = 3*sfBandIndex_45[sfreq].s[11] + j * sb;
+                    sb = sfBandIndex_45[sfreq].s[13]-sfBandIndex_45[sfreq].s[12];
+
+                    i = 3*sfBandIndex_45[sfreq].s[11] + j * sb;
+                    for ( ; sb > 0; sb-- ) {
+                        is_pos[i] = is_pos[sfb];
+                        is_ratio[i] = is_ratio[sfb];
+                        k[0][i] = k[0][sfb];
+                        k[1][i] = k[1][sfb];
+                        i++;
+                    }
+                }
+                if ( max_sfb <= 3 ) {
+                    i = 2;
+                    ss = 17;
+                    sb = -1;
+                    while ( i >= 0 ) {
+                        if ( xrh[i][ss] != 0.0 ) {
+                            sb = i*18+ss;
+                            i = -1;
+                        } else {
+                            ss--;
+                            if ( ss < 0 ) {
+                                i--;
+                                ss = 17;
+                            }
+                        }
+                    }
+                    i = 0;
+                    while ( sfBandIndex_45[sfreq].l[i] <= sb )
+                        i++;
+                    sfb = i;
+                    i = sfBandIndex_45[sfreq].l[i];
+                    for ( ; sfb<8; sfb++ ) {
+                        sb = sfBandIndex_45[sfreq].l[sfb+1]-sfBandIndex_45[sfreq].l[sfb];
+                        for ( ; sb > 0; sb--) {
+                            is_pos[i] = (*scalefac)[1].l[sfb];
+                            if ( is_pos[i] != 7 ){
+                                if ( lsf ) {
+                                    III_i_stereo_k_values(is_pos[i],io,i,k);
+                                } else {
+#ifdef OPTIMIZE
+                                    QUICKTAN(is_ratio[i], is_pos[i])
+#else
+                                    is_ratio[i] = tan((float)is_pos[i] *
+                                                (PI / 12));
+#endif
+                                }
+                            }
+                            i++;
+                        }
+                    }
+                }
+
+            } else {
+
+                for ( j=0; j<3; j++ ) {
+                    int sfbcnt;
+                    sfbcnt = -1;
+                    for( sfb=12; sfb >=0; sfb-- ) {
+                        int lines;
+                        lines = sfBandIndex_45[sfreq].s[sfb+1]-sfBandIndex_45[sfreq].s[sfb];
+                        i = 3*sfBandIndex_45[sfreq].s[sfb] + (j+1) * lines - 1;
+                        while ( lines > 0 ) {
+                            if ( xrh[i/SSLIMIT][i%SSLIMIT] != 0.0 ) {
+                                sfbcnt = sfb;
+                                sfb = -10;
+                                lines = -10;
+                            }
+                            lines--;
+                            i--;
+                        }
+                    }
+                    sfb = sfbcnt + 1;
+                    while ( sfb<12 ) {
+                        sb = sfBandIndex_45[sfreq].s[sfb+1]-sfBandIndex_45[sfreq].s[sfb];
+                        i = 3*sfBandIndex_45[sfreq].s[sfb] + j * sb;
+                        for ( ; sb > 0; sb--) {
+                            is_pos[i] = (*scalefac)[1].s[j][sfb];
+                            if ( is_pos[i] != 7 ){
+                                if( lsf ) {
+                                    III_i_stereo_k_values(is_pos[i],io,i,k);
+                                } else {
+#ifdef OPTIMIZE
+                                    QUICKTAN(is_ratio[i], is_pos[i])
+#else
+                                    is_ratio[i] = tan((float)is_pos[i] *
+                                                        (PI / 12));
+#endif
+                                }
+                            }
+                            i++;
+                        }
+                        sfb++;
+                    }
+
+                    sb = sfBandIndex_45[sfreq].s[12]-sfBandIndex_45[sfreq].s[11];
+                    sfb = 3*sfBandIndex_45[sfreq].s[11] + j * sb;
+                    sb = sfBandIndex_45[sfreq].s[13]-sfBandIndex_45[sfreq].s[12];
+
+                    i = 3*sfBandIndex_45[sfreq].s[11] + j * sb;
+                    for ( ; sb > 0; sb-- ) {
+                        is_pos[i] = is_pos[sfb];
+                        is_ratio[i] = is_ratio[sfb];
+                        k[0][i] = k[0][sfb];
+                        k[1][i] = k[1][sfb];
+                        i++;
+                    }
+                }
+            }
+        } else {
+            i = 31;
+            ss = 17;
+            sb = 0;
+            while ( i >= 0 ) {
+                if ( xrh[i][ss] != 0.0 ) {
+                    sb = i*18+ss;
+                    i = -1;
+                } else {
+                    ss--;
+                    if ( ss < 0 ) {
+                        i--;
+                        ss = 17;
+                    }
+                }
+            }
+            i = 0;
+            while ( sfBandIndex_45[sfreq].l[i] <= sb )
+                i++;
+            sfb = i;
+            i = sfBandIndex_45[sfreq].l[i];
+            for ( ; sfb<21; sfb++ ) {
+                sb = sfBandIndex_45[sfreq].l[sfb+1] - sfBandIndex_45[sfreq].l[sfb];
+                for ( ; sb > 0; sb--) {
+                    is_pos[i] = (*scalefac)[1].l[sfb];
+                    if ( is_pos[i] != 7 ){
+                        if( lsf ) {
+                            III_i_stereo_k_values(is_pos[i],io,i,k);
+                        } else {
+#ifdef OPTIMIZE
+                            QUICKTAN(is_ratio[i], is_pos[i])
+#else
+                            is_ratio[i] = tan((float)is_pos[i] * (PI / 12));
+#endif
+                        }
+                    }
+                    i++;
+                }
+            }
+            sfb = sfBandIndex_45[sfreq].l[20];
+            for ( sb = 576 - sfBandIndex_45[sfreq].l[21]; sb > 0; sb-- ) {
+                is_pos[i] = is_pos[sfb];
+                is_ratio[i] = is_ratio[sfb];
+                k[0][i] = k[0][sfb];
+                k[1][i] = k[1][sfb];
+                i++;
+            }
+        }
+    }
+
+        for (sb = 0; sb < SBLIMIT; sb++)
+            for (ss = 0; ss < SSLIMIT; ss++) {
+                lrr[sb][ss] = 0;
+                lrl[sb][ss] = 0;
+	    }
+
+    if (stereo == 2)
+        for(sb = 0; sb < SBLIMIT; sb++)
+            for(ss = 0; ss < SSLIMIT; ss++) {
+                i = (sb*18)+ss;
+                if ( is_pos[i] == 7 ) {
+                    if ( ms_stereo ) {
+                        lrr[sb][ss] = (xrl[sb][ss]+xrh[sb][ss])/1.41421356;
+                        lrl[sb][ss] = (xrl[sb][ss]-xrh[sb][ss])/1.41421356;
+                    } else {
+                        lrr[sb][ss] = xrl[sb][ss];
+                        lrl[sb][ss] = xrh[sb][ss];
+                    }
+                } else if (i_stereo ) {
+                    if ( lsf ) {
+                        lrr[sb][ss] = xrl[sb][ss] * k[0][i];
+                        lrl[sb][ss] = xrl[sb][ss] * k[1][i];
+                    } else {
+                        lrr[sb][ss] = xrl[sb][ss] * (is_ratio[i]/(1+is_ratio[i]));
+                        lrl[sb][ss] = xrl[sb][ss] * (1/(1+is_ratio[i]));
+                    }
+                } else {
+                    fprintf(stderr, "Error in stereo processing\n");
+                }
+            }
+
+    else        /* mono , bypass xr[0][][] to lr[0][][]*/
+
+        for (sb = 0; sb < SBLIMIT; sb++)
+            for(ss = 0; ss < SSLIMIT; ss++)
+                lrr[sb][ss] = xrl[sb][ss];
+}
+
+/////////////////////////////////////
+// internal variables
+/////////////////////////////////////
+
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+STATIC Packet3 Packet[2];
+
+TASK_GO
+{
+    // TODO: task main code
+
+    MQ_RECEIVE(port_input, (unsigned char*)&Packet, sizeof(Packet3)*2);
+
+    III_stereo(Packet[0].output.data, Packet[1].output.data, output_6[(1-(1))].data,output_6[(1-(0))].data,&Packet[0].scaleFactor, &Packet[1].groupInformation, &Packet[0].frameHeader);
+
+    memcpy(&Packet[0].output, &output_6[0], sizeof(struct MP3DeQData));
+    memcpy(&Packet[1].output, &output_6[1], sizeof(struct MP3DeQData));
+
+    MQ_SEND(port_output, (unsigned char*)&Packet, sizeof(Packet3) * 2);
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

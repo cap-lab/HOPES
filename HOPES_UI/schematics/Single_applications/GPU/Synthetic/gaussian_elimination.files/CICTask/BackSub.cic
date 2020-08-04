@@ -1,0 +1,104 @@
+/************************************
+ *
+ * File : Ba.cic
+ * Date : Mar 23, 2020 12:03 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <string.h>
+#include <math.h>
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+STATIC int port_in_a;
+STATIC int port_in_b;
+STATIC int port_out_a;
+STATIC int port_out_b;
+STATIC int port_out_f;
+
+STATIC int Size = 4;
+STATIC float *a, *b, *finalVec;
+STATIC int t = 0;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    UFPort_Initialize(TASK_ID, "in_a", &port_in_a);
+    UFPort_Initialize(TASK_ID, "in_b", &port_in_b);
+    UFPort_Initialize(TASK_ID, "out_a", &port_out_a);
+    UFPort_Initialize(TASK_ID, "out_b", &port_out_b);
+    UFPort_Initialize(TASK_ID, "out_f", &port_out_f);
+    
+    a = (float *) malloc(Size * Size * sizeof(float));
+    b = (float *) malloc(Size * sizeof(float));
+    finalVec = (float *) malloc(Size * sizeof(float));
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+/*------------------------------------------------------
+ ** BackSub() -- Backward substitution
+ **------------------------------------------------------
+ */
+
+void BackSub()
+{
+	// solve "bottom up"
+	int i,j;
+	for(i=0;i<Size;i++){
+		finalVec[Size-i-1]=b[Size-i-1];
+		for(j=0;j<i;j++)
+		{
+			finalVec[Size-i-1]-=*(a+Size*(Size-i-1)+(Size-j-1)) * finalVec[Size-j-1];
+		}
+		finalVec[Size-i-1]=finalVec[Size-i-1]/ *(a+Size*(Size-i-1)+(Size-i-1));
+	}
+}
+
+TASK_GO
+{
+    int nDataRead = 0;
+    UFPort_ReadFromQueue(port_in_a, (unsigned char *)a, Size*Size*sizeof(float), 0, &nDataRead);
+    UFPort_ReadFromQueue(port_in_b, (unsigned char *)b, Size*sizeof(float), 0, &nDataRead);
+
+    BackSub();
+    
+    int nDataWrite = 0;
+    UFPort_WriteToQueue(port_out_a, (unsigned char *)a, Size*Size*sizeof(float), 0, &nDataWrite);
+    UFPort_WriteToQueue(port_out_b, (unsigned char *)b, Size*sizeof(float), 0, &nDataWrite);
+    UFPort_WriteToQueue(port_out_f, (unsigned char *)finalVec, Size*sizeof(float), 0, &nDataWrite);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(a);
+    free(b);
+    free(finalVec);
+
+}
+
+TASK_CODE_END

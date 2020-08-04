@@ -1,0 +1,108 @@
+/************************************
+ *
+ * File : In.cic
+ * Date : Apr 11, 2020 3:14 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <math.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define SIZE 256
+
+typedef enum _FUNC_RETURN_CODE { RET_SUCCESS, RET_FAILURE } func_ret_t;
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+STATIC float *m;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    UFPort_Initialize(TASK_ID, "out", &port_out);
+    
+    m = (float*)malloc(sizeof(float) * SIZE * SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+func_ret_t create_matrix(float **mp, int size) {
+    float *m;
+    int i, j;
+    float lamda = -0.001;
+    float coe[2 * size - 1];
+    float coe_i = 0.0;
+
+    m = *mp;
+    for (i = 0; i < size; i++) {
+        coe_i = 10 * exp(lamda * i);
+        j = size - 1 + i;
+        coe[j] = coe_i;
+        j = size - 1 - i;
+        coe[j] = coe_i;
+    }
+
+    //m = (float *)malloc(sizeof(float) * size * size);
+    if (m == NULL) {
+        return RET_FAILURE;
+    }
+
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            m[i * size + j] = coe[size - 1 - i + j];
+        }
+    }
+
+    return RET_SUCCESS;
+}
+
+TASK_GO
+{
+    // TODO: task main code
+    int result, nDataWrite = 0;
+    
+    create_matrix(&m, SIZE);
+    
+    result = UFPort_WriteToQueue(port_out, (unsigned char *)m, sizeof(float)*SIZE*SIZE, THIS_THREAD_ID, &nDataWrite); 
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(m);
+}
+
+TASK_CODE_END

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<information type="info" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <sdf3files>
+    <sdf3file task_name="MP3Dec" level="1">
+      <mode mode_name="Default" file_name="MP3Dec,Default.xml" frequency="0" />
+      <throughputConstraint value="300000" unit="1/usec" />
+      <throughputConstraint value="200000" unit="1/usec" />
+    </sdf3file>
+    <sdf3file task_name="H264Dec_VIDEO" level="1">
+      <mode mode_name="I_Frame" file_name="H264Dec_VIDEO,I_Frame.xml" frequency="0" />
+      <mode mode_name="P_Frame" file_name="H264Dec_VIDEO,P_Frame.xml" frequency="0" />
+      <throughputConstraint value="3000" unit="1/usec" />
+    </sdf3file>
+    <sdf3file task_name="x264Enc" level="1">
+      <mode mode_name="Default" file_name="x264Enc,Default.xml" frequency="0" />
+      <throughputConstraint value="110000" unit="1/usec" />
+    </sdf3file>
+    <sdf3file task_name="H264Dec_PHONE" level="1">
+      <mode mode_name="I_Frame" file_name="H264Dec_PHONE,I_Frame.xml" frequency="0" />
+      <mode mode_name="P_Frame" file_name="H264Dec_PHONE,P_Frame.xml" frequency="0" />
+      <throughputConstraint value="2500" unit="1/usec" />
+    </sdf3file>
+  </sdf3files>
+  <transitionInfo>
+    <transitions task_name="x264Enc" />
+    <transitions task_name="MP3Dec" />
+    <transitions task_name="H264Dec_VIDEO">
+      <transition curr_mode="I_Frame" next_mode="P_Frame" />
+      <transition curr_mode="P_Frame" next_mode="I_Frame" />
+    </transitions>
+    <transitions task_name="H264Dec_PHONE">
+      <transition curr_mode="I_Frame" next_mode="P_Frame" />
+      <transition curr_mode="P_Frame" next_mode="I_Frame" />
+    </transitions>
+  </transitionInfo>
+</information>
+

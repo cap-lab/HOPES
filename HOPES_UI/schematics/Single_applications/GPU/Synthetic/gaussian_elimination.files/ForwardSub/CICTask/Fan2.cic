@@ -1,0 +1,160 @@
+/************************************
+ *
+ * File : Fan2.cic
+ * Date : Mar 23, 2020 1:32 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include "cuda.h"
+#include <string.h>
+#include <math.h>
+
+#ifdef RD_WG_SIZE_0_0
+        #define MAXBLOCKSIZE RD_WG_SIZE_0_0
+#elif defined(RD_WG_SIZE_0)
+        #define MAXBLOCKSIZE RD_WG_SIZE_0
+#elif defined(RD_WG_SIZE)
+        #define MAXBLOCKSIZE RD_WG_SIZE
+#else
+        #define MAXBLOCKSIZE 512
+#endif
+
+//2D defines. Go from specific to general                                                
+#ifdef RD_WG_SIZE_1_0
+        #define BLOCK_SIZE_XY RD_WG_SIZE_1_0
+#elif defined(RD_WG_SIZE_1)
+        #define BLOCK_SIZE_XY RD_WG_SIZE_1
+#elif defined(RD_WG_SIZE)
+        #define BLOCK_SIZE_XY RD_WG_SIZE
+#else
+        #define BLOCK_SIZE_XY 4
+#endif
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+STATIC int port_in_a;
+STATIC int port_in_b;
+STATIC int port_in_m;
+STATIC int port_out_a;
+STATIC int port_out_b;
+STATIC int port_out_m;
+STATIC int port_out_a2;
+
+STATIC int Size = 4, nLoop = 2;
+STATIC float *m_cuda,*a_cuda, *b_cuda;
+STATIC int t = 0;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+    UFPort_Initialize(TASK_ID, "in_a", &port_in_a);
+    UFPort_Initialize(TASK_ID, "in_b", &port_in_b);
+    UFPort_Initialize(TASK_ID, "in_m", &port_in_m);
+    UFPort_Initialize(TASK_ID, "out_a", &port_out_a);
+    UFPort_Initialize(TASK_ID, "out_b", &port_out_b);
+    UFPort_Initialize(TASK_ID, "out_m", &port_out_m);
+    UFPort_Initialize(TASK_ID, "out_a2", &port_out_a2);
+    
+	cudaMalloc((void **) &m_cuda, Size * Size * sizeof(float));     
+    cudaMalloc((void **) &a_cuda, Size * Size * sizeof(float));    
+    cudaMalloc((void **) &b_cuda, Size * sizeof(float));
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+/*-------------------------------------------------------
+ ** Fan2() -- Modify the matrix A into LUD
+ **-------------------------------------------------------
+ */ 
+
+__global__ void Fan2(float *m_cuda, float *a_cuda, float *b_cuda,int Size, int j1, int t)
+{
+	if(threadIdx.x + blockIdx.x * blockDim.x >= Size-1-t) return;
+	if(threadIdx.y + blockIdx.y * blockDim.y >= Size-t) return;
+	
+	int xidx = blockIdx.x * blockDim.x + threadIdx.x;
+	int yidx = blockIdx.y * blockDim.y + threadIdx.y;
+	//printf("blockIdx.x:%d,threadIdx.x:%d,blockIdx.y:%d,threadIdx.y:%d,blockDim.x:%d,blockDim.y:%d\n",blockIdx.x,threadIdx.x,blockIdx.y,threadIdx.y,blockDim.x,blockDim.y);
+	
+	a_cuda[Size*(xidx+1+t)+(yidx+t)] -= m_cuda[Size*(xidx+1+t)+t] * a_cuda[Size*t+(yidx+t)];
+	//a_cuda[xidx+1+t][yidx+t] -= m_cuda[xidx+1+t][t] * a_cuda[t][yidx+t];
+	if(yidx == 0){
+		//printf("blockIdx.x:%d,threadIdx.x:%d,blockIdx.y:%d,threadIdx.y:%d,blockDim.x:%d,blockDim.y:%d\n",blockIdx.x,threadIdx.x,blockIdx.y,threadIdx.y,blockDim.x,blockDim.y);
+		//printf("xidx:%d,yidx:%d\n",xidx,yidx);
+		b_cuda[xidx+1+t] -= m_cuda[Size*(xidx+1+t)+(yidx+t)] * b_cuda[t];
+	}
+}
+
+void checkCUDAError(const char *msg)
+{
+    cudaError_t err = cudaGetLastError();
+    if( cudaSuccess != err) 
+    {
+        fprintf(stderr, "Cuda error: %s: %s.\n", msg, 
+                                  cudaGetErrorString( err) );
+        exit(EXIT_FAILURE);
+    }                         
+}
+
+TASK_GO
+{
+    // TODO: task main code  
+    int nDataRead = 0;
+    
+    UFPort_ReadFromQueue(port_in_a, (unsigned char *)a_cuda, Size*Size*sizeof(float), 0, &nDataRead);
+    UFPort_ReadFromQueue(port_in_m, (unsigned char *)m_cuda, Size*Size*sizeof(float), 0, &nDataRead);
+    if(t == 0) {
+        UFPort_ReadFromQueue(port_in_b, (unsigned char *)b_cuda, Size*sizeof(float), 0, &nDataRead);
+    }
+    else {
+        UFPort_ReadFromQueue(port_in_b, (unsigned char *)NULL, Size*sizeof(float), 0, &nDataRead);
+    }
+    
+    KERNEL_CALL(Fan2, m_cuda,a_cuda,b_cuda,Size,Size-t,t); 
+    cudaThreadSynchronize();
+    checkCUDAError("Fan2");
+    t += 1;
+    
+    int nDataWrite = 0;
+    
+    if(t == nLoop) {
+        UFPort_WriteToQueue(port_out_a, (unsigned char *)a_cuda, Size*Size*sizeof(float), 0, &nDataWrite);
+        UFPort_WriteToQueue(port_out_b, (unsigned char *)b_cuda, Size*sizeof(float), 0, &nDataWrite);
+        UFPort_WriteToQueue(port_out_m, (unsigned char *)m_cuda, Size*Size*sizeof(float), 0, &nDataWrite);
+    }
+    else {
+        UFPort_WriteToQueue(port_out_a2, (unsigned char *)a_cuda, Size*Size*sizeof(float), 0, &nDataWrite);
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    cudaFree(a_cuda);
+    cudaFree(b_cuda);
+    cudaFree(m_cuda);
+}
+
+TASK_CODE_END

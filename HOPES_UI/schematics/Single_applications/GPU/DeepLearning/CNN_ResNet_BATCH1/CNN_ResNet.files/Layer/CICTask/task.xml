@@ -473,19 +473,19 @@
   </task_list>
   <library_list />
   <channel_list>
-    <channel src_task="ReadData" src_port="output_image" dst_task="first_conv" dst_port="input" size="602112" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="ReadData" src_port="output_image" dst_task="first_conv" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="602112">
       <edge_list>
         <edge id="0" x="208" y="100" />
         <edge id="1" x="404" y="100" />
       </edge_list>
     </channel>
-    <channel src_task="first_conv" src_port="output" dst_task="first_pool" dst_port="input" size="3211264" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="first_conv" src_port="output" dst_task="first_pool" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="3211264">
       <edge_list>
         <edge id="0" x="484" y="100" />
         <edge id="1" x="684" y="100" />
       </edge_list>
     </channel>
-    <channel src_task="first_pool" src_port="output" dst_task="first_ResidualLearningBlock" dst_port="input" size="802816" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="first_pool" src_port="output" dst_task="first_ResidualLearningBlock" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="802816">
       <edge_list>
         <edge id="0" x="764" y="100" />
         <edge id="1" x="796" y="144" />
@@ -493,25 +493,25 @@
         <edge id="3" x="128" y="240" />
       </edge_list>
     </channel>
-    <channel src_task="first_ResidualLearningBlock" src_port="output" dst_task="second_ResidualLearningBlock" dst_port="input" size="3211264" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="first_ResidualLearningBlock" src_port="output" dst_task="second_ResidualLearningBlock" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="3211264">
       <edge_list>
         <edge id="0" x="208" y="240" />
         <edge id="1" x="400" y="240" />
       </edge_list>
     </channel>
-    <channel src_task="second_ResidualLearningBlock" src_port="output" dst_task="third_ResidualLearningBlock" dst_port="input" size="1605632" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="second_ResidualLearningBlock" src_port="output" dst_task="third_ResidualLearningBlock" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="1605632">
       <edge_list>
         <edge id="0" x="480" y="240" />
         <edge id="1" x="684" y="240" />
       </edge_list>
     </channel>
-    <channel src_task="third_ResidualLearningBlock" src_port="output" dst_task="fourth_ResidualLearningBlock" dst_port="input" size="802816" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="third_ResidualLearningBlock" src_port="output" dst_task="fourth_ResidualLearningBlock" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="802816">
       <edge_list>
         <edge id="0" x="764" y="240" />
         <edge id="1" x="936" y="240" />
       </edge_list>
     </channel>
-    <channel src_task="fourth_ResidualLearningBlock" src_port="output" dst_task="last_conv" dst_port="input" size="401408" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="fourth_ResidualLearningBlock" src_port="output" dst_task="last_conv" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="401408">
       <edge_list>
         <edge id="0" x="1016" y="240" />
         <edge id="1" x="1088" y="264" />
@@ -519,19 +519,19 @@
         <edge id="3" x="124" y="384" />
       </edge_list>
     </channel>
-    <channel src_task="last_conv" src_port="output" dst_task="last_pool" dst_port="input" size="196000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="last_conv" src_port="output" dst_task="last_pool" dst_port="input" size="1" init_size="0" sampleType="" sampleSize="196000">
       <edge_list>
         <edge id="0" x="204" y="384" />
         <edge id="1" x="404" y="384" />
       </edge_list>
     </channel>
-    <channel src_task="last_pool" src_port="output" dst_task="Delta" dst_port="input_logits" size="4000" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="last_pool" src_port="output" dst_task="Delta" dst_port="input_logits" size="1" init_size="0" sampleType="" sampleSize="4000">
       <edge_list>
         <edge id="0" x="484" y="384" />
         <edge id="1" x="680" y="384" />
       </edge_list>
     </channel>
-    <channel src_task="ReadData" src_port="output_label" dst_task="Delta" dst_port="input_labels" size="4" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="ReadData" src_port="output_label" dst_task="Delta" dst_port="input_labels" size="1" init_size="0" sampleType="" sampleSize="4">
       <edge_list>
         <edge id="0" x="208" y="120" />
         <edge id="1" x="304" y="120" />
@@ -539,7 +539,7 @@
         <edge id="3" x="680" y="404" />
       </edge_list>
     </channel>
-    <channel src_task="ReadData" src_port="output_chunkindex" dst_task="Delta" dst_port="input_chunkindex" size="4" init_size="0" sampleType="" sampleSize="1">
+    <channel src_task="ReadData" src_port="output_chunkindex" dst_task="Delta" dst_port="input_chunkindex" size="1" init_size="0" sampleType="" sampleSize="4">
       <edge_list>
         <edge id="0" x="208" y="140" />
         <edge id="1" x="268" y="140" />

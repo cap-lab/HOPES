@@ -81,7 +81,7 @@
       </outport_list>
       <portMap_list>
         <portMap macroNode="CTypeLoop" macroNodePort="in_f" direction="In" insideTask="InputProcess" insideTaskPort="in_f" portType="fifo" portMapType="broadcasting" />
-        <portMap macroNode="CTypeLoop" macroNodePort="out_rp" direction="Out" insideTask="Replace" insideTaskPort="out_rp" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="CTypeLoop" macroNodePort="out_rp" direction="Out" insideTask="Replace" insideTaskPort="out_rp" portType="fifo" portMapType="normal" />
       </portMap_list>
       <libraryPort_list />
       <multicast_port_list />

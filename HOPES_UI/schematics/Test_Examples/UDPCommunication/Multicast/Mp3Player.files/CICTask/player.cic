@@ -1,0 +1,116 @@
+/************************************
+ *
+ * File : player.cic
+ * Date : Dec 30, 2019 5:23 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+#include "alsa/asoundlib.h"
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+STATIC int gMusic;
+STATIC int pMusic;
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+STATIC struct musicPacket {
+    unsigned char index;
+    short int data[8192];
+} musicPacket;
+STATIC unsigned char beforeIndex;
+STATIC snd_pcm_t *p_playback_handle;
+STATIC snd_pcm_hw_params_t *hw_params;
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+unsigned int freq = 44100;  // 8KHz
+// ##INIT_PORT_SECTION::START
+port_input = PORT_INITIALIZE(TASK_ID, "input");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+    UFMulticastPort_Initialize(TASK_ID, "music_in", &gMusic, &pMusic);
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    beforeIndex = 0;
+
+    if(snd_pcm_open(&p_playback_handle, "plughw:1,0",SND_PCM_STREAM_PLAYBACK,0)<0){
+            perror("Cound not open output audio dev");
+            return;
+    }
+  
+    snd_pcm_hw_params_malloc(&hw_params);
+    snd_pcm_hw_params_any(p_playback_handle,hw_params);  // set default value
+    snd_pcm_hw_params_set_access(p_playback_handle,hw_params,SND_PCM_ACCESS_RW_INTERLEAVED); //SND_PCM_ACCESS_RW_INTERLEAVED : enable snd_pcm_readi/snd_pcm_writei
+    snd_pcm_hw_params_set_format(p_playback_handle,hw_params,(snd_pcm_format_t)SND_PCM_FORMAT_S16_LE);  // signed 16 bits, little endian
+    snd_pcm_hw_params_set_rate_near(p_playback_handle,hw_params, &freq,0);
+    snd_pcm_hw_params_set_channels(p_playback_handle,hw_params, 2);
+    snd_pcm_hw_params(p_playback_handle,hw_params);
+    snd_pcm_hw_params_free (hw_params);
+
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int realRead = 0;
+    int error=0;
+    UFMulticastPort_ReadFromBuffer(gMusic, pMusic, &musicPacket, sizeof(musicPacket), &realRead);
+
+    //MQ_RECEIVE(port_input, (unsigned char*)&musicPacket, sizeof(musicPacket));
+    if (realRead && (beforeIndex != musicPacket.index)){
+        printf("sound in, index:%d, len:%d\n", musicPacket.index, realRead);
+        beforeIndex = musicPacket.index;
+        do 
+        {
+                error = snd_pcm_writei(p_playback_handle, &musicPacket.data,8192>>1);
+                if(error < 0)
+                {
+                    //printf("merong: %d\n", error);
+
+                    snd_pcm_prepare(p_playback_handle);
+                }
+        }while(error < 0);
+    }    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+  snd_pcm_drop(p_playback_handle);
+  snd_pcm_close(p_playback_handle);
+
+}
+
+TASK_CODE_END
