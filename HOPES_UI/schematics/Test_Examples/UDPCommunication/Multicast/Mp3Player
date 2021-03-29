@@ -33,43 +33,43 @@ Run 10
           <select>yes</select>
           <schematic>
             <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:CIC_Architecture target="server" xmlns:ns2="http://peace.snu.ac.kr/CICXMLSchema">
-    <ns2:elementTypes>
-        <ns2:elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <ns2:elementType name="SHARED_MEMORY_2" category="memory">
-            <ns2:slavePort size="8000" name="Slave" metric="MiB"/>
-        </ns2:elementType>
-        <ns2:elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_4" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <ns2:elementType name="SHARED_MEMORY_6" category="memory">
-            <ns2:slavePort size="8000" name="Slave" metric="MiB"/>
-        </ns2:elementType>
-    </ns2:elementTypes>
-    <ns2:devices>
-        <ns2:device runtime="native" platform="linux" name="server" architecture="x86_64">
-            <ns2:elements>
-                <ns2:element type="i7_0" poolSize="4" name="i7_0"/>
-                <ns2:element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
-            </ns2:elements>
-            <ns2:connections>
-                <ns2:UDPConnection network="Ethernet/Wi-Fi" multicast="true"/>
-            </ns2:connections>
-            <ns2:modules/>
-            <ns2:environmentVariables/>
-        </ns2:device>
-        <ns2:device runtime="native" platform="linux" name="client" architecture="x86_64">
-            <ns2:elements>
-                <ns2:element type="i7_4" poolSize="4" name="i7_4"/>
-                <ns2:element type="SHARED_MEMORY_6" name="SHARED_MEMORY_6"/>
-            </ns2:elements>
-            <ns2:connections>
-                <ns2:UDPConnection network="Ethernet/Wi-Fi" multicast="true"/>
-            </ns2:connections>
-            <ns2:modules/>
-            <ns2:environmentVariables/>
-        </ns2:device>
-    </ns2:devices>
-    <ns2:connections/>
-</ns2:CIC_Architecture>
+<CIC_Architecture target="server" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <elementTypes>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_2" category="memory">
+            <slavePort size="8000" name="Slave" metric="MiB"/>
+        </elementType>
+        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_4" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
+        <elementType name="SHARED_MEMORY_6" category="memory">
+            <slavePort size="8000" name="Slave" metric="MiB"/>
+        </elementType>
+    </elementTypes>
+    <devices>
+        <device runtime="native" platform="linux" name="server" architecture="x86_64">
+            <elements>
+                <element type="i7_0" poolSize="4" name="i7_0"/>
+                <element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
+            </elements>
+            <connections>
+                <UDPConnection role="Multicast" network="Ethernet/Wi-Fi" name="Multicast"/>
+            </connections>
+            <modules/>
+            <environmentVariables/>
+        </device>
+        <device runtime="native" platform="linux" name="client" architecture="x86_64">
+            <elements>
+                <element type="i7_4" poolSize="4" name="i7_4"/>
+                <element type="SHARED_MEMORY_6" name="SHARED_MEMORY_6"/>
+            </elements>
+            <connections>
+                <UDPConnection role="Multicast" network="Ethernet/Wi-Fi" name="Multicast"/>
+            </connections>
+            <modules/>
+            <environmentVariables/>
+        </device>
+    </devices>
+    <connections/>
+</CIC_Architecture>
 ]]>
           </schematic>
         </target>
@@ -116,7 +116,7 @@ Run 10
       <target_list>
         <target>
           <name>Translation</name>
-          <select>no</select>
+          <select>yes</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"
@@ -236,7 +236,7 @@ Run 10
         </target>
         <target>
           <name>Translation</name>
-          <select>yes</select>
+          <select>no</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"

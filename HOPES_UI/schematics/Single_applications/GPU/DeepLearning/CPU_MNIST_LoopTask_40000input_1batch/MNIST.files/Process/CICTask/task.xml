@@ -27,7 +27,7 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="true" name="in_image_l" type="fifo" sample_size="784" sample_rate="Fixed" description="">
@@ -45,7 +45,7 @@
       <portMap_list>
         <portMap macroNode="Layer" macroNodePort="in_image_l" direction="In" insideTask="PreProcess" insideTaskPort="in_image" portType="" portMapType="distributing" />
         <portMap macroNode="Layer" macroNodePort="in_label_l" direction="In" insideTask="PreProcess" insideTaskPort="in_label" portType="" portMapType="distributing" />
-        <portMap macroNode="Layer" macroNodePort="out_result_l" direction="Out" insideTask="Delta" insideTaskPort="out_result" portType="" portMapType="broadcasting" />
+        <portMap macroNode="Layer" macroNodePort="out_result_l" direction="Out" insideTask="Delta" insideTaskPort="out_result" portType="" portMapType="normal" />
       </portMap_list>
       <libraryPort_list />
       <multicast_port_list />
@@ -77,7 +77,7 @@
         <parameter name="IsLoopSubTask" value="Yes" />
         <parameter name="IsDesignatedTask" value="Yes" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="in_result" type="fifo" sample_size="4" sample_rate="Fixed" description="">

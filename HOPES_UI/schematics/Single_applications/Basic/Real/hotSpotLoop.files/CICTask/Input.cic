@@ -1,0 +1,141 @@
+/************************************
+ *
+ * File : Input.cic
+ * Date : Jun 19, 2020 12:02 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+void readinput(float *vect, int grid_rows, int grid_cols, int layers,
+               char *file) {
+    int i, j, k;
+    FILE *fp;
+    char str[STR_SIZE];
+    float val;
+
+    if ((fp = fopen(file, "r")) == 0)
+        fatal("The file was not opened");
+
+
+    for (i = 0; i <= grid_rows - 1; i++)
+        for (j = 0; j <= grid_cols - 1; j++)
+            for (k = 0; k <= layers - 1; k++) {
+                if (fgets(str, STR_SIZE, fp) == NULL)
+                    fatal("Error reading file\n");
+                if (feof(fp))
+                    fatal("not enough lines in file");
+                if ((sscanf(str, "%f", &val) != 1))
+                    fatal("invalid file format");
+                vect[i * grid_cols + j + k * grid_rows * grid_cols] = val;
+            }
+
+    fclose(fp);
+}
+
+
+TASK_GO
+{
+   char *pfile, *tfile, *ofile; // *testFile;
+    int iterations = atoi(argv[3]);
+
+    pfile = "power_64x8";
+    tfile = "temp_64x8";
+    ofile = "output.txt";
+    // testFile = argv[7];
+    int numCols = 64;
+    int numRows = 64;
+    int layers = 8;
+
+    /* calculating parameters*/
+
+    float dx = chip_height / numRows;
+    float dy = chip_width / numCols;
+    float dz = t_chip / layers;
+
+    float Cap = FACTOR_CHIP * SPEC_HEAT_SI * t_chip * dx * dy;
+    float Rx = dy / (2.0 * K_SI * t_chip * dx);
+    float Ry = dx / (2.0 * K_SI * t_chip * dy);
+    float Rz = dz / (K_SI * dx * dy);
+
+    // cout << Rx << " " << Ry << " " << Rz << endl;
+    float max_slope = MAX_PD / (FACTOR_CHIP * t_chip * SPEC_HEAT_SI);
+    float dt = PRECISION / max_slope;
+
+
+    float *powerIn, *tempOut, *tempIn, *tempCopy; // *pCopy;
+    //    float *d_powerIn, *d_tempIn, *d_tempOut;
+    int size = numCols * numRows * layers;
+
+    powerIn = (float *)calloc(size, sizeof(float));
+    tempCopy = (float *)malloc(size * sizeof(float));
+    tempIn = (float *)calloc(size, sizeof(float));
+    tempOut = (float *)calloc(size, sizeof(float));
+    // pCopy = (float*)calloc(size,sizeof(float));
+    float *answer = (float *)calloc(size, sizeof(float));
+
+    // outCopy = (float*)calloc(size, sizeof(float));
+    readinput(powerIn, numRows, numCols, layers, pfile);
+    readinput(tempIn, numRows, numCols, layers, tfile);
+
+    memcpy(tempCopy, tempIn, size * sizeof(float));
+
+    struct timeval start, stop;
+    float time;
+    gettimeofday(&start, NULL);
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

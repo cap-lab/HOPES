@@ -1,0 +1,101 @@
+/************************************
+ *
+ * File : CPU_Hough_F.cic
+ * Date : Mar 21, 2018 2:15 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <math.h>
+
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+#define MAX_ANGLE 360
+#define MAX_R 2077
+#define ISEDGE 50
+#define PI 3.141592
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC unsigned char* src;
+STATIC int* dst;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src = (unsigned char*)malloc(WIDTH*HEIGHT*3);
+    dst = (int*)malloc(MAX_ANGLE * MAX_R * sizeof(int));
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int x, y = 0;
+    int angle = 0;
+    int r = 0;
+
+    MQ_RECEIVE(port_input, (unsigned char*)src, WIDTH * HEIGHT * 3);
+ 	//printf("Hough_MQ_RECEIVE_FINISH!\n");
+    memset((void*)dst, 0x0, MAX_R*MAX_ANGLE*4);
+
+    for(x=0; x < WIDTH; x++){
+        for(y=0; y<HEIGHT; y++){
+            if(src[(WIDTH * y + x)*3] > ISEDGE)
+            {
+                for(angle = 0; angle < MAX_ANGLE; angle++)
+                {
+                    r = (int)floor(((double)x * sin(angle*PI/MAX_ANGLE)) + ((double)y * cos(angle*PI/MAX_ANGLE)) + (double)0.5);
+                    r += (MAX_R/2);
+                    dst[(angle * MAX_R + r)]++;
+                }
+            }
+        }
+    }
+
+    MQ_SEND(port_output, (unsigned char*)dst, MAX_R * MAX_ANGLE * sizeof(int));
+	//printf("Hough_MQ_SEND_FINISH!\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(src);
+    free(dst);
+}
+
+TASK_CODE_END

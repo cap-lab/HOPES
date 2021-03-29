@@ -51,7 +51,7 @@ Run 10
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
             </elements>
             <connections>
-                <SerialConnection role="slave" network="USB" name="OpenCR_Serial" multicast="false" boardTXPinNumber="0" boardRXPinNumber="0"/>
+                <SerialConnection role="slave" network="USB" name="OpenCR_Serial" boardTXPinNumber="0" boardRXPinNumber="0"/>
             </connections>
             <modules/>
             <environmentVariables>
@@ -65,7 +65,7 @@ Run 10
                 <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
             </elements>
             <connections>
-                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="RaspberryPi_Serial" multicast="false"/>
+                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="RaspberryPi_Serial"/>
             </connections>
             <modules/>
             <environmentVariables/>

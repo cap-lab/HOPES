@@ -27,7 +27,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list />
       <outport_list>
@@ -69,7 +69,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="in_image_p" type="fifo" sample_size="784" sample_rate="Fixed" description="">

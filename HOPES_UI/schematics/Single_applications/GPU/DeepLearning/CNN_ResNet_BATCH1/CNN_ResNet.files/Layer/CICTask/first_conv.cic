@@ -125,9 +125,35 @@ static void cudnn_convolutional_setup() {
         exit(-1);
     }   
 #endif
-    cudnnGetConvolutionForwardAlgorithm(
+
+    int requested_algo_count = 0, returned_algo_count = 0;
+    float min_time = 1000000;   // 1000 sec
+    cudnnConvolutionFwdAlgoPerf_t conv_fwd_results[100];
+	cudnnSetConvolutionMathType(convDesc, CUDNN_TENSOR_OP_MATH);
+
+    cudnnGetConvolutionForwardAlgorithmMaxCount(cudnn_handle(), &requested_algo_count);
+
+    cudnnGetConvolutionForwardAlgorithm_v7(
         cudnn_handle(), srcTensorDesc, weightDesc, convDesc, dstTensorDesc,
-        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &fw_algo);
+        requested_algo_count, &returned_algo_count, conv_fwd_results);
+
+	printf("Num algo: %d %d\n", requested_algo_count, returned_algo_count);
+    for (int i = 0; i < returned_algo_count; i++)
+    {
+		//printf(" - cuDNN FWD algo: %d, time = %f ms \n", conv_fwd_results[i].algo, conv_fwd_results[i].time);
+
+        if (conv_fwd_results[i].status == CUDNN_STATUS_SUCCESS &&
+//            conv_fwd_results[i].algo != CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED &&
+            conv_fwd_results[i].time > 0 && conv_fwd_results[i].time < min_time)
+        {
+            fw_algo = conv_fwd_results[i].algo;
+            min_time = conv_fwd_results[i].time;
+            //printf(" - cuDNN FWD algo: %d, time = %f ms \n", l->fw_algo, min_time);
+        }
+    }
+
+	fw_algo = conv_fwd_results[0].algo;
+
 }
 
 static void nobn_weight_do(int layer_idx)

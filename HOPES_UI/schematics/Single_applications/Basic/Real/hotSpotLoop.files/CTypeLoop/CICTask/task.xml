@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="hotSpotLoop">
+  <setting_list>
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="Preprocess" type="Computational">
+      <config>
+        <location x="196" y="180" width="80" height="80" />
+        <parameter name="CICFile" value="Preprocess.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="true" name="in_power" type="fifo" sample_size="4194304" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="true" name="in_temperature" type="fifo" sample_size="4194304" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out_power" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="out_temperature" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="out_coefficient" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="ComputeTemperature" type="Loop">
+      <config>
+        <location x="524" y="180" width="80" height="80" />
+        <parameter name="CICFile" value="ComputeCenterLoop.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="DATA" />
+        <parameter name="LoopCount" value="4" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_power" type="fifo" sample_size="4194304" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="in_temperature" type="fifo" sample_size="4194304" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="in_coefficient" type="fifo" sample_size="16" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="1048576" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="4" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="ComputeCenterLoop" macroNodePort="in_power" direction="In" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="ComputeCenterLoop" macroNodePort="in_temperature" direction="In" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="ComputeCenterLoop" macroNodePort="in_coefficient" direction="In" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="ComputeCenterLoop" macroNodePort="out" direction="Out" insideTask="" insideTaskPort="" portType="fifo" portMapType="normal" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="finishCondition" type="Computational">
+      <config>
+        <location x="784" y="180" width="80" height="40" />
+        <parameter name="CICFile" value="finish.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="Yes" />
+        <parameter name="IsDesignatedTask" value="Yes" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="1048576" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="4" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="true" name="out" type="fifo" sample_size="4194304" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="Preprocess" src_port="out_power" dst_task="ComputeTemperature" dst_port="in_power" size="4194304" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="276" y="200" />
+        <edge id="1" x="524" y="200" />
+      </edge_list>
+    </channel>
+    <channel src_task="Preprocess" src_port="out_temperature" dst_task="ComputeTemperature" dst_port="in_temperature" size="4194304" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="276" y="220" />
+        <edge id="1" x="524" y="220" />
+      </edge_list>
+    </channel>
+    <channel src_task="Preprocess" src_port="out_coefficient" dst_task="ComputeTemperature" dst_port="in_coefficient" size="4194304" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="276" y="240" />
+        <edge id="1" x="524" y="240" />
+      </edge_list>
+    </channel>
+    <channel src_task="ComputeTemperature" src_port="out" dst_task="finishCondition" dst_port="in" size="16" init_size="0" sampleType="" sampleSize="262144">
+      <edge_list>
+        <edge id="0" x="604" y="200" />
+        <edge id="1" x="784" y="200" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

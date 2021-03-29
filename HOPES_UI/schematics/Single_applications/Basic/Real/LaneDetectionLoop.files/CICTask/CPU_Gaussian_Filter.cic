@@ -1,0 +1,125 @@
+/************************************
+ *
+ * File : CPU_Gauss.cic
+ * Date : Mar 21, 2018 2:12 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC unsigned char* src;
+STATIC unsigned char* dst;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src = (unsigned char*)malloc(WIDTH * HEIGHT * 3);
+    dst = (unsigned char*)malloc(WIDTH * HEIGHT * 3);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    int i, j = 0;
+    float a = 0.7f;
+
+    // TODO: task main code
+    MQ_RECEIVE(port_input, (unsigned char*)src, WIDTH * HEIGHT * 3);
+
+    for(i = 0; i < WIDTH; i++)
+    {
+    // forward pass
+        float yp[3] = {src[i*3 + 0], src[i*3 + 1], src[i*3 + 2]};
+
+        for (j = 0; j < HEIGHT; j++) {
+            float xc[3] = {src[WIDTH*j*3 + i*3 + 0], src[WIDTH*j*3 + i*3 + 1], src[WIDTH*j*3 + i*3 + 2]};
+
+            float yc[3] = {0, };
+            yc[0] = xc[0] + a*(yp[0] - xc[0]);
+            yc[1] = xc[1] + a*(yp[1] - xc[1]);
+            yc[2] = xc[2] + a*(yp[2] - xc[2]);
+        
+            dst[WIDTH*j*3 + i*3 + 0] = yc[0];
+            dst[WIDTH*j*3 + i*3 + 1] = yc[1];
+            dst[WIDTH*j*3 + i*3 + 2] = yc[2];
+
+            yp[0] = yc[0];
+            yp[1] = yc[1];
+            yp[2] = yc[2];
+        }
+
+        yp[0] = src[WIDTH*(j-1)*3 + i*3 + 0];
+        yp[1] = src[WIDTH*(j-1)*3 + i*3 + 1];
+        yp[2] = src[WIDTH*(j-1)*3 + i*3 + 2];
+        for (j = (HEIGHT-1); j >= 0; j--) {
+            float xc[3] = {src[WIDTH*j*3 + i*3 + 0], src[WIDTH*j*3 + i*3 + 1], src[WIDTH*j*3 + i*3 + 2]};
+
+            float yc[3] = {0, };
+            yc[0] = xc[0] + a*(yp[0] - xc[0]);
+            yc[1] = xc[1] + a*(yp[1] - xc[1]);
+            yc[2] = xc[2] + a*(yp[2] - xc[2]);
+
+            float ot[3] = {dst[WIDTH*j*3 + i*3 + 0], dst[WIDTH*j*3 + i*3 + 1], dst[WIDTH*j*3 + i*3 + 2]};
+            ot[0] = (ot[0] + yc[0]) * 0.5f;
+            ot[1] = (ot[1] + yc[1]) * 0.5f;
+            ot[2] = (ot[2] + yc[2]) * 0.5f;
+
+            dst[WIDTH*j*3 + i*3 + 0] = ot[0];
+            dst[WIDTH*j*3 + i*3 + 1] = ot[1];
+            dst[WIDTH*j*3 + i*3 + 2] = ot[2];
+
+            yp[0] = yc[0];
+            yp[1] = yc[1];
+            yp[2] = yc[2];
+        }
+   }
+
+   MQ_SEND(port_output, (unsigned char*)dst, WIDTH * HEIGHT * 3);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(src);
+    free(dst);
+}
+
+TASK_CODE_END

@@ -45,7 +45,7 @@
       <portMap_list>
         <portMap macroNode="Layer" macroNodePort="in_image_l" direction="In" insideTask="PreProcess" insideTaskPort="in_image" portType="" portMapType="distributing" />
         <portMap macroNode="Layer" macroNodePort="in_label_l" direction="In" insideTask="PreProcess" insideTaskPort="in_label" portType="" portMapType="distributing" />
-        <portMap macroNode="Layer" macroNodePort="out_result_l" direction="Out" insideTask="Delta" insideTaskPort="out_result" portType="" portMapType="broadcasting" />
+        <portMap macroNode="Layer" macroNodePort="out_result_l" direction="Out" insideTask="Delta" insideTaskPort="out_result" portType="" portMapType="normal" />
       </portMap_list>
       <libraryPort_list />
       <multicast_port_list />

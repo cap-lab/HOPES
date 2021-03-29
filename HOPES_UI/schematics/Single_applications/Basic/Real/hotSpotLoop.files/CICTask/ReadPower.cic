@@ -1,0 +1,108 @@
+/************************************
+ *
+ * File : ReadPower.cic
+ * Date : Jun 19, 2020 2:04 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define STR_SIZE 256
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+STATIC int grid_rows = 1024;
+STATIC int grid_cols = 1024;
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+typedef float FLOAT;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+static void fatal(char *s) {
+    fprintf(stderr, "error: %s\n", s);
+    exit(1);
+}
+
+
+STATIC void read_input(FLOAT *vect, int grid_rows, int grid_cols, char *file) {
+    int i, index;
+    FILE *fp;
+    char str[STR_SIZE];
+    FLOAT val;
+
+    fp = fopen(file, "r");
+    if (!fp)
+        fatal("file could not be opened for reading");
+
+    for (i = 0; i < grid_rows * grid_cols; i++) {
+        fgets(str, STR_SIZE, fp);
+        if (feof(fp))
+            fatal("not enough lines in file");
+        if ((sscanf(str, "%f", &val) != 1))
+            fatal("invalid file format");
+        vect[i] = val;
+    }
+
+    fclose(fp);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    char *tfile = "power_1024";
+    int nDataWrite;
+	uem_result result;
+
+    FLOAT *power = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+    read_input(power, grid_rows, grid_cols, tfile);
+	printf("power[0] at %s : %f\n",TASK_NAME, power[0]);
+    result = UFPort_WriteToQueue(port_out, (unsigned char *) power, grid_rows * grid_cols * sizeof(FLOAT), 0, &nDataWrite);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

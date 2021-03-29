@@ -7,7 +7,7 @@
   <step_list>
     <step>
       <title>Func.</title>
-      <selected>yes</selected>
+      <selected>no</selected>
       <name>sim</name>
       <target_list>
         <target>
@@ -16,7 +16,9 @@
           <schematic>
             <![CDATA[Domain "BP"
 Target "CIC-TaskEditor"
-TargetParameter "SimulationTarget" STRING "PThread ##PThread-C++,PThread,NONE"
+TargetParameter "SimulationTarget" STRING "PTHREAD ##PThread-C++,PThread,NONE"
+TargetParameter "ThreadSetting" String "MULTI_THREAD"
+TargetParameter "TaskGraphProperty" String "ProcessNetwork"
 Run 10
 ]]>
           </schematic>
@@ -35,19 +37,19 @@ Run 10
             <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <CIC_Architecture target="Jetson_TX2" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
     <elementTypes>
-        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_2" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <elementType subcategory="GPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="cuda_gpu_sm20_4" model="cuda_gpu_sm20" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <elementType name="SHARED_MEMORY_6" category="memory">
-            <slavePort size="8000" name="Slave" metric="MiB"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" scheduler="RR" OS="LINUX" model="i7" subcategory="CPU" category="processor" name="i7_0"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" scheduler="RR" OS="LINUX" model="i7" subcategory="CPU" category="processor" name="i7_2"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" scheduler="RR" OS="LINUX" model="cuda_gpu_sm20" subcategory="GPU" category="processor" name="cuda_gpu_sm20_4"/>
+        <elementType category="memory" name="SHARED_MEMORY_6">
+            <slavePort metric="MiB" size="8000" name="Slave"/>
         </elementType>
     </elementTypes>
     <devices>
-        <device runtime="native" platform="linux" name="Jetson_TX2" architecture="x86_64">
+        <device runtime="native" platform="linux" architecture="x86_64" name="Jetson_TX2">
             <elements>
-                <element type="i7_0" poolSize="4" name="i7_0"/>
-                <element type="i7_2" poolSize="2" name="i7_2"/>
-                <element type="cuda_gpu_sm20_4" poolSize="1" name="cuda_gpu_sm20_4"/>
+                <element poolSize="4" type="i7_0" name="i7_0"/>
+                <element poolSize="2" type="i7_2" name="i7_2"/>
+                <element poolSize="1" type="cuda_gpu_sm20_4" name="cuda_gpu_sm20_4"/>
                 <element type="SHARED_MEMORY_6" name="SHARED_MEMORY_6"/>
             </elements>
             <connections/>
@@ -64,7 +66,7 @@ Run 10
     </step>
     <step>
       <title>Xml-Gen</title>
-      <selected>no</selected>
+      <selected>yes</selected>
       <name>codegen</name>
       <target_list>
         <target>

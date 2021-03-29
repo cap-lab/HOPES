@@ -1,0 +1,221 @@
+/************************************
+ *
+ * File : CPU_NLM_F.cic
+ * Date : Mar 21, 2018 12:28 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <stdlib.h>
+
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+
+#define BLOCKDIM_X   8
+#define BLOCKDIM_Y   8
+#define NLM_WINDOW_RADIUS   3
+#define NLM_BLOCK_RADIUS    3
+#define NLM_WINDOW_AREA     ( (2 * NLM_WINDOW_RADIUS + 1) * (2 * NLM_WINDOW_RADIUS + 1) )
+#define INV_NLM_WINDOW_AREA ( 1.0f / (float)NLM_WINDOW_AREA )
+
+#define NLM_WEIGHT_THRESHOLD    0.10f
+#define NLM_LERP_THRESHOLD      0.10f
+// ##DEFINE_SECTION::END
+
+static float nlmNoise = 1.45f;
+static float    lerpC = 0.2f;
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC unsigned char *src;
+STATIC unsigned char *dst;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+
+{
+    // ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+    // ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src    = (unsigned char*)malloc(WIDTH * HEIGHT * 3);
+    dst    = (unsigned char*)malloc(WIDTH * BLOCKDIM_X * 3);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+static float lerpf(float a, float b, float c){
+    return a + (b - a) * c;
+}
+
+static float vecLen(float a[3], float b[3]){
+    return (
+            (b[0] - a[0]) * (b[0] - a[0]) +
+            (b[1] - a[1]) * (b[1] - a[1]) +
+            (b[2] - a[2]) * (b[2] - a[2])
+           );
+}
+
+static int prev_grid_iy = -1; 
+
+TASK_GO
+{  
+    // TODO: task main code
+    int ix = 0, iy = 0, grid_iy = 0, iy_max = 0, iy_init = 0;        
+    float i = 0.0, j = 0.0, n = 0.0, m = 0.0;
+    float fWeights[WIDTH/BLOCKDIM_X][BLOCKDIM_X * BLOCKDIM_Y];
+
+	UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &grid_iy);
+
+    if(prev_grid_iy >= 0 && prev_grid_iy < grid_iy) {
+        MQ_RECEIVE(port_input, (unsigned char*)NULL, WIDTH * HEIGHT * 3); 
+    }   
+    else{
+        MQ_RECEIVE(port_input, (unsigned char*)src, WIDTH * HEIGHT * 3); 
+    }   
+    prev_grid_iy = grid_iy;   
+    //MQ_RECEIVE(port_input, (unsigned char*)src, WIDTH * HEIGHT * 3);
+    //printf("NLM_MQ_RECEIVE_FINISH!\n");
+
+    //0 ~ 89	
+	iy_init = grid_iy * BLOCKDIM_Y;
+	iy_max = iy_init + BLOCKDIM_Y;
+	
+	for(ix = 0; ix < WIDTH; ix++){
+        for(iy = iy_init; iy < iy_max; iy++){
+            if(ix < WIDTH && iy < HEIGHT){
+                int cx = (ix-(ix%8)) + NLM_WINDOW_RADIUS;
+                int cy = (iy-(iy%8)) + NLM_WINDOW_RADIUS;
+
+                float weight = 0;
+                for(n = -NLM_BLOCK_RADIUS; n <= NLM_BLOCK_RADIUS; n++)
+                    for(m = -NLM_BLOCK_RADIUS; m <= NLM_BLOCK_RADIUS; m++){
+                        float in = n, im = m;
+
+                        if(cy + in < 0 || cy + in >= HEIGHT)  in = -n;
+                        if(cx + im < 0 || cx + im >= WIDTH)   im = -m; 
+                        float clr00_1[3] = {src[(WIDTH * (cy + (int)in) + (cx + (int)im))*3+0], src[(WIDTH * (cy + (int)in) + (cx + (int)im))*3+1], src[(WIDTH * (cy + (int)in) + (cx + (int)im))*3+2]};
+
+                        if(iy + in < 0 || iy + in >= HEIGHT)  in = -n;
+                        if(ix + im < 0 || ix + im >= WIDTH)   im = -m; 
+                        float clr00_2[3] = {src[(WIDTH * (iy + (int)in) + (ix + (int)im))*3+0], src[(WIDTH * (iy + (int)in) + (ix + (int)im))*3+1], src[(WIDTH * (iy + (int)in) + (ix + (int)im))*3+2]};
+
+                        weight += vecLen(clr00_1, clr00_2);
+                    }
+
+                //Geometric distance from current texel to the center of NLM window
+                float dist =
+                    ((ix%BLOCKDIM_X) - NLM_WINDOW_RADIUS) * ((ix%BLOCKDIM_X) - NLM_WINDOW_RADIUS) +
+                    ((iy%BLOCKDIM_Y) - NLM_WINDOW_RADIUS) * ((iy%BLOCKDIM_Y) - NLM_WINDOW_RADIUS);
+
+                //Derive final weight from color and geometric distance
+                weight = exp( -(weight * nlmNoise + dist * INV_NLM_WINDOW_AREA) );
+                
+                //Write the result to shared memory
+                fWeights[ix/BLOCKDIM_X][(iy%BLOCKDIM_Y) * BLOCKDIM_X + (ix%BLOCKDIM_X)] = weight;
+            }
+        }
+    }
+	
+    for(ix = 0; ix < WIDTH; ix++){
+        for(iy = iy_init; iy < iy_max; iy++){
+            if(ix < WIDTH && iy < HEIGHT){
+                //Normalized counter for the NLM weight threshold
+                float fCount = 0;
+                //Total sum of pixel weights
+                float sumWeights = 0;
+                //Result accumulator
+                float clr[3] = {0, };
+    
+                int idx = 0;
+    
+                //Cycle through NLM window, surrounding (x, y) texel
+                for(i = -NLM_WINDOW_RADIUS; i <= NLM_WINDOW_RADIUS + 1; i++)
+                    for(j = -NLM_WINDOW_RADIUS; j <= NLM_WINDOW_RADIUS + 1; j++)
+                    {
+                        float ii = i, ij = j;
+                        if(iy + ii < 0 || iy + ii >= HEIGHT)  ii = -i;
+                        if(ix + ij < 0 || ix + ij >= WIDTH)   ij = -j; 
+    
+                        //Load precomputed weight
+                        float weightIJ = fWeights[ix/BLOCKDIM_X][idx++];
+    
+                        //Accumulate (x + j, y + i) texel color with computed weight
+                        float clrIJ[3] = {src[(WIDTH * (iy + (int)ii) + (ix + (int)ij))*3+0], src[(WIDTH * (iy + (int)ii) + (ix + (int)ij))*3+1], src[(WIDTH * (iy + (int)ii) + (ix + (int)ij))*3+2]};
+    
+                        clr[0]       += clrIJ[0] * weightIJ;
+                        clr[1]       += clrIJ[1] * weightIJ;
+                        clr[2]       += clrIJ[2] * weightIJ;
+    
+                        //Sum of weights for color normalization to [0..1] range
+                        sumWeights  += weightIJ;
+    
+                        //Update weight counter, if NLM weight for current window texel
+                        //exceeds the weight threshold
+                        fCount      += (weightIJ > NLM_WEIGHT_THRESHOLD) ? INV_NLM_WINDOW_AREA : 0;
+                    }
+    
+                //Normalize result color by sum of weights
+                sumWeights = 1.0f / sumWeights;
+                clr[0] *= sumWeights;
+                clr[1] *= sumWeights;
+                clr[2] *= sumWeights;
+    
+                //Choose LERP quotent basing on how many texels
+                //within the NLM window exceeded the weight threshold
+                float lerpQ = (fCount > NLM_LERP_THRESHOLD) ? lerpC : 1.0f - lerpC;
+    
+                //Write final result to global memory
+                float clr00[3] = {src[(WIDTH * iy + ix)*3+0], src[(WIDTH * iy + ix)*3+1], src[(WIDTH * iy + ix)*3+2]};
+    
+                clr[0] = lerpf(clr[0], clr00[0], lerpQ);
+                clr[1] = lerpf(clr[1], clr00[1], lerpQ);
+                clr[2] = lerpf(clr[2], clr00[2], lerpQ);
+
+                dst[((iy - iy_init) * WIDTH + ix)*3 + 0] = (unsigned char)clr[0];
+                dst[((iy - iy_init) * WIDTH + ix)*3 + 1] = (unsigned char)clr[1];
+                dst[((iy - iy_init) * WIDTH + ix)*3 + 2] = (unsigned char)clr[2]; 
+            }
+        }
+    }
+	AC_SEND(port_output, (unsigned char*) dst, WIDTH * BLOCKDIM_X * 3, grid_iy);
+    //MQ_SEND(port_output, (unsigned char*)dst, WIDTH * HEIGHT * 3);
+    //printf("NLM_MQ_SEND_FINISH!\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(src);
+    free(dst);
+}
+
+TASK_CODE_END
+

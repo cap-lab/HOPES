@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<cic_manual name="CODES2020">
+<cic_manual name="ClusteringExample">
   <setting_list>
-    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="ProcessNetwork" />
   </setting_list>
   <task_list>
     <task name="ReadFile" type="Computational">
@@ -11,10 +11,10 @@
         <parameter name="CICFile" value="ReadFile.cic" />
         <parameter name="RunCondition" value="time-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="10000000" />
         <parameter name="DeadlineUnit" value="us" />
-        <parameter name="Period" value="500" />
-        <parameter name="PeriodUnit" value="ms" />
+        <parameter name="Period" value="10000" />
+        <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="1" />
         <parameter name="Language" value="C" />
         <parameter name="CompileFlags" value="" />
@@ -51,7 +51,7 @@
         <parameter name="CICFile" value="CTypeLoop/CICTask/task.xml" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="10000000" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
@@ -97,7 +97,7 @@
         <parameter name="CICFile" value="PrintCenter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="10000000" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />

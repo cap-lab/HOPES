@@ -1,0 +1,85 @@
+/************************************
+ *
+ * File : Pr.cic
+ * Date : Jun 19, 2020 2:07 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include<stdio.h>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_corner;
+STATIC int port_in_center;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+typedef float FLOAT;
+
+STATIC int grid_rows = 1024;
+STATIC int grid_cols = 1024;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_corner = PORT_INITIALIZE(TASK_ID, "in_corner");
+    port_in_center = PORT_INITIALIZE(TASK_ID, "in_center");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+
+    uem_result result;
+    FLOAT *temperature = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+    int nDataRead;
+    result = UFPort_ReadFromQueue(port_in_center, (unsigned char *) temperature, grid_rows * grid_cols * sizeof(FLOAT), 0, &nDataRead);
+	printf("temperature[0] at %s : %f\n",TASK_NAME, temperature[0]);
+        
+    FILE *file = fopen("output.txt", "w+");
+    for (int i = 0; i < grid_rows * grid_cols; i++)
+        fprintf(file, "%d\t%g\n", i, temperature[i]);
+    fclose(file);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

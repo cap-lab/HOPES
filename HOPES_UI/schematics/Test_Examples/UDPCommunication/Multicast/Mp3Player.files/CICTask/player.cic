@@ -53,6 +53,7 @@ port_input = PORT_INITIALIZE(TASK_ID, "input");
     // TODO: task initialize code
     beforeIndex = 0;
 
+#ifndef NO_SOUND
     if(snd_pcm_open(&p_playback_handle, "plughw:1,0",SND_PCM_STREAM_PLAYBACK,0)<0){
             perror("Cound not open output audio dev");
             return;
@@ -66,7 +67,7 @@ port_input = PORT_INITIALIZE(TASK_ID, "input");
     snd_pcm_hw_params_set_channels(p_playback_handle,hw_params, 2);
     snd_pcm_hw_params(p_playback_handle,hw_params);
     snd_pcm_hw_params_free (hw_params);
-
+#endif
 
 }
 
@@ -86,6 +87,7 @@ TASK_GO
     if (realRead && (beforeIndex != musicPacket.index)){
         printf("sound in, index:%d, len:%d\n", musicPacket.index, realRead);
         beforeIndex = musicPacket.index;
+#ifndef NO_SOUND
         do 
         {
                 error = snd_pcm_writei(p_playback_handle, &musicPacket.data,8192>>1);
@@ -96,7 +98,8 @@ TASK_GO
                     snd_pcm_prepare(p_playback_handle);
                 }
         }while(error < 0);
-    }    
+#endif
+    }
 }
 
 
@@ -108,9 +111,10 @@ TASK_GO
 TASK_WRAPUP
 {
     // TODO: task wrapup code
+#ifndef NO_SOUND
   snd_pcm_drop(p_playback_handle);
   snd_pcm_close(p_playback_handle);
-
+#endif
 }
 
 TASK_CODE_END

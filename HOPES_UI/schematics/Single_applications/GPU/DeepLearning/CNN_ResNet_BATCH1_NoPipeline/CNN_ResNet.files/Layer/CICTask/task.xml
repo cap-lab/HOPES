@@ -189,7 +189,7 @@
       </outport_list>
       <portMap_list>
         <portMap macroNode="first_ResidualLearningBlock" macroNodePort="input" direction="In" insideTask="start_shortcut" insideTaskPort="input2" portType="" portMapType="broadcasting" />
-        <portMap macroNode="first_ResidualLearningBlock" macroNodePort="output" direction="Out" insideTask="end_shortcut" insideTaskPort="output2" portType="" portMapType="broadcasting" />
+        <portMap macroNode="first_ResidualLearningBlock" macroNodePort="output" direction="Out" insideTask="end_shortcut" insideTaskPort="output2" portType="" portMapType="normal" />
       </portMap_list>
       <libraryPort_list />
       <multicast_port_list />

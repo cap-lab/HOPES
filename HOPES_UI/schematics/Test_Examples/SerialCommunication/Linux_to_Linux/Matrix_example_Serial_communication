@@ -51,7 +51,7 @@ Run 10
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
             </elements>
             <connections>
-                <SerialConnection role="master" portAddress="/dev/ttyUSB1" network="USB" name="Serial_hostpc" multicast="false"/>
+                <SerialConnection role="master" portAddress="/dev/ttyUSB1" network="USB" name="Serial_hostpc"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -62,7 +62,7 @@ Run 10
                 <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
             </elements>
             <connections>
-                <SerialConnection role="slave" portAddress="/dev/ttyAMA0" network="USB" name="Serial_raspi" multicast="false"/>
+                <SerialConnection role="slave" portAddress="/dev/ttyAMA0" network="USB" name="Serial_raspi"/>
             </connections>
             <modules/>
             <environmentVariables/>

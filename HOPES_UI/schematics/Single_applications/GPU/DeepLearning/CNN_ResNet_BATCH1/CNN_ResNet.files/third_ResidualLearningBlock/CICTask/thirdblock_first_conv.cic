@@ -62,6 +62,9 @@ static cudnnTensorDescriptor_t biasTensorDesc;
 static cudnnFilterDescriptor_t weightDesc;
 static cudnnConvolutionDescriptor_t convDesc;
 static cudnnConvolutionFwdAlgo_t fw_algo;
+static cudnnConvolutionFwdAlgo_t fw_algo_512;
+static cudnnConvolutionFwdAlgo_t fw_algo_1024;
+
 static size_t workspace_size;
 static size_t workspace_maxsize;
 
@@ -116,6 +119,7 @@ static void nobn_weight_do(int idx, int layer_idx)
     cuda_push_array(pfBiasGPU[idx], pfBias, OUT_CHANNEL);
 }
 
+
 static void cudnn_convolutional_setup() {
     cudnnSetTensor4dDescriptor(srcTensorDesc, CUDNN_TENSOR_NCHW,
                                CUDNN_DATA_FLOAT, BATCH, IN_CHANNEL, IN_HEIGHT,
@@ -144,9 +148,38 @@ static void cudnn_convolutional_setup() {
         exit(-1);
     }   
 #endif
-    cudnnGetConvolutionForwardAlgorithm(
+}
+
+static cudnnConvolutionFwdAlgo_t getForwardAlgorithm()
+{
+    int requested_algo_count = 0, returned_algo_count = 0;
+    int found_conv_algorithm = 0;
+	float min_time = 1000000;   // 1000 sec
+	cudnnConvolutionFwdAlgo_t fw_get;
+	cudnnConvolutionFwdAlgoPerf_t conv_fwd_results[100];
+	cudnnSetConvolutionMathType(convDesc, CUDNN_TENSOR_OP_MATH);
+
+	cudnnGetConvolutionForwardAlgorithmMaxCount(cudnn_handle(), &requested_algo_count);
+
+    cudnnGetConvolutionForwardAlgorithm_v7(
         cudnn_handle(), srcTensorDesc, weightDesc, convDesc, dstTensorDesc,
-        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &fw_algo);
+        requested_algo_count, &returned_algo_count, conv_fwd_results);
+
+	fw_get = conv_fwd_results[0].algo;
+    for (int i = 0; i < returned_algo_count; i++)
+    {
+		//printf(" - cuDNN FWD algo: %d, time = %f ms \n", conv_fwd_results[i].algo, conv_fwd_results[i].time);
+        if (conv_fwd_results[i].status == CUDNN_STATUS_SUCCESS &&
+//            conv_fwd_results[i].algo != CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED &&
+          conv_fwd_results[i].time > 0 && conv_fwd_results[i].time < min_time)
+        {
+            fw_get = conv_fwd_results[i].algo;
+            min_time = conv_fwd_results[i].time;
+            //printf(" - cuDNN FWD algo: %d, time = %f ms \n", l->fw_algo, min_time);
+        }
+    }	
+
+	return fw_get;
 }
 
 
@@ -216,6 +249,15 @@ TASK_INIT
     cudnnCreateFilterDescriptor(&weightDesc);
     cudnnCreateConvolutionDescriptor(&convDesc);
 
+    IN_WIDTH = 28; IN_HEIGHT = 28; IN_CHANNEL = 512; 
+    OUT_WIDTH = 28; OUT_HEIGHT = 28; OUT_CHANNEL = 256; 
+	cudnn_convolutional_setup();
+	fw_algo_512 = getForwardAlgorithm();
+
+    IN_WIDTH = 14; IN_HEIGHT = 14; IN_CHANNEL = 1024;
+    OUT_WIDTH = 14; OUT_HEIGHT = 14; OUT_CHANNEL = 256;
+	cudnn_convolutional_setup();
+	fw_algo_1024 = getForwardAlgorithm();
 
 }
 
@@ -253,10 +295,12 @@ TASK_GO
     if(layer_idx == 35){
         IN_WIDTH = 28; IN_HEIGHT = 28; IN_CHANNEL = 512; 
         OUT_WIDTH = 28; OUT_HEIGHT = 28; OUT_CHANNEL = 256;
+		fw_algo = fw_algo_512;
     }
     else{
         IN_WIDTH = 14; IN_HEIGHT = 14; IN_CHANNEL = 1024;
         OUT_WIDTH = 14; OUT_HEIGHT = 14; OUT_CHANNEL = 256;
+		fw_algo = fw_algo_1024;
     }
     nMaxInSize = 28 * 28 * 512;
     nMaxOutSize = 28 * 28 * 256;

@@ -51,7 +51,7 @@ Run 10
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
             </elements>
             <connections>
-                <TCPConnection role="client" port="6384" network="Ethernet/Wi-Fi" name="LinuxToWindows" multicast="false" ip="147.46.121.6"/>
+                <TCPConnection secure="false" role="client" port="6384" network="Ethernet/Wi-Fi" name="LinuxToWindows" ip="147.46.121.6"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -62,7 +62,7 @@ Run 10
                 <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
             </elements>
             <connections>
-                <TCPConnection role="server" port="6384" network="Ethernet/Wi-Fi" name="WindowsToLinux" multicast="false" ip="255.255.255.255"/>
+                <TCPConnection secure="false" role="server" port="6384" network="Ethernet/Wi-Fi" name="WindowsToLinux" ip="255.255.255.255"/>
             </connections>
             <modules/>
             <environmentVariables/>

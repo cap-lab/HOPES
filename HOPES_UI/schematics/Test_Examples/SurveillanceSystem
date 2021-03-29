@@ -69,7 +69,7 @@ Run 10
                 <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
             </elements>
             <connections>
-                <TCPConnection role="server" port="7776" network="Ethernet/Wi-Fi" name="HostPC_TCP" multicast="false" ip="255.255.255.255"/>
+                <TCPConnection secure="false" role="server" port="7776" network="Ethernet/Wi-Fi" name="HostPC_TCP" ip="255.255.255.255"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -80,8 +80,8 @@ Run 10
                 <element type="SHARED_MEMORY_1" name="SHARED_MEMORY_1"/>
             </elements>
             <connections>
-                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="Labtop_TCP2HostPC" multicast="false" ip="147.46.121.7"/>
-                <SerialConnection role="master" portAddress="B8:27:EB:44:50:58" network="Bluetooth" name="Labtop_Bluetooth2waffle_pi" multicast="false"/>
+                <TCPConnection secure="false" role="client" port="7776" network="Ethernet/Wi-Fi" name="Labtop_TCP2HostPC" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="B8:27:EB:44:50:58" network="Bluetooth" name="Labtop_Bluetooth2waffle_pi"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -92,9 +92,9 @@ Run 10
                 <element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
             </elements>
             <connections>
-                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="Turtlebot_waffle_pi_TCP2HostPC" multicast="false" ip="147.46.121.7"/>
-                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Turtlebot_waffle_pi_USB" multicast="false"/>
-                <SerialConnection role="slave" portAddress="74:E5:F9:C4:C4:70" network="Bluetooth" name="Waffle_pi_Bluetooth2Labtop" multicast="false"/>
+                <TCPConnection secure="false" role="client" port="7776" network="Ethernet/Wi-Fi" name="Turtlebot_waffle_pi_TCP2HostPC" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Turtlebot_waffle_pi_USB"/>
+                <SerialConnection role="slave" portAddress="74:E5:F9:C4:C4:70" network="Bluetooth" name="Waffle_pi_Bluetooth2Labtop"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -105,7 +105,7 @@ Run 10
                 <element type="SHARED_MEMORY_3" name="SHARED_MEMORY_3"/>
             </elements>
             <connections>
-                <SerialConnection role="slave" network="USB" name="turtlebot_waffle_OpenCR_USB" multicast="false" boardTXPinNumber="0" boardRXPinNumber="0"/>
+                <SerialConnection role="slave" network="USB" name="turtlebot_waffle_OpenCR_USB" boardTXPinNumber="0" boardRXPinNumber="0"/>
             </connections>
             <modules/>
             <environmentVariables>
@@ -119,8 +119,8 @@ Run 10
                 <element type="SHARED_MEMORY_4" name="SHARED_MEMORY_4"/>
             </elements>
             <connections>
-                <TCPConnection role="client" port="7776" network="Ethernet/Wi-Fi" name="Turtlebot_tank_pi_TCP2HostPC" multicast="false" ip="147.46.121.7"/>
-                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Turtlebot_tank_pi_USB" multicast="false"/>
+                <TCPConnection secure="false" role="client" port="7776" network="Ethernet/Wi-Fi" name="Turtlebot_tank_pi_TCP2HostPC" ip="147.46.121.7"/>
+                <SerialConnection role="master" portAddress="/dev/ttyACM0" network="USB" name="Turtlebot_tank_pi_USB"/>
             </connections>
             <modules/>
             <environmentVariables/>
@@ -131,7 +131,7 @@ Run 10
                 <element type="SHARED_MEMORY_5" name="SHARED_MEMORY_5"/>
             </elements>
             <connections>
-                <SerialConnection role="slave" network="USB" name="Turtlebot_tank_OpenCR_USB" multicast="false" boardTXPinNumber="0" boardRXPinNumber="0"/>
+                <SerialConnection role="slave" network="USB" name="Turtlebot_tank_OpenCR_USB" boardTXPinNumber="0" boardRXPinNumber="0"/>
             </connections>
             <modules/>
             <environmentVariables>

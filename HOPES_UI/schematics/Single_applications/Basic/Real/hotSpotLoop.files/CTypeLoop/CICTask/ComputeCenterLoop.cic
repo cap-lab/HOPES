@@ -1,0 +1,247 @@
+/************************************
+ *
+ * File : ComputeTemperature.cic
+ * Date : Jun 19, 2020 12:02 PM
+ *
+ *************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+#define BLOCK_SIZE 16
+#define BLOCK_SIZE_C BLOCK_SIZE
+#define BLOCK_SIZE_R BLOCK_SIZE
+
+
+typedef float FLOAT;
+#define NUM_THREAD 4
+STATIC int grid_rows = 1024;
+STATIC int grid_cols = 1024;
+
+#if THIS_THREAD_ID == 0
+int numFinished=0;
+//FLOAT* result = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+FLOAT result[1024* 1024];// = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+#else
+extern int numFinished;
+extern FLOAT result[1024 * 1024];// = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+#endif
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_power;
+STATIC int port_in_temperature;
+STATIC int port_in_coefficient;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+TASK_INIT
+{
+	// ##INIT_PORT_SECTION::START
+    port_in_power = PORT_INITIALIZE(TASK_ID, "in_power");
+    port_in_temperature = PORT_INITIALIZE(TASK_ID, "in_temperature");
+    port_in_coefficient = PORT_INITIALIZE(TASK_ID, "in_coefficient");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+	// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+	// TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+static const FLOAT amb_temp = 80.0;
+
+
+typedef struct _coefficient
+{
+	FLOAT Rx_1;
+	FLOAT Ry_1;
+	FLOAT Rz_1;
+	FLOAT Cap_1;
+} Coefficient;
+
+
+TASK_GO
+{
+	uem_result uemResult;
+	FLOAT *power = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+	FLOAT *temperature = (FLOAT *)calloc(grid_rows * grid_cols, sizeof(FLOAT));
+	int nDataRead, nDataWrite;	
+	Coefficient coeff;
+	uemResult = UFPort_ReadFromQueue(port_in_temperature, (unsigned char *) temperature, grid_rows * grid_cols * sizeof(FLOAT), 0, &nDataRead);
+	uemResult = UFPort_ReadFromQueue(port_in_power, (unsigned char *) power, grid_rows * grid_cols * sizeof(FLOAT), 0, &nDataRead);
+	uemResult = UFPort_ReadFromQueue(port_in_coefficient, (unsigned char *) &coeff, sizeof(coeff), 0, &nDataRead);
+	//printf("power[0] at %s : %f\n",TASK_NAME, power[0]);
+	//printf("temperature[0] at %s : %f\n",TASK_NAME, temperature[0]);
+	FLOAT Rx_1 = coeff.Rx_1;
+	FLOAT Ry_1 = coeff.Ry_1;
+	FLOAT Rz_1 = coeff.Rz_1;
+	FLOAT Cap_1 = coeff.Cap_1;
+	//printf("Rx_1 : %f\n",Rx_1);
+	//printf("Ry_1 : %f\n",Ry_1);
+	//printf("Rz_1 : %f\n",Rz_1);
+	//printf("Cap_1 : %f\n",Cap_1);
+	//printf("temp[0]: %f\n",temperature[0]);
+
+	int row = grid_rows;
+	int col = grid_cols;
+	FLOAT* temp = temperature;
+
+	FLOAT delta;
+	int r, c;
+	int chunk;
+	int num_iteration;
+	UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &num_iteration);
+	int num_chunk = row * col / (BLOCK_SIZE_R * BLOCK_SIZE_C);
+	int chunks_in_row = col / BLOCK_SIZE_C;
+	int chunks_in_col = row / BLOCK_SIZE_R;
+	for (chunk = 1024 * num_iteration; chunk < 1024 * (num_iteration+1); ++chunk) {
+		//printf("chunk : %d\n",chunk);
+		int r_start = BLOCK_SIZE_R * (chunk / chunks_in_col);
+		int c_start = BLOCK_SIZE_C * (chunk % chunks_in_row);
+		int r_end = r_start + BLOCK_SIZE_R > row ? row : r_start + BLOCK_SIZE_R;
+		int c_end = c_start + BLOCK_SIZE_C > col ? col : c_start + BLOCK_SIZE_C;
+
+		for(int iter = 0; iter < 1; iter++){
+			if (r_start == 0 || c_start == 0 || r_end == row || c_end == col) {
+				for (r = r_start; r < r_start + BLOCK_SIZE_R; ++r) {
+					for (c = c_start; c < c_start + BLOCK_SIZE_C; ++c) {
+						/* Corner 1 */
+						if ((r == 0) && (c == 0)) {
+							delta =
+								(Cap_1) * (power[0] + (temp[1] - temp[0]) * Rx_1 +
+										(temp[col] - temp[0]) * Ry_1 +
+										(amb_temp - temp[0]) * Rz_1);
+						} /* Corner 2 */
+						else if ((r == 0) && (c == col - 1)) {
+							delta = (Cap_1) *
+								(power[c] + (temp[c - 1] - temp[c]) * Rx_1 +
+								 (temp[c + col] - temp[c]) * Ry_1 +
+								 (amb_temp - temp[c]) * Rz_1);
+						} /* Corner 3 */
+						else if ((r == row - 1) && (c == col - 1)) {
+							delta = (Cap_1) *
+								(power[r * col + c] +
+								 (temp[r * col + c - 1] - temp[r * col + c]) *
+								 Rx_1 +
+								 (temp[(r - 1) * col + c] - temp[r * col + c]) *
+								 Ry_1 +
+								 (amb_temp - temp[r * col + c]) * Rz_1);
+						} /* Corner 4 */
+						else if ((r == row - 1) && (c == 0)) {
+							delta = (Cap_1) *
+								(power[r * col] +
+								 (temp[r * col + 1] - temp[r * col]) * Rx_1 +
+								 (temp[(r - 1) * col] - temp[r * col]) * Ry_1 +
+								 (amb_temp - temp[r * col]) * Rz_1);
+						} /* Edge 1 */
+						else if (r == 0) {
+							delta = (Cap_1) *
+								(power[c] +
+								 (temp[c + 1] + temp[c - 1] - 2.0 * temp[c]) *
+								 Rx_1 +
+								 (temp[col + c] - temp[c]) * Ry_1 +
+								 (amb_temp - temp[c]) * Rz_1);
+						} /* Edge 2 */
+						else if (c == col - 1) {
+							delta = (Cap_1) *
+								(power[r * col + c] +
+								 (temp[(r + 1) * col + c] +
+								  temp[(r - 1) * col + c] -
+								  2.0 * temp[r * col + c]) *
+								 Ry_1 +
+								 (temp[r * col + c - 1] - temp[r * col + c]) *
+								 Rx_1 +
+								 (amb_temp - temp[r * col + c]) * Rz_1);
+						} /* Edge 3 */
+						else if (r == row - 1) {
+							delta =
+								(Cap_1) *
+								(power[r * col + c] +
+								 (temp[r * col + c + 1] + temp[r * col + c - 1] -
+								  2.0 * temp[r * col + c]) *
+								 Rx_1 +
+								 (temp[(r - 1) * col + c] - temp[r * col + c]) *
+								 Ry_1 +
+								 (amb_temp - temp[r * col + c]) * Rz_1);
+						} /* Edge 4 */
+						else if (c == 0) {
+							delta = (Cap_1) *
+								(power[r * col] +
+								 (temp[(r + 1) * col] + temp[(r - 1) * col] -
+								  2.0 * temp[r * col]) *
+								 Ry_1 +
+								 (temp[r * col + 1] - temp[r * col]) * Rx_1 +
+								 (amb_temp - temp[r * col]) * Rz_1);
+						}
+						result[r * col + c] = temp[r * col + c] + delta;
+					}
+				}
+			}else{
+				for (r = r_start; r < r_start + BLOCK_SIZE_R; ++r) {    
+					for (c = c_start; c < c_start + BLOCK_SIZE_C; ++c) {
+						/* Update Temperatures */
+						result[r * col + c] =
+							temp[r * col + c] +
+							(Cap_1 *
+							 (power[r * col + c] +
+							  (temp[(r + 1) * col + c] + temp[(r - 1) * col + c] -
+							   2.f * temp[r * col + c]) *
+							  Ry_1 +
+							  (temp[r * col + c + 1] + temp[r * col + c - 1] -
+							   2.f * temp[r * col + c]) *
+							  Rx_1 +
+							  (amb_temp - temp[r * col + c]) * Rz_1));
+					}
+				}
+			}
+		}
+	}	
+	numFinished++;
+	//printf("numFinished : %d\n",numFinished);
+	if(numFinished == NUM_THREAD){
+        for(int i = 0; i < NUM_THREAD; i++){
+            AC_SEND(port_out, (unsigned char*) (result + grid_rows * grid_cols / NUM_THREAD * i), grid_rows * grid_cols * sizeof(FLOAT) / NUM_THREAD, i);
+        }
+		numFinished= 0;
+	}
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

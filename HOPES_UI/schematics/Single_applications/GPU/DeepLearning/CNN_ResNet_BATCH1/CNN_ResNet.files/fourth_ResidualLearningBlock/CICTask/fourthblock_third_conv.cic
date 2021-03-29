@@ -106,6 +106,72 @@ static void nobn_weight_do(int idx, int layer_idx)
     cuda_push_array(pfBiasGPU[idx], pfBias, OUT_CHANNEL);
 }
 
+static size_t get_workspace_size() {
+    size_t most = 0;
+    size_t s = 0;
+    cudnnGetConvolutionForwardWorkspaceSize(cudnn_handle(), srcTensorDesc,
+                                            weightDesc, convDesc, dstTensorDesc,
+                                            fw_algo, &s);
+    if (s > most)
+        most = s;
+    return most;
+}
+
+static void cudnn_convolutional_setup() {
+    cudnnSetTensor4dDescriptor(srcTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, BATCH, IN_CHANNEL, IN_HEIGHT,
+                               IN_WIDTH);
+    cudnnSetTensor4dDescriptor(dstTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, BATCH, OUT_CHANNEL, OUT_HEIGHT,
+                               OUT_WIDTH);
+    cudnnSetTensor4dDescriptor(biasTensorDesc, CUDNN_TENSOR_NCHW,
+                               CUDNN_DATA_FLOAT, 1, OUT_CHANNEL, 1,
+                               1); 
+    cudnnSetFilter4dDescriptor(weightDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW,
+                               OUT_CHANNEL, IN_CHANNEL/GROUPS, KERNEL_HEIGHT,
+                               KERNEL_WIDTH);
+#if CUDNN_MAJOR >= 6
+    cudnnSetConvolution2dDescriptor(convDesc, PADDING_HEIGHT, PADDING_WIDTH, STRIDE, STRIDE, 1, 1,
+                                    CUDNN_CROSS_CORRELATION, CUDNN_DATA_FLOAT);
+#else
+    cudnnSetConvolution2dDescriptor(convDesc, PADDING_HEIGHT, PADDING_WIDTH, STRIDE, STRIDE, 1, 1,
+                                    CUDNN_CROSS_CORRELATION);
+#endif
+#if CUDNN_MAJOR >= 7
+    cudnnSetConvolutionGroupCount(convDesc, GROUPS);
+#else
+    if (GROUPS > 1) {
+        perror("CUDNN < 7 doesn't support groups, please upgrade!");
+        exit(-1);
+    }   
+#endif
+
+    int requested_algo_count = 0, returned_algo_count = 0;
+    float min_time = 1000000;   // 1000 sec
+    cudnnConvolutionFwdAlgoPerf_t conv_fwd_results[100];
+	cudnnSetConvolutionMathType(convDesc, CUDNN_TENSOR_OP_MATH);
+
+    cudnnGetConvolutionForwardAlgorithmMaxCount(cudnn_handle(), &requested_algo_count);
+
+    cudnnGetConvolutionForwardAlgorithm_v7(
+        cudnn_handle(), srcTensorDesc, weightDesc, convDesc, dstTensorDesc,
+        requested_algo_count, &returned_algo_count, conv_fwd_results);
+
+    /*for (int i = 0; i < returned_algo_count; i++)
+    {
+        if (conv_fwd_results[i].status == CUDNN_STATUS_SUCCESS &&
+ //           conv_fwd_results[i].algo != CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED &&
+            conv_fwd_results[i].time > 0 && conv_fwd_results[i].time < min_time)
+        {
+            fw_algo = conv_fwd_results[i].algo;
+            min_time = conv_fwd_results[i].time;
+            //printf(" - cuDNN FWD algo: %d, time = %f ms \n", l->fw_algo, min_time);
+        }
+    }*/
+	fw_algo = conv_fwd_results[0].algo;
+
+}
+
 TASK_INIT
 {
 // ##INIT_PORT_SECTION::START
@@ -159,6 +225,15 @@ TASK_INIT
 
     nOutSize = OUT_WIDTH * OUT_HEIGHT * OUT_CHANNEL;
     pfDataGPU = cuda_make_array((float *)NULL, BATCH * nOutSize);
+
+    cudnn_convolutional_setup();
+    workspace_size = get_workspace_size();
+    if(workspace_size > workspace_maxsize){
+        if(pfWorkspace != NULL) cudaFree(pfWorkspace);
+        pfWorkspace = cuda_make_array((float *)NULL, workspace_size);
+        workspace_maxsize = workspace_size;
+    } 
+
 }
 
 
@@ -166,49 +241,7 @@ TASK_INIT
 // go code
 /////////////////////////////////////
 
-static size_t get_workspace_size() {
-    size_t most = 0;
-    size_t s = 0;
-    cudnnGetConvolutionForwardWorkspaceSize(cudnn_handle(), srcTensorDesc,
-                                            weightDesc, convDesc, dstTensorDesc,
-                                            fw_algo, &s);
-    if (s > most)
-        most = s;
-    return most;
-}
 
-static void cudnn_convolutional_setup() {
-    cudnnSetTensor4dDescriptor(srcTensorDesc, CUDNN_TENSOR_NCHW,
-                               CUDNN_DATA_FLOAT, BATCH, IN_CHANNEL, IN_HEIGHT,
-                               IN_WIDTH);
-    cudnnSetTensor4dDescriptor(dstTensorDesc, CUDNN_TENSOR_NCHW,
-                               CUDNN_DATA_FLOAT, BATCH, OUT_CHANNEL, OUT_HEIGHT,
-                               OUT_WIDTH);
-    cudnnSetTensor4dDescriptor(biasTensorDesc, CUDNN_TENSOR_NCHW,
-                               CUDNN_DATA_FLOAT, 1, OUT_CHANNEL, 1,
-                               1); 
-    cudnnSetFilter4dDescriptor(weightDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW,
-                               OUT_CHANNEL, IN_CHANNEL/GROUPS, KERNEL_HEIGHT,
-                               KERNEL_WIDTH);
-#if CUDNN_MAJOR >= 6
-    cudnnSetConvolution2dDescriptor(convDesc, PADDING_HEIGHT, PADDING_WIDTH, STRIDE, STRIDE, 1, 1,
-                                    CUDNN_CROSS_CORRELATION, CUDNN_DATA_FLOAT);
-#else
-    cudnnSetConvolution2dDescriptor(convDesc, PADDING_HEIGHT, PADDING_WIDTH, STRIDE, STRIDE, 1, 1,
-                                    CUDNN_CROSS_CORRELATION);
-#endif
-#if CUDNN_MAJOR >= 7
-    cudnnSetConvolutionGroupCount(convDesc, GROUPS);
-#else
-    if (GROUPS > 1) {
-        perror("CUDNN < 7 doesn't support groups, please upgrade!");
-        exit(-1);
-    }   
-#endif
-    cudnnGetConvolutionForwardAlgorithm(
-        cudnn_handle(), srcTensorDesc, weightDesc, convDesc, dstTensorDesc,
-        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &fw_algo);
-}
 
 static int iter = 0;
 const float one = 1;
@@ -225,13 +258,6 @@ TASK_GO
 	nInSize = IN_WIDTH * IN_HEIGHT * IN_CHANNEL;
     nOutSize = OUT_WIDTH * OUT_HEIGHT * OUT_CHANNEL;
 
-    cudnn_convolutional_setup();
-    workspace_size = get_workspace_size();
-    if(workspace_size > workspace_maxsize){
-        if(pfWorkspace != NULL) cudaFree(pfWorkspace);
-        pfWorkspace = cuda_make_array((float *)NULL, workspace_size);
-        workspace_maxsize = workspace_size;
-    } 
 
     check_error(cudaMemsetAsync(pfDataGPU, 0, sizeof(float) * BATCH * nOutSize, stream));
     

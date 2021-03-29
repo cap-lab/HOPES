@@ -11,7 +11,7 @@
         <parameter name="CICFile" value="CryptographywithLibrary/CICTask/task.xml" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="1000000" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
@@ -47,7 +47,7 @@
         <parameter name="CICFile" value="H264Dec_PHONE/CICTask/task.xml" />
         <parameter name="RunCondition" value="time-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="1000000" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="30" />
         <parameter name="PeriodUnit" value="ms" />
@@ -104,9 +104,9 @@
         <parameter name="CICFile" value="KmeansClustering/CICTask/task.xml" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="1000000" />
         <parameter name="DeadlineUnit" value="us" />
-        <parameter name="Period" value="1" />
+        <parameter name="Period" value="1000" />
         <parameter name="PeriodUnit" value="us" />
         <parameter name="Priority" value="4" />
         <parameter name="Language" value="C" />
@@ -140,7 +140,7 @@
         <parameter name="CICFile" value="CNN_ResNet_BATCH1/CICTask/task.xml" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="10000000" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
@@ -176,7 +176,7 @@
         <parameter name="CICFile" value="LaneDetection/CICTask/task.xml" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
-        <parameter name="Deadline" value="1" />
+        <parameter name="Deadline" value="10000000" />
         <parameter name="DeadlineUnit" value="us" />
         <parameter name="Period" value="1" />
         <parameter name="PeriodUnit" value="us" />
