@@ -7,7 +7,7 @@
   <step_list>
     <step>
       <title>Func.</title>
-      <selected>yes</selected>
+      <selected>no</selected>
       <name>sim</name>
       <target_list>
         <target>
@@ -36,7 +36,7 @@ Run 10
 <CIC_Architecture target="MulticoreHost" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
     <elementTypes>
         <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <elementType name="SHARED_MEMORY_0" category="memory">
+        <elementType name="SHARED_MEMORY_2" category="memory">
             <slavePort size="4000" name="Slave" metric="MiB"/>
         </elementType>
     </elementTypes>
@@ -44,7 +44,7 @@ Run 10
         <device runtime="native" platform="linux" name="MulticoreHost" architecture="x86">
             <elements>
                 <element type="i7_0" poolSize="4" name="i7_0"/>
-                <element type="SHARED_MEMORY_0" name="SHARED_MEMORY_0"/>
+                <element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
             </elements>
             <connections/>
             <modules/>
@@ -53,7 +53,6 @@ Run 10
     </devices>
     <connections/>
 </CIC_Architecture>
-
 ]]>
           </schematic>
         </target>
@@ -61,7 +60,7 @@ Run 10
     </step>
     <step>
       <title>Xml-Gen</title>
-      <selected>no</selected>
+      <selected>yes</selected>
       <name>codegen</name>
       <target_list>
         <target>
@@ -100,7 +99,7 @@ Run 10
       <target_list>
         <target>
           <name>Translation</name>
-          <select>yes</select>
+          <select>no</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"
@@ -220,7 +219,7 @@ Run 10
         </target>
         <target>
           <name>Translation</name>
-          <select>no</select>
+          <select>yes</select>
           <schematic>
             <![CDATA[Domain "BP"
 Target "Translation"

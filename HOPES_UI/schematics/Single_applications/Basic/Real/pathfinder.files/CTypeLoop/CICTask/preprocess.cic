@@ -1,0 +1,124 @@
+/************************************
+ *
+ * File : preprocess.cic
+ * Date : Jul 12, 2021 4:09 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+STATIC int rows = 100;
+STATIC int cols = 100000;
+STATIC int t = 0;
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_dst;
+STATIC int port_in_wall;
+STATIC int port_in_src;
+STATIC int port_in_dst1;
+STATIC int port_out_src;
+STATIC int port_out_wall;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_dst = PORT_INITIALIZE(TASK_ID, "in_dst");
+    port_in_wall = PORT_INITIALIZE(TASK_ID, "in_wall");
+    port_in_src = PORT_INITIALIZE(TASK_ID, "in_src");
+    port_in_dst1 = PORT_INITIALIZE(TASK_ID, "in_dst1");
+    port_out_src = PORT_INITIALIZE(TASK_ID, "out_src");
+    port_out_wall = PORT_INITIALIZE(TASK_ID, "out_wall");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+    
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+
+    int iter, nDataRead, nDataWrite;
+    uem_result result;
+
+    int **wall = (int**)calloc(rows * cols, sizeof(int));
+    int *src = (int*)calloc(cols, sizeof(int));
+    int *dst1 = (int*)calloc(cols, sizeof(int));
+    int *temp = (int*)calloc(cols, sizeof(int));
+    int *dst = (int*)calloc(cols, sizeof(int));
+    
+
+    result = UFPort_ReadFromQueue(port_in_wall, (unsigned char**) wall, rows*cols*sizeof(int), 0, &nDataRead);
+
+    if (t == 0) {
+        result = UFPort_ReadFromQueue(port_in_dst, (unsigned char*) dst, cols*sizeof(int), 0, &nDataRead);
+
+   } 
+    
+    else {
+
+         result = UFPort_ReadFromQueue(port_in_dst1, (unsigned char*) dst, cols*sizeof(int), 0, &nDataRead);
+         result = UFPort_ReadFromQueue(port_in_src, (unsigned char*) src, cols*sizeof(int),  0, &nDataRead);
+    }
+
+    
+    for(int i = 0; i < cols; i++) {
+        temp[i] = src[i];
+    }
+    for(int i = 0; i < cols; i++) {
+        src[i] = dst[i];
+    }
+    for(int i = 0; i < cols; i++) {
+        dst[i] = temp[i];
+    }
+    
+
+    result = UFPort_WriteToQueue(port_out_src, (unsigned char*) src, cols*sizeof(int), THIS_THREAD_ID, &nDataWrite);
+    //result = UFPort_WriteToQueue(port_out_dst, (unsigned char*) dst, cols*sizeof(int),  THIS_THREAD_ID, &nDataWrite);
+    result = UFPort_WriteToQueue(port_out_wall, (unsigned char**) wall, rows*cols*sizeof(int), THIS_THREAD_ID, &nDataWrite);
+
+    t++;
+ }
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+}
+
+TASK_CODE_END

@@ -1,0 +1,139 @@
+/************************************
+ *
+ * File : print.cic
+ * Date : Jul 12, 2021 3:57 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_dst;
+STATIC int port_in_wall;
+STATIC int port_in_data;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC int rows = 100;
+STATIC int cols = 100000;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_dst = PORT_INITIALIZE(TASK_ID, "in_dst");
+    port_in_wall = PORT_INITIALIZE(TASK_ID, "in_wall");
+    port_in_data = PORT_INITIALIZE(TASK_ID, "in_data");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+        
+        uem_result result;
+        int nDataRead;
+        
+        int *data = (int*)calloc(rows * cols, sizeof(int));
+        int **wall = (int**)calloc(rows * cols, sizeof(int));
+        int *dst = (int*)calloc(cols, sizeof(int));
+    
+        result = UFPort_ReadFromQueue(port_in_wall, (unsigned char **) wall, rows*cols*sizeof(int), 0, &nDataRead);
+		
+		/*
+		printf("wall:\n");
+		for(int i = 0; i < rows; i++) {
+			for(int j = 0; j < cols; j++) {
+				printf("%d ", wall[i][j]);
+			}
+			printf("\n");
+		}*/
+
+		
+        FILE *file = fopen("output.txt", "w");
+        fprintf(file, "wall:\n");
+        for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        fprintf(file, "%d ", wall[i][j]);
+                    }
+                    fprintf(file, "\n");
+                }
+        
+
+        result = UFPort_ReadFromQueue(port_in_data, (unsigned char *) data, rows*cols*sizeof(int), 0, &nDataRead);
+		
+		/*
+		printf("data:\n");
+		for(int i = 0; i < cols; i++) {
+			printf("%d ", data[i]);
+		}
+		printf("\n");
+		*/
+		
+		
+        fprintf(file, "data:\n");
+               for (int i = 0; i < cols; i++)
+                   fprintf(file, "%d ", data[i]);
+                fprintf(file, "\n");
+        
+
+         result = UFPort_ReadFromQueue(port_in_dst, (unsigned char *) dst, cols*sizeof(int), 0, &nDataRead);
+        
+        /*
+		printf("result:\n");
+		for(int i = 0; i < cols; i++) {
+			printf("%d ", dst[i]);
+		}
+		printf("\n");
+		*/
+		
+		 fprintf(file, "result:\n");
+                for (int i = 0; i < cols; i++) {
+                    fprintf(file, "%d ", dst[i]);
+               }     
+                fprintf(file, "\n");
+        
+         fclose(file);
+		
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

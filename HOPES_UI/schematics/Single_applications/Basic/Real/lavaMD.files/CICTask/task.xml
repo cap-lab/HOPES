@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="lavaMD">
+  <setting_list>
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="Init" type="Computational">
+      <config>
+        <location x="268" y="168" width="80" height="120" />
+        <parameter name="CICFile" value="Init.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="-lm" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="out_par" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="out_dim" type="fifo" sample_size="56" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="out_box" type="fifo" sample_size="656000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="3" export="false" name="out_rv" type="fifo" sample_size="1600000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="4" export="false" name="out_qv" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="DLoop" type="Loop">
+      <config>
+        <location x="628" y="168" width="80" height="120" />
+        <parameter name="CICFile" value="DLoop.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="DATA" />
+        <parameter name="LoopCount" value="4" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_par" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="in_dim" type="fifo" sample_size="56" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="in_box" type="fifo" sample_size="656000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="3" export="false" name="in_rv" type="fifo" sample_size="1600000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="4" export="false" name="in_qv" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out_fv" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="4" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="DLoop" macroNodePort="in_par" direction="In" insideTask="" insideTaskPort="" portType="" portMapType="broadcasting" />
+        <portMap macroNode="DLoop" macroNodePort="in_dim" direction="In" insideTask="" insideTaskPort="" portType="" portMapType="broadcasting" />
+        <portMap macroNode="DLoop" macroNodePort="in_box" direction="In" insideTask="" insideTaskPort="" portType="" portMapType="broadcasting" />
+        <portMap macroNode="DLoop" macroNodePort="in_rv" direction="In" insideTask="" insideTaskPort="" portType="" portMapType="broadcasting" />
+        <portMap macroNode="DLoop" macroNodePort="in_qv" direction="In" insideTask="" insideTaskPort="" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="DLoop" macroNodePort="out_fv" direction="Out" insideTask="" insideTaskPort="" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Print" type="Computational">
+      <config>
+        <location x="960" y="168" width="80" height="40" />
+        <parameter name="CICFile" value="Print.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_fv" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="4" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="DLoop" src_port="out_fv" dst_task="Print" dst_port="in_fv" size="1600000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="708" y="188" />
+        <edge id="1" x="960" y="188" />
+      </edge_list>
+    </channel>
+    <channel src_task="Init" src_port="out_par" dst_task="DLoop" dst_port="in_par" size="1" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="348" y="188" />
+        <edge id="1" x="628" y="188" />
+      </edge_list>
+    </channel>
+    <channel src_task="Init" src_port="out_dim" dst_task="DLoop" dst_port="in_dim" size="56" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="208" />
+        <edge id="1" x="628" y="208" />
+      </edge_list>
+    </channel>
+    <channel src_task="Init" src_port="out_box" dst_task="DLoop" dst_port="in_box" size="656000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="228" />
+        <edge id="1" x="628" y="228" />
+      </edge_list>
+    </channel>
+    <channel src_task="Init" src_port="out_rv" dst_task="DLoop" dst_port="in_rv" size="1600000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="248" />
+        <edge id="1" x="628" y="248" />
+      </edge_list>
+    </channel>
+    <channel src_task="Init" src_port="out_qv" dst_task="DLoop" dst_port="in_qv" size="400000" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="268" />
+        <edge id="1" x="628" y="268" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

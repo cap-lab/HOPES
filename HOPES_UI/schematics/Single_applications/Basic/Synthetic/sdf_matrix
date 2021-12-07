@@ -35,15 +35,15 @@ Run 10
             <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <CIC_Architecture target="test_sdf_matrix" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
     <elementTypes>
-        <elementType subcategory="CPU" sleepPower="80000" scheduler="RR" relativeCost="1.0" name="i7_0" model="i7" clock="3400" category="processor" activePower="80000" OS="LINUX"/>
-        <elementType name="SHARED_MEMORY_2" category="memory">
-            <slavePort size="4000" name="Slave" metric="MiB"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" scheduler="RR" OS="LINUX" model="i7" subcategory="CPU" category="processor" name="i7_0"/>
+        <elementType category="memory" name="SHARED_MEMORY_2">
+            <slavePort metric="MiB" size="4000" name="Slave"/>
         </elementType>
     </elementTypes>
     <devices>
-        <device runtime="native" platform="linux" name="test_sdf_matrix" architecture="x86">
+        <device runtime="native" platform="linux" architecture="x86" name="test_sdf_matrix">
             <elements>
-                <element type="i7_0" poolSize="4" name="i7_0"/>
+                <element poolSize="4" type="i7_0" name="i7_0"/>
                 <element type="SHARED_MEMORY_2" name="SHARED_MEMORY_2"/>
             </elements>
             <connections/>

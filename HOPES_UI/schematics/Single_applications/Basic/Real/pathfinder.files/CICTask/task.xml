@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="pathfinder">
+  <setting_list>
+    <setting cycle="1" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+  </setting_list>
+  <task_list>
+    <task name="init" type="Computational">
+      <config>
+        <location x="64" y="172" width="80" height="80" />
+        <parameter name="CICFile" value="init.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="out_dst" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="out_wall" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="out_data" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="print" type="Computational">
+      <config>
+        <location x="620" y="244" width="80" height="80" />
+        <parameter name="CICFile" value="print.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_dst" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="in_wall" type="fifo" sample_size="40000000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="in_data" type="fifo" sample_size="40000000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="CTypeLoop" type="Loop">
+      <config>
+        <location x="412" y="108" width="80" height="60" />
+        <parameter name="CICFile" value="CTypeLoop/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="CONVERGENT" />
+        <parameter name="LoopCount" value="99" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in_dst" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="in_wall" type="fifo" sample_size="40000000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out_dst" type="fifo" sample_size="400000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="CTypeLoop" macroNodePort="in_dst" direction="In" insideTask="preprocess" insideTaskPort="in_dst" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="CTypeLoop" macroNodePort="in_wall" direction="In" insideTask="preprocess" insideTaskPort="in_wall" portType="fifo" portMapType="broadcasting" />
+        <portMap macroNode="CTypeLoop" macroNodePort="out_dst" direction="Out" insideTask="out" insideTaskPort="out" portType="fifo" portMapType="normal" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="init" src_port="out_dst" dst_task="CTypeLoop" dst_port="in_dst" size="100000" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="144" y="192" />
+        <edge id="1" x="412" y="128" />
+      </edge_list>
+    </channel>
+    <channel src_task="init" src_port="out_wall" dst_task="CTypeLoop" dst_port="in_wall" size="10000000" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="144" y="212" />
+        <edge id="1" x="412" y="148" />
+      </edge_list>
+    </channel>
+    <channel src_task="init" src_port="out_data" dst_task="print" dst_port="in_data" size="10000000" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="144" y="232" />
+        <edge id="1" x="324" y="304" />
+        <edge id="2" x="620" y="304" />
+      </edge_list>
+    </channel>
+    <channel src_task="init" src_port="out_wall" dst_task="print" dst_port="in_wall" size="10000000" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="144" y="212" />
+        <edge id="1" x="412" y="284" />
+        <edge id="2" x="620" y="284" />
+      </edge_list>
+    </channel>
+    <channel src_task="CTypeLoop" src_port="out_dst" dst_task="print" dst_port="in_dst" size="100000" init_size="0" sampleType="" sampleSize="4">
+      <edge_list>
+        <edge id="0" x="492" y="128" />
+        <edge id="1" x="560" y="144" />
+        <edge id="2" x="620" y="264" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

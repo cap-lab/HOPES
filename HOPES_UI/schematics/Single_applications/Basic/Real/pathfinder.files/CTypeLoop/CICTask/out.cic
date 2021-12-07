@@ -1,0 +1,102 @@
+/************************************
+ *
+ * File : out.cic
+ * Date : Jul 12, 2021 4:26 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+STATIC int rows = 100;
+STATIC int cols = 100000;
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_dst;
+STATIC int port_in_src;
+STATIC int port_out_dst;
+STATIC int port_out_src;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_dst = PORT_INITIALIZE(TASK_ID, "in_dst");
+    port_in_src = PORT_INITIALIZE(TASK_ID, "in_src");
+    port_out_dst = PORT_INITIALIZE(TASK_ID, "out_dst");
+    port_out_src = PORT_INITIALIZE(TASK_ID, "out_src");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    uem_result result;
+    int nDataWrite, nDataRead;
+    int *dst = (int*)calloc(cols, sizeof(int));
+    int *src = (int*)calloc(cols, sizeof(int));
+
+    int iter;
+        
+    UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &iter);    
+    
+    result = UFPort_ReadFromQueue(port_in_dst, (unsigned char*) dst,  cols*sizeof(int), 0, &nDataRead);
+    result = UFPort_ReadFromQueue(port_in_src, (unsigned char*) src,  cols*sizeof(int), 0, &nDataRead);
+    
+
+    if(iter == 98){		
+            result = UFPort_WriteToQueue(port_out, (unsigned char *) dst, cols * sizeof(int), 0, &nDataWrite);
+            UFLoop_StopNextIteration(THIS_TASK_ID);
+        }
+    else {
+
+            result = UFPort_WriteToQueue(port_out_dst, (unsigned char *) dst, cols * sizeof(int), 0, &nDataWrite);
+            result = UFPort_WriteToQueue(port_out_src, (unsigned char *) src, cols * sizeof(int), 0, &nDataWrite);
+
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

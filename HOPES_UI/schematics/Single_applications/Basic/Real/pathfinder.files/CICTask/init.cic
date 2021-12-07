@@ -1,0 +1,106 @@
+/************************************
+ *
+ * File : init.cic
+ * Date : Jul 12, 2021 3:56 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+#include <stdio.h>
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+STATIC int rows = 100;
+STATIC int cols = 100000;
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_dst;
+STATIC int port_out_wall;
+STATIC int port_out_data;
+STATIC int port_out_src;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out_dst = PORT_INITIALIZE(TASK_ID, "out_dst");
+    port_out_wall = PORT_INITIALIZE(TASK_ID, "out_wall");
+    port_out_data = PORT_INITIALIZE(TASK_ID, "out_data");
+    port_out_src = PORT_INITIALIZE(TASK_ID, "out_src");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    uem_result result;
+    int nDataWrite, nDataRead;
+    
+    int *data = (int*)calloc(rows * cols, sizeof(int));
+    int **wall = (int**)calloc(rows * cols, sizeof(int));
+    int *dst = (int*)calloc(cols, sizeof(int));
+    int *src = (int*)calloc(cols, sizeof(int));
+
+     
+     for (int n = 0; n < rows; n++) {
+               wall[n] = data + cols * n;
+     }
+                   
+     srand(7);
+       
+     for (int i = 0; i < rows; i++) {   //Wall ?‚´ë¶? ?š”?†Œ 
+        for (int j = 0; j < cols; j++) {
+            wall[i][j] = rand() % 10;
+        }
+     }
+     
+         for (int j = 0; j < cols; j++) {
+              dst[j] = wall[0][j];
+         }
+        
+     result = UFPort_WriteToQueue(port_out_data, (unsigned char*) data, rows*cols*sizeof(int),0, &nDataWrite);
+     result = UFPort_WriteToQueue(port_out_wall, (unsigned char**) wall, rows*cols*sizeof(int), 0, &nDataWrite);
+     result = UFPort_WriteToQueue(port_out_dst, (unsigned char*) dst, cols*sizeof(int), 0, &nDataWrite);
+    
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

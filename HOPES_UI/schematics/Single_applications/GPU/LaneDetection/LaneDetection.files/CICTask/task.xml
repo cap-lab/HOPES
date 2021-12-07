@@ -2,7 +2,7 @@
 
 <cic_manual name="LaneDetection">
   <setting_list>
-    <setting cycle="30" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+    <setting cycle="100" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
   </setting_list>
   <task_list>
     <task name="LoadImage" type="Computational">
@@ -27,7 +27,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list />
       <outport_list>
@@ -48,7 +48,7 @@
       <config>
         <location x="1068" y="384" width="80" height="40" />
         <parameter name="CICFile" value="StoreImage.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -66,7 +66,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -82,12 +82,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="YUVtoRGB" type="Computational">
       <config>
         <location x="240" y="332" width="80" height="40" />
         <parameter name="CICFile" value="GPU_YUVtoRGB.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -105,7 +106,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -125,12 +126,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="RGBtoYUV" type="Computational">
       <config>
         <location x="860" y="384" width="80" height="40" />
         <parameter name="CICFile" value="GPU_RGBtoYUV.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -148,7 +150,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -168,12 +170,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="KNN" type="Computational">
       <config>
         <location x="484" y="192" width="80" height="40" />
         <parameter name="CICFile" value="GPU_KNN_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -191,7 +194,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -211,12 +214,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="NLM" type="Computational">
       <config>
         <location x="484" y="288" width="80" height="40" />
         <parameter name="CICFile" value="GPU_NLM_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -234,7 +238,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -254,12 +258,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Blending" type="Computational">
       <config>
         <location x="692" y="232" width="80" height="60" />
         <parameter name="CICFile" value="GPU_Blending_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -277,7 +282,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input_knn" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -300,12 +305,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Sharpen" type="Computational">
       <config>
         <location x="892" y="232" width="80" height="40" />
         <parameter name="CICFile" value="GPU_Sharpen_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -323,7 +329,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -343,12 +349,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Gaussian" type="Computational">
       <config>
         <location x="484" y="104" width="80" height="40" />
         <parameter name="CICFile" value="GPU_Gaussian_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -366,7 +373,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -386,12 +393,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Sobel" type="Computational">
       <config>
         <location x="692" y="104" width="80" height="40" />
         <parameter name="CICFile" value="GPU_Sobel_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -409,7 +417,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -429,12 +437,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="NonMax" type="Computational">
       <config>
         <location x="904" y="104" width="80" height="40" />
         <parameter name="CICFile" value="GPU_NonMax_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -452,7 +461,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -472,12 +481,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Hough" type="Computational">
       <config>
         <location x="1100" y="104" width="80" height="40" />
         <parameter name="CICFile" value="GPU_Hough_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -495,7 +505,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -515,12 +525,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="DrawLane" type="Computational">
       <config>
         <location x="1104" y="232" width="80" height="40" />
         <parameter name="CICFile" value="CPU_Draw_Lane.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -538,7 +549,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -558,12 +569,13 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
     <task name="Merge" type="Computational">
       <config>
         <location x="620" y="384" width="80" height="60" />
         <parameter name="CICFile" value="GPU_Merge_Filter.cic" />
-        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
         <parameter name="DeadlineUnit" value="us" />
@@ -581,7 +593,7 @@
         <parameter name="IsLoopSubTask" value="No" />
         <parameter name="IsDesignatedTask" value="No" />
         <parameter name="SubgraphProperty" value="Dataflow" />
-        <parameter name="Description" />
+        <parameter name="Description" value="" />
       </config>
       <inport_list>
         <port id="0" export="false" name="input_origin" type="fifo" sample_size="1" sample_rate="Fixed" description="">
@@ -604,6 +616,7 @@
         <control_params />
         <slaves />
       </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
     </task>
   </task_list>
   <library_list />

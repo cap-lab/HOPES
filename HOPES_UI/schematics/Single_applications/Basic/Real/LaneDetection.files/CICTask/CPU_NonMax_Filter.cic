@@ -1,0 +1,196 @@
+/************************************
+ *
+ * File : CPU_NonMax_F.cic
+ * Date : Mar 21, 2018 2:14 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+#include <math.h>
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC unsigned char *src;
+STATIC unsigned char *dst;
+
+STATIC int diffx[WIDTH * HEIGHT];
+STATIC int diffy[WIDTH * HEIGHT];
+STATIC int mag[WIDTH * HEIGHT];
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src = (unsigned char*)malloc(WIDTH*HEIGHT*3);
+    dst = (unsigned char*)malloc(WIDTH*HEIGHT*3);
+}
+    
+unsigned int make_color(unsigned char r, unsigned char g, unsigned char b, unsigned char a){
+    return
+        ((int)(a) << 24) |
+        ((int)(b) << 16) |
+        ((int)(g) <<  8) |
+        ((int)(r) <<  0);
+}
+
+void divide_pixel(unsigned int pixel, unsigned char f_div_pixel[4])
+{
+    f_div_pixel[0] = (pixel >> 0) & 0xff;
+    f_div_pixel[1] = (pixel >> 8) & 0xff;
+    f_div_pixel[2] = (pixel >> 16) & 0xff;
+    f_div_pixel[3] = (pixel >> 24) & 0xff;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    int convolveX[] = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
+    int convolveY[] = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
+    int templateSize = 3;
+    int x1, y1 = 0;
+    int ix, iy = 0;
+    int valx, valy;
+
+    // TODO: task main code
+    MQ_RECEIVE(port_input, (unsigned char*)src, WIDTH * HEIGHT * 3);
+    
+    for(ix= templateSize/2; ix<WIDTH - (templateSize/2); ix++){
+        for(iy=templateSize/2; iy<HEIGHT - (templateSize/2); iy++){
+            valx=0;
+            valy=0;
+            for(x1 = 0; x1 < templateSize; x1++) {
+                for(y1 = 0; y1 < templateSize; y1++) {
+                    int pos = (y1 * templateSize + x1);
+                    int imPos = ((ix + (x1 - (templateSize / 2))) + ((iy + (y1 - (templateSize / 2))) * WIDTH)) * 3;
+                    unsigned int pixel = 0;
+                    pixel = make_color(src[(imPos + 0)], src[(imPos + 1)], src[(imPos + 2)], 0);
+
+                    valx +=((pixel&0xff) * convolveX[pos]);
+                    valy +=((pixel&0xff) * convolveY[pos]);
+                }
+            }
+            diffx[ix + (iy * WIDTH)] = valx;
+            diffy[ix + (iy * WIDTH)] = valy;
+            mag[ix + (iy * WIDTH)] = (int)(sqrt(((valx * valx) + (valy * valy))));
+        }
+    }
+
+    for(ix=1; ix<WIDTH; ix++){
+        for(iy=1; iy<HEIGHT; iy++){
+            int dx, dy;
+
+            if(diffx[ix + (iy * WIDTH)] > 0) dx = 1;
+            else dx = -1;
+
+            if(diffy[ix + (iy * WIDTH)] > 0) dy = 1;
+            else dy = -1;                   
+
+            int a1, a2, b1, b2, A, B, point, val;
+
+            if(abs(diffx[ix + (iy * WIDTH)]) > abs(diffy[ix + (iy * WIDTH)]))
+            {
+                a1 = mag[(ix+dx) + ((iy) * WIDTH)];
+                a2 = mag[(ix+dx) + ((iy-dy) * WIDTH)];
+                b1 = mag[(ix-dx) + ((iy) * WIDTH)];
+                b2 = mag[(ix-dx) + ((iy+dy) * WIDTH)];
+                A = (abs(diffx[ix + (iy * WIDTH)]) - abs(diffy[ix + (iy * WIDTH)]))*a1 + abs(diffy[ix + (iy * WIDTH)])*a2;
+                B = (abs(diffx[ix + (iy * WIDTH)]) - abs(diffy[ix + (iy * WIDTH)]))*b1 + abs(diffy[ix + (iy * WIDTH)])*b2;
+                point = mag[ix + (iy * WIDTH)] * abs(diffx[ix + (iy * WIDTH)]);
+
+                int output = 0;
+                unsigned char temp[4];
+                if(point >= A && point > B) {
+                    val = abs(diffx[ix + (iy * WIDTH)]);
+                    output = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
+                    divide_pixel(output, temp);
+                    dst[(ix + (iy * WIDTH)) * 3 + 0] = temp[0];
+                    dst[(ix + (iy * WIDTH)) * 3 + 1] = temp[1];
+                    dst[(ix + (iy * WIDTH)) * 3 + 2] = temp[2];
+                }
+                else {
+                    val = 0;
+                    output = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
+                    divide_pixel(output, temp);
+                    dst[(ix + (iy * WIDTH)) * 3 + 0] = temp[0];
+                    dst[(ix + (iy * WIDTH)) * 3 + 1] = temp[1];
+                    dst[(ix + (iy * WIDTH)) * 3 + 2] = temp[2];
+                }
+            }
+
+            else
+            {
+                a1 = mag[(ix) + ((iy-dy) * WIDTH)];
+                a2 = mag[(ix+dx) + ((iy-dy) * WIDTH)];
+                b1 = mag[(ix) + ((iy+dy) * WIDTH)];
+                b2 = mag[(ix-dx) + ((iy+dy) * WIDTH)];                        
+                A = (abs(diffy[ix + (iy * WIDTH)]) - abs(diffx[ix + (iy * WIDTH)]))*a1 + abs(diffx[ix + (iy * WIDTH)])*a2;
+                B = (abs(diffy[ix + (iy * WIDTH)]) - abs(diffx[ix + (iy * WIDTH)]))*b1 + abs(diffx[ix + (iy * WIDTH)])*b2;
+                point = mag[ix + (iy * WIDTH)] * abs(diffy[ix + (iy * WIDTH)]);
+                int output = 0;
+                unsigned char temp[4];
+                if(point >= A && point > B) {
+                    val = abs(diffy[ix + (iy * WIDTH)]);
+                    output = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
+                    divide_pixel(output, temp);
+                    dst[(ix + (iy * WIDTH)) * 3 + 0] = temp[0];
+                    dst[(ix + (iy * WIDTH)) * 3 + 1] = temp[1];
+                    dst[(ix + (iy * WIDTH)) * 3 + 2] = temp[2];
+                }
+                else {
+                    val = 0;
+                    output = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
+                    divide_pixel(output, temp);
+                    dst[(ix + (iy * WIDTH)) * 3 + 0] = temp[0];
+                    dst[(ix + (iy * WIDTH)) * 3 + 1] = temp[1];
+                    dst[(ix + (iy * WIDTH)) * 3 + 2] = temp[2];
+                }                           
+            }
+        }
+    }
+
+    MQ_SEND(port_output, (unsigned char*)dst, WIDTH * HEIGHT * 3);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(src);
+    free(dst);
+}
+
+TASK_CODE_END

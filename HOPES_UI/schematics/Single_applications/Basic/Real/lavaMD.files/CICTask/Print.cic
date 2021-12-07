@@ -1,0 +1,89 @@
+/************************************
+ *
+ * File : Print.cic
+ * Date : Jul 23, 2021 2:27 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "header.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_fv;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_fv = PORT_INITIALIZE(TASK_ID, "in_fv");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    uem_result result;
+    int nDataRead;
+    
+    FOUR_VECTOR *fv_cpu = (FOUR_VECTOR *)malloc(1600000);
+    
+    result = UFPort_ReadFromQueue(port_in_fv, (unsigned char*) fv_cpu, 1600000, 0, &nDataRead);
+    /*
+    FILE *fptr;
+    fptr = fopen("output.txt", "w");
+            
+    for (int i = 0; i < 100000; i = i + 1) {
+        fprintf(fptr, "%f, %f, %f, %f\n", fv_cpu[i].v, fv_cpu[i].x,
+        fv_cpu[i].y, fv_cpu[i].z);
+    }
+    fclose(fptr);
+    */
+    
+    for (int i = 0; i < 100000; i = i + 1) {
+        printf("%f, %f, %f, %f\n", fv_cpu[i].v, fv_cpu[i].x, fv_cpu[i].y, fv_cpu[i].z);
+    }       
+            
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

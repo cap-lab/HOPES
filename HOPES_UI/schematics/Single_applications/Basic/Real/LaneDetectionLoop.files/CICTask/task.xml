@@ -2,7 +2,7 @@
 
 <cic_manual name="LaneDetectionLoop">
   <setting_list>
-    <setting cycle="300" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
+    <setting cycle="100" unit="count" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="DataFlow" />
   </setting_list>
   <task_list>
     <task name="LoadImage" type="Computational">
@@ -87,7 +87,7 @@
     <task name="YUVtoRGB" type="Computational">
       <config>
         <location x="152" y="332" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_YUVtoRGB.cic" />
+        <parameter name="CICFile" value="CPU_YUVtoRGB.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -131,7 +131,7 @@
     <task name="RGBtoYUV" type="Computational">
       <config>
         <location x="956" y="440" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_RGBtoYUV.cic" />
+        <parameter name="CICFile" value="CPU_RGBtoYUV.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -175,7 +175,7 @@
     <task name="Blending" type="Computational">
       <config>
         <location x="692" y="232" width="80" height="60" />
-        <parameter name="CICFile" value="GPU_Blending_Filter.cic" />
+        <parameter name="CICFile" value="CPU_Blending_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -222,7 +222,7 @@
     <task name="Sharpen" type="Computational">
       <config>
         <location x="892" y="232" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_Sharpen_Filter.cic" />
+        <parameter name="CICFile" value="CPU_Sharpen_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -266,7 +266,7 @@
     <task name="Gaussian" type="Computational">
       <config>
         <location x="380" y="104" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_Gaussian_Filter.cic" />
+        <parameter name="CICFile" value="CPU_Gaussian_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -310,7 +310,7 @@
     <task name="Sobel" type="Computational">
       <config>
         <location x="692" y="104" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_Sobel_Filter.cic" />
+        <parameter name="CICFile" value="CPU_Sobel_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -354,7 +354,7 @@
     <task name="NonMax" type="Computational">
       <config>
         <location x="904" y="104" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_NonMax_Filter.cic" />
+        <parameter name="CICFile" value="CPU_NonMax_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -398,7 +398,7 @@
     <task name="Hough" type="Computational">
       <config>
         <location x="1100" y="104" width="80" height="40" />
-        <parameter name="CICFile" value="GPU_Hough_Filter.cic" />
+        <parameter name="CICFile" value="CPU_Hough_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />
@@ -486,7 +486,7 @@
     <task name="Merge" type="Computational">
       <config>
         <location x="716" y="440" width="80" height="60" />
-        <parameter name="CICFile" value="GPU_Merge_Filter.cic" />
+        <parameter name="CICFile" value="CPU_Merge_Filter.cic" />
         <parameter name="RunCondition" value="data-driven" />
         <parameter name="HasInternalStates" value="Yes" />
         <parameter name="Deadline" value="1" />

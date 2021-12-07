@@ -1,0 +1,194 @@
+/************************************
+ *
+ * File : DLoop.cic
+ * Date : Jul 23, 2021 2:00 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "header.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_par;
+STATIC int port_in_dim;
+STATIC int port_in_box;
+STATIC int port_in_rv;
+STATIC int port_in_qv;
+STATIC int port_out_fv;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+#if THIS_THREAD_ID == 0
+int numFinished=0;
+FOUR_VECTOR fv[100000];
+FOUR_VECTOR rv[100000];
+box_str box[1000];
+float qv[100000];
+
+#else
+extern int numFinished;
+extern FOUR_VECTOR fv[100000];
+extern FOUR_VECTOR rv[100000];
+extern box_str box[1000];
+extern float qv[100000];
+#endif
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_par = PORT_INITIALIZE(TASK_ID, "in_par");
+    port_in_dim = PORT_INITIALIZE(TASK_ID, "in_dim");
+    port_in_box = PORT_INITIALIZE(TASK_ID, "in_box");
+    port_in_rv = PORT_INITIALIZE(TASK_ID, "in_rv");
+    port_in_qv = PORT_INITIALIZE(TASK_ID, "in_qv");
+    port_out_fv = PORT_INITIALIZE(TASK_ID, "out_fv");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    uem_result result;
+    int nDataWrite, nDataRead, iter;
+    
+    par_str par;
+    dim_str dim;
+     
+    UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &iter);
+
+    result = UFPort_ReadFromQueue(port_in_par, (unsigned char*) &par, sizeof(par_str), 0, &nDataRead); // 4
+    result = UFPort_ReadFromQueue(port_in_dim, (unsigned char*) &dim, sizeof(dim_str), 0, &nDataRead);// 56
+    result = UFPort_ReadFromQueue(port_in_box, (unsigned char*) box, dim.box_mem, 0, &nDataRead); 
+    result = UFPort_ReadFromQueue(port_in_rv, (unsigned char*) rv, dim.space_mem, 0, &nDataRead);
+    result = UFPort_ReadFromQueue(port_in_qv, (unsigned char*) qv, dim.space_mem2, 0, &nDataRead); 
+   
+    for (int i = 0; i < dim.space_elem; i = i + 1) {
+        fv[i].v =
+            0; // set to 0, because kernels keeps adding to initial value
+        fv[i].x =
+            0; // set to 0, because kernels keeps adding to initial value
+        fv[i].y =
+            0; // set to 0, because kernels keeps adding to initial value
+        fv[i].z =
+            0; // set to 0, because kernels keeps adding to initial value
+    }
+    
+    
+    fp alpha;
+    fp a2;
+    
+        // counters
+    int i, j, k, l;
+    
+        // home box
+    long first_i;
+    FOUR_VECTOR *rA;
+    FOUR_VECTOR *fA;
+    
+        // neighbor box
+    int pointer;
+    long first_j;
+    FOUR_VECTOR *rB;
+    fp *qB;
+    
+        // common
+    fp r2;
+    fp u2;
+    fp fs;
+    fp vij;
+    fp fxij, fyij, fzij;
+    THREE_VECTOR d;
+    
+    alpha = par.alpha;
+    a2 = 2.0 * alpha * alpha;    
+    
+    for (l = iter * (dim.number_boxes / 4); l < (iter + 1) * dim.number_boxes / 4; l = l + 1) {  // 1000
+    
+            first_i = box[l].offset; // first_i = l * 100 
+    
+            rA = &rv[first_i];
+            fA = &fv[first_i];
+    
+            for (k = 0; k < (1 + box[l].nn); k++) {
+                if (k == 0) {
+                    pointer = l; 
+                }
+                else {
+                    pointer = box[l].nei[k - 1].number; 
+                }
+                first_j = box[pointer].offset;
+    
+                rB = &rv[first_j];
+                qB = &qv[first_j];
+    
+                for (i = 0; i < NUMBER_PAR_PER_BOX; i = i + 1) { //100
+    
+                    for (j = 0; j < NUMBER_PAR_PER_BOX; j = j + 1) { //100
+    
+                        r2 = rA[i].v + rB[j].v - DOT(rA[i], rB[j]);
+                        u2 = a2 * r2;
+                        vij = exp(-u2);
+                        fs = 2. * vij;
+                        d.x = rA[i].x - rB[j].x;
+                        d.y = rA[i].y - rB[j].y;
+                        d.z = rA[i].z - rB[j].z;
+                        fxij = fs * d.x;
+                        fyij = fs * d.y;
+                        fzij = fs * d.z;
+    
+                        fA[i].v += qB[j] * vij;
+                        fA[i].x += qB[j] * fxij;
+                        fA[i].y += qB[j] * fyij;
+                        fA[i].z += qB[j] * fzij;
+    
+                    } // for j
+                } // for i
+            } // for k
+        } // for l
+    
+    numFinished++;
+    
+     result = UFPort_WriteToQueue(port_out_fv, (unsigned char*) (fv + 25000 * iter),  400000, iter, &nDataWrite);
+
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

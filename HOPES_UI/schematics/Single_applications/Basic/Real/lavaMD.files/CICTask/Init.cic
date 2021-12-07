@@ -1,0 +1,197 @@
+/************************************
+ *
+ * File : Init.cic
+ * Date : Jul 23, 2021 11:45 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "header.h"
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_par;
+STATIC int port_out_dim;
+STATIC int port_out_box;
+STATIC int port_out_rv;
+STATIC int port_out_qv;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out_par = PORT_INITIALIZE(TASK_ID, "out_par");
+    port_out_dim = PORT_INITIALIZE(TASK_ID, "out_dim");
+    port_out_box = PORT_INITIALIZE(TASK_ID, "out_box");
+    port_out_rv = PORT_INITIALIZE(TASK_ID, "out_rv");
+    port_out_qv = PORT_INITIALIZE(TASK_ID, "out_qv");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    uem_result result;
+    int nDataWrite;
+    // counters
+    int i, j, k, l, m, n;
+    
+    par_str par_cpu;
+    dim_str dim_cpu;
+    
+    int nh;
+    
+    dim_cpu.boxes1d_arg = 10;
+    par_cpu.alpha = 0.5;
+    
+        // total number of boxes
+    dim_cpu.number_boxes =
+    dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg * dim_cpu.boxes1d_arg;
+
+    // how many particles space has in each direction
+    dim_cpu.space_elem = dim_cpu.number_boxes * NUMBER_PAR_PER_BOX; 
+    dim_cpu.space_mem = dim_cpu.space_elem * sizeof(FOUR_VECTOR);
+    dim_cpu.space_mem2 = dim_cpu.space_elem * sizeof(fp);
+
+    // box array
+    dim_cpu.box_mem = dim_cpu.number_boxes * sizeof(box_str);
+
+    // allocate boxes
+    box_str *box_cpu = (box_str *)malloc(dim_cpu.box_mem);
+    
+    // initialize number of home boxes
+    nh = 0;
+    
+    // home boxes in z direction
+        for (i = 0; i < dim_cpu.boxes1d_arg; i++) {
+            // home boxes in y direction
+            for (j = 0; j < dim_cpu.boxes1d_arg; j++) {
+                // home boxes in x direction
+                for (k = 0; k < dim_cpu.boxes1d_arg; k++) {
+    
+                    // current home box
+                    box_cpu[nh].x = k;
+                    box_cpu[nh].y = j;
+                    box_cpu[nh].z = i;
+                    box_cpu[nh].number = nh;
+                    box_cpu[nh].offset = nh * NUMBER_PAR_PER_BOX;
+    
+                    // initialize number of neighbor boxes
+                    box_cpu[nh].nn = 0;
+    
+                    // neighbor boxes in z direction
+                    for (l = -1; l < 2; l++) {
+                        // neighbor boxes in y direction
+                        for (m = -1; m < 2; m++) {
+                            // neighbor boxes in x direction
+                            for (n = -1; n < 2; n++) {
+    
+                                // check if (this neighbor exists) and (it is not
+                                // the same as home box)
+                                if ((((i + l) >= 0 && (j + m) >= 0 &&
+                                      (k + n) >= 0) == true &&
+                                     ((i + l) < dim_cpu.boxes1d_arg &&
+                                      (j + m) < dim_cpu.boxes1d_arg &&
+                                      (k + n) < dim_cpu.boxes1d_arg) == true) &&
+                                    (l == 0 && m == 0 && n == 0) == false) {
+    
+                                    // current neighbor box
+                                    box_cpu[nh].nei[box_cpu[nh].nn].x = (k + n);
+                                    box_cpu[nh].nei[box_cpu[nh].nn].y = (j + m);
+                                    box_cpu[nh].nei[box_cpu[nh].nn].z = (i + l);
+                                    box_cpu[nh].nei[box_cpu[nh].nn].number =
+                                        (box_cpu[nh].nei[box_cpu[nh].nn].z *
+                                         dim_cpu.boxes1d_arg *
+                                         dim_cpu.boxes1d_arg) +
+                                        (box_cpu[nh].nei[box_cpu[nh].nn].y *
+                                         dim_cpu.boxes1d_arg) +
+                                        box_cpu[nh].nei[box_cpu[nh].nn].x;
+                                    box_cpu[nh].nei[box_cpu[nh].nn].offset =
+                                        box_cpu[nh].nei[box_cpu[nh].nn].number *
+                                        NUMBER_PAR_PER_BOX;
+    
+                                    // increment neighbor box
+                                    box_cpu[nh].nn = box_cpu[nh].nn + 1;
+                                }
+    
+                            } // neighbor boxes in x direction
+                        }     // neighbor boxes in y direction
+                    }         // neighbor boxes in z direction
+    
+                    // increment home box
+                    nh = nh + 1;
+    
+                } // home boxes in x direction
+            }     // home boxes in y direction
+        }         // home boxes in z direction
+    
+        srand(7);
+    
+        // input (distances)
+        FOUR_VECTOR *rv_cpu = (FOUR_VECTOR *)malloc(dim_cpu.space_mem);
+        for (i = 0; i < dim_cpu.space_elem; i = i + 1) {
+            rv_cpu[i].v =
+                (rand() % 10 + 1) / 10.0; // get a number in the range 0.1 - 1.0
+            rv_cpu[i].x =
+                (rand() % 10 + 1) / 10.0; // get a number in the range 0.1 - 1.0
+            rv_cpu[i].y =
+                (rand() % 10 + 1) / 10.0; // get a number in the range 0.1 - 1.0
+            rv_cpu[i].z =
+                (rand() % 10 + 1) / 10.0; // get a number in the range 0.1 - 1.0
+        }
+    
+        // input (charge)
+        float *qv_cpu = (fp *)malloc(dim_cpu.space_mem2);
+        for (i = 0; i < dim_cpu.space_elem; i = i + 1) {
+            qv_cpu[i] =
+                (rand() % 10 + 1) / 10.0; // get a number in the range 0.1 - 1.0
+        }
+       
+        result = UFPort_WriteToQueue(port_out_box, (unsigned char*) box_cpu, dim_cpu.box_mem, 0, &nDataWrite); 
+        result = UFPort_WriteToQueue(port_out_rv, (unsigned char*) rv_cpu, dim_cpu.space_mem, 0, &nDataWrite);
+        result = UFPort_WriteToQueue(port_out_qv, (unsigned char*) qv_cpu, dim_cpu.space_mem2, 0, &nDataWrite); 
+        result = UFPort_WriteToQueue(port_out_par, (unsigned char*) &par_cpu, sizeof(par_str), 0, &nDataWrite); 
+        result = UFPort_WriteToQueue(port_out_dim, (unsigned char*) &dim_cpu, sizeof(dim_str), 0, &nDataWrite);
+ }
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

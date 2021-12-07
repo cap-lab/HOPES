@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_GPUSetup xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <tasks>
+        <task clustering="No" pipelining="No" maxStream="0" name="RGBtoYUV">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="Hough">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="Sobel">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="YUVtoRGB">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="KNN">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="NLM">
+            <globalWorkSize depth="1" width="160" height="90"/>
+            <localWorkSize depth="1" width="8" height="8"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="Blending">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="Merge">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="Sharpen">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="Gaussian">
+            <globalWorkSize depth="1" width="80" height="1"/>
+            <localWorkSize depth="1" width="16" height="1"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="NonMax">
+            <globalWorkSize depth="1" width="80" height="45"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+            <device name="NewPC">
+                <processor pool="cuda_gpu_sm20_2"/>
+            </device>
+        </task>
+    </tasks>
+</CIC_GPUSetup>

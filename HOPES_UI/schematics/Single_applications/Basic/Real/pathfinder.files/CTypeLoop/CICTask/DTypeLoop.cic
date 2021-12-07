@@ -1,0 +1,128 @@
+/************************************
+ *
+ * File : DLoop.cic
+ * Date : Jul 14, 2021 5:30 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+#if THIS_THREAD_ID == 0
+int numFinished=0;
+extern int t = 0;
+int dst[100000];
+int src[100000];
+#else
+extern int numFinished;
+extern int t;
+extern int dst[100000];
+extern int src[100000];
+
+#endif
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+STATIC int rows = 100;
+STATIC int cols = 100000;
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_src;
+STATIC int port_in_wall;
+STATIC int port_out_dst;
+STATIC int port_out_src;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+#define MIN(a, b) ((a) <= (b) ? (a) : (b))
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_src = PORT_INITIALIZE(TASK_ID, "in_src");
+    port_in_wall = PORT_INITIALIZE(TASK_ID, "in_wall");
+    port_out_dst = PORT_INITIALIZE(TASK_ID, "out_dst");
+    port_out_src = PORT_INITIALIZE(TASK_ID, "out_src");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    uem_result result;
+    int nDataRead = 0;
+    int nDataWrite = 0; 
+    int min, iter;
+    
+    int **wall = (int**)calloc(rows * cols, sizeof(int));
+
+    UFLoop_GetIteration(THIS_TASK_ID, THIS_THREAD_ID, &iter);
+    
+     result = UFPort_ReadFromQueue(port_in_src, (unsigned char*) src, cols*sizeof(int),0, &nDataRead);
+    // result = UFPort_ReadFromQueue(port_in_dst, (unsigned char*) dst, cols*sizeof(int), 0, &nDataRead);
+
+    result = UFPort_ReadFromQueue(port_in_wall, (unsigned char**) wall, rows*cols*sizeof(int), 0, &nDataRead);
+
+
+    for(int n = cols/4 * iter; n < cols/4 * (iter+1); n++) {
+                min = src[n];
+                if (n > 0)
+                    min = MIN(min, src[n - 1]);
+                if (n < cols - 1)
+                    min = MIN(min, src[n + 1]);
+                
+                dst[n] = wall[t + 1][n] + min;
+                
+      }
+      numFinished++;
+    
+      
+          if(numFinished == 4)
+         {
+            for(int i = 0; i < 4; i++) {
+                result = UFPort_WriteToQueue(port_out_dst, (unsigned char*) (dst+cols/4*i),  cols * sizeof(int) / 4, i, &nDataWrite);
+                result = UFPort_WriteToQueue(port_out_src, (unsigned char*) (src+cols/4*i),  cols * sizeof(int) / 4, i, &nDataWrite);
+            }
+            numFinished = 0;
+            t++;
+        }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+
+}
+
+TASK_CODE_END

@@ -1,0 +1,93 @@
+/************************************
+ *
+ * File : CPU_YUVtoRGB.cic
+ * Date : Mar 20, 2018 7:58 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+
+// ##DEFINE_SECTION::START
+#define WIDTH 1280
+#define HEIGHT 720
+
+#define CLIPING(data)  ( (data) < 0 ? 0 : ( (data) > 255 ) ? 255 : ( data ) )
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_input;
+STATIC int port_output;
+// ##DEFINE_PORT_SECTION::END
+
+STATIC unsigned char* src;
+STATIC unsigned char* dst;
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+TASK_INIT
+{
+
+// ##INIT_PORT_SECTION::START
+    port_input = PORT_INITIALIZE(TASK_ID, "input");
+    port_output = PORT_INITIALIZE(TASK_ID, "output");
+// ##INIT_PORT_SECTION::END
+
+    // TODO: task initialize code
+    src = (unsigned char*)malloc(WIDTH*HEIGHT*1.5);
+    dst = (unsigned char*)malloc(WIDTH*HEIGHT*3);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int ix, iy = 0;
+    // TODO: task main code
+    MQ_RECEIVE(port_input,(unsigned char*)src , WIDTH * HEIGHT * 1.5);
+    //printf("YUVtoRGB_MQ_RECEIVE_FINISH!\n");
+   
+    for(ix=0; ix<WIDTH; ix++){
+        for(iy=0; iy<HEIGHT; iy++){
+            unsigned char Y = src[WIDTH * iy + ix];
+            unsigned char U = src[WIDTH * HEIGHT + ((WIDTH/2) * (iy/2) + (ix/2))];
+            unsigned char V = src[WIDTH * HEIGHT + (WIDTH * HEIGHT)/4 + ((WIDTH/2) * (iy/2) + (ix/2))];
+
+            dst[(WIDTH * iy + ix)*3 + 0] = CLIPING((1.164*(Y-16) + 1.596*(V-128)));                 // R
+            dst[(WIDTH * iy + ix)*3 + 1] = CLIPING((1.164*(Y-16) - 0.813*(V-128) - 0.391*(U-128))); // G
+            dst[(WIDTH * iy + ix)*3 + 2] = CLIPING((1.164*(Y-16) + 2.018*(U-128)));                 // B
+        }
+    }
+
+    MQ_SEND(port_output, (unsigned char*)dst, WIDTH * HEIGHT * 3);
+    //printf("YUVtoRGB_MQ_SEND_FINISH!\n");
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(src);
+    free(dst);
+}
+
+TASK_CODE_END

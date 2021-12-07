@@ -44,22 +44,16 @@ Run 10
     <devices>
         <device runtime="native" platform="linux" architecture="x86" name="NewPC">
             <elements>
-                <element poolSize="16" type="i7_0" name="i7_0"/>
+                <element poolSize="8" type="i7_0" name="i7_0"/>
                 <element poolSize="1" type="cuda_gpu_sm20_2" name="cuda_gpu_sm20_2"/>
                 <element type="SHARED_MEMORY_4" name="SHARED_MEMORY_4"/>
             </elements>
-            <connections>
-                <TCPConnection secure="false" port="4567" ip="255.255.255.255" role="server" network="Ethernet/Wi-Fi" name="test2"/>
-            </connections>
+            <connections/>
             <modules/>
             <environmentVariables/>
         </device>
     </devices>
-    <connections>
-        <connection connection="test2" master="NewPC">
-            <slave connection="test" device="Device2"/>
-        </connection>
-    </connections>
+    <connections/>
 </CIC_Architecture>
 ]]>
           </schematic>
