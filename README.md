@@ -1,11 +1,44 @@
 # HOPES(Hope Of Parallel Embedded Software development)
 HOPES is a model-based embedded software design framework that supports all stages from application specification including static analysis, design space exploration, to real code generation. HOPES is developed by Codesign and Parallel Processing Laboratory(CAPLab), Seoul National University.
 
-For more detailed information about HOPES, You can refer to the following document.(https://link.springer.com/chapter/10.1007/978-3-319-95246-8_18)
+If you use HOPES in your research, please cite the [following paper](https://dl.acm.org/doi/10.1145/3447680).
+
+Related documents of HOPES.
+
+* HOPES Modeling
+```
+@Inbook{Ha2018embedded,
+author="Ha, Soonhoi and Jeong, EunJin",
+title="Embedded Software Design Methodology Based on Formal Models of Computation",
+bookTitle="Principles of Modeling: Essays Dedicated to Edward A. Lee on the Occasion of His 60th Birthday",
+year="2018",
+publisher="Springer International Publishing",
+pages="306--325",
+isbn="978-3-319-95246-8",
+doi="10.1007/978-3-319-95246-8_18",
+}
+```
+
+* HOPES Code Generation
+```
+@article{jeong2021dataflow,
+author = {Jeong, Eunjin and Jeong, Dowhan and Ha, Soonhoi},
+title = {Dataflow Model–Based Software Synthesis Framework for Parallel and Distributed Embedded Systems},
+year = {2021},
+publisher = {Association for Computing Machinery},
+volume = {26},
+number = {5},
+issn = {1084-4309},
+doi = {10.1145/3447680},
+journal = {ACM Trans. Des. Autom. Electron. Syst.},
+month = {jun},
+}
+```
+
 
 # License
 
-Software license is provided separately per each folder (HOPES_UI, Public/UEMLibraryCode, Public/UEMTranslator).
+Software license is provided separately per each folder (HOPES_UI, Public/UEMLibraryCode, Public/UEMTranslator, Public/CICXML4JAVA).
 
 # Installation
 
@@ -80,15 +113,12 @@ java -jar uem_ui.jar
 ```
 >Or just double click the "uem_ui.jar" to execute.
 
+## On Docker
+
+Please refer [this file](https://github.com/cap-lab/HOPES/releases/download/v1.3.0/211216_HOPES_Tutorial.pdf)
+
+
 # Note
 
 Gantt chart viewer of performance estimation is not currently supported in Linux platform.
-
-# Publication
-
-
-# Contact
-
-
-# Appendix: Libraries We Use
 
