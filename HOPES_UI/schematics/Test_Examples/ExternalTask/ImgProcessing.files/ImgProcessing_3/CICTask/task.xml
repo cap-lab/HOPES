@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="ImgProcessing2">
+  <setting_list>
+    <setting cycle="0" unit="s" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="ProcessNetwork" />
+  </setting_list>
+  <task_list>
+    <task name="Img3_ReadImage" type="Computational">
+      <config>
+        <location x="124" y="228" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_ReadImage.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="100000" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="100000" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="58" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/include/opencv4 -I/usr/include/vpi" />
+        <parameter name="LinkFlags" value="-L/opt/nvidia/vpi1/lib64/ -lnvvpi `pkg-config opencv4 --libs`" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="true" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="504000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_Rescale1" type="Computational">
+      <config>
+        <location x="404" y="76" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_Rescale1.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="56" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/include/opencv4 -I/usr/include/vpi" />
+        <parameter name="LinkFlags" value="-L/opt/nvidia/vpi1/lib64/ -lnvvpi `pkg-config opencv4 --libs`" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_cvt_BGR_NV12" type="Computational">
+      <config>
+        <location x="304" y="228" width="80" height="60" />
+        <parameter name="CICFile" value="Img3_cvt_BGR_NV12.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="57" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="504000" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out1" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="out2" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_TNR" type="Computational">
+      <config>
+        <location x="584" y="76" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_tnr.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="52" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_cvt_NV12_BGR1" type="Computational">
+      <config>
+        <location x="768" y="76" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_cvt_NV12_BGR1.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="54" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="true" name="out" type="fifo" sample_size="519168" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_Rescale2" type="Computational">
+      <config>
+        <location x="408" y="360" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_Rescale2.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="55" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/include/opencv4 -I/usr/include/vpi" />
+        <parameter name="LinkFlags" value="-L/opt/nvidia/vpi1/lib64/ -lnvvpi `pkg-config opencv4 --libs`" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_cvt_NV12_BGR2" type="Computational">
+      <config>
+        <location x="592" y="360" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_cvt_NV12_BGR2.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="53" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="8" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="12288" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Img3_SaveImage" type="Computational">
+      <config>
+        <location x="764" y="360" width="80" height="40" />
+        <parameter name="CICFile" value="Img3_SaveImage.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="51" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="12288" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="Img3_ReadImage" src_port="out" dst_task="Img3_cvt_BGR_NV12" dst_port="in" size="49152" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="204" y="248" />
+        <edge id="1" x="304" y="248" />
+      </edge_list>
+    </channel>
+    <channel src_task="Img3_cvt_BGR_NV12" src_port="out1" dst_task="Img3_Rescale1" dst_port="in" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="384" y="248" />
+        <edge id="1" x="404" y="96" />
+      </edge_list>
+    </channel>
+    <channel src_task="Img3_TNR" src_port="out" dst_task="Img3_cvt_NV12_BGR1" dst_port="in" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="664" y="96" />
+        <edge id="1" x="768" y="96" />
+      </edge_list>
+    </channel>
+    <channel src_task="Img3_Rescale1" src_port="out" dst_task="Img3_TNR" dst_port="in" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="484" y="96" />
+        <edge id="1" x="584" y="96" />
+      </edge_list>
+    </channel>
+    <channel src_task="Img3_cvt_BGR_NV12" src_port="out2" dst_task="Img3_Rescale2" dst_port="in" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="384" y="268" />
+        <edge id="1" x="408" y="380" />
+      </edge_list>
+    </channel>
+    <channel src_task="Img3_Rescale2" src_port="out" dst_task="Img3_cvt_NV12_BGR2" dst_port="in" size="8" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="488" y="380" />
+        <edge id="1" x="592" y="380" />
+      </edge_list>
+    </channel>
+    <channel src_task="Img3_cvt_NV12_BGR2" src_port="out" dst_task="Img3_SaveImage" dst_port="in" size="49152" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="672" y="380" />
+        <edge id="1" x="764" y="380" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

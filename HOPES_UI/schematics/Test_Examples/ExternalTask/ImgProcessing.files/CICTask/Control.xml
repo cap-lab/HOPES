@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<fsms>
+  <fsm name="fsm_0">
+    <state_list>
+      <state name="state1" x="328" y="200" initial_state="false" hierarchical="false">
+        <application_list>
+          <application name="ImgProcessing_1" />
+          <application name="ImgProcessing_2" />
+          <application name="ImgProcessing_3" />
+          <application name="ImgProcessing_4" />
+          <application name="Jedi_1" />
+          <application name="Jedi_2" />
+          <application name="Jedi_3" />
+          <application name="Jedi_4" />
+        </application_list>
+      </state>
+      <state name="state0" x="324" y="96" initial_state="true" hierarchical="false">
+        <application_list />
+      </state>
+    </state_list>
+    <transition_list>
+      <transition name="transition_0_3" src_state="state0" dst_state="state1" curve0_x="328" curve0_y="140" curve1_x="276" curve1_y="168">
+        <condition_list />
+        <action_list />
+      </transition>
+    </transition_list>
+  </fsm>
+</fsms>
+

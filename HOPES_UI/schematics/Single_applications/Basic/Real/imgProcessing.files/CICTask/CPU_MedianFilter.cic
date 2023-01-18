@@ -1,0 +1,109 @@
+/************************************
+ *
+ * File : GPU_MedianFilter.cic
+ * Date : Mar 21, 2022 12:57 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+
+using namespace std;
+using namespace cv;
+
+STATIC unsigned char* imgData;
+
+STATIC int MAX_KERNEL_LENGTH = 9;   
+
+void medianFilter_CPU (const Mat& input, Mat& output) {
+   Mat input_gray;
+   int kernel_size = 3;
+   int scale = 1;
+   int delta = 0;
+   int ddepth = CV_16S;
+ 
+   for ( int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2 )
+        medianBlur (input, output, i );
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    imgData = (unsigned char*)malloc(IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)imgData, IMG_SIZE);
+    
+    Mat srcImage(IMG_HEIGHT, IMG_WIDTH, CV_8UC3, imgData);
+        
+    // Declare the output image  
+    Mat dstImage (srcImage.size(), srcImage.type());
+    
+    // run median filter on CPU  
+    medianFilter_CPU(srcImage, dstImage);
+    
+    memcpy(imgData, dstImage.data, IMG_SIZE);
+    
+    MQ_SEND(port_out, (unsigned char*)imgData, IMG_SIZE);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

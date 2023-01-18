@@ -5,7 +5,9 @@
       "deviceModel": {
         "platform": "LINUX",
         "architecture": "X86_64",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "MulticoreHost",
       "mProcessors": [
@@ -35,7 +37,9 @@
       "deviceModel": {
         "platform": "LINUX",
         "architecture": "ARM",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "MulticoreHost",
       "mProcessors": [
@@ -75,7 +79,9 @@
       "deviceModel": {
         "platform": "LINUX",
         "architecture": "X86_64",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "CUDA",
       "mProcessors": [
@@ -115,7 +121,9 @@
       "deviceModel": {
         "platform": "LINUX",
         "architecture": "ARM",
-        "runtime": "HSIM"
+        "runtime": "HSIM",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "HSim",
       "mProcessors": [
@@ -155,7 +163,9 @@
       "deviceModel": {
         "platform": "LINUX",
         "architecture": "X86_64",
-        "runtime": "SOPHY"
+        "runtime": "SOPHY",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "XeonPhi",
       "mProcessors": [
@@ -195,7 +205,9 @@
       "deviceModel": {
         "platform": "ARDUINO",
         "architecture": "AVR",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "ArduinoGeneric",
       "mProcessors": [
@@ -225,7 +237,9 @@
       "deviceModel": {
         "platform": "ARDUINO",
         "architecture": "AVR",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "ArduinoProMini",
       "mProcessors": [
@@ -255,7 +269,9 @@
       "deviceModel": {
         "platform": "ARDUINO",
         "architecture": "SAMD",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "OpenCR",
       "mProcessors": [
@@ -287,7 +303,9 @@
       "deviceModel": {
         "platform": "LINUX",
         "architecture": "X86_64",
-        "runtime": "NATIVE"
+        "runtime": "NATIVE",
+        "processorType": "CPU",
+        "schedulingMethod": "OTHER"
       },
       "mTarget": "NewDevice",
       "mProcessors": [],

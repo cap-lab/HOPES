@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_Architecture target="Jetson_Xavier" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <elementTypes>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" model="i7_0" subcategory="CPU" category="processor" name="i7_0"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" model="cuda_virtual_2" subcategory="VIRTUAL" category="processor" name="cuda_virtual_2"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" model="dla_virtual_4" subcategory="VIRTUAL" category="processor" name="dla_virtual_4"/>
+        <elementType category="memory" name="SHARED_MEMORY_8">
+            <slavePort metric="MiB" size="8000" name="Slave"/>
+        </elementType>
+    </elementTypes>
+    <devices>
+        <device scheduler="other" runtime="native" platform="linux" architecture="x86_64" name="Jetson_Xavier">
+            <elements>
+                <element poolSize="5" type="i7_0" name="i7_0"/>
+                <element poolSize="1" type="cuda_virtual_2" name="cuda_virtual_2"/>
+                <element poolSize="2" type="dla_virtual_4" name="dla_virtual_4"/>
+                <element type="SHARED_MEMORY_8" name="SHARED_MEMORY_8"/>
+            </elements>
+            <connections/>
+            <modules/>
+            <environmentVariables/>
+        </device>
+    </devices>
+    <connections/>
+</CIC_Architecture>

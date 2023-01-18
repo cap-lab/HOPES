@@ -1,0 +1,104 @@
+/************************************
+ *
+ * File : Rescale2.cic
+ * Date : Apr 25, 2022 11:29 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <opencv2/imgcodecs.hpp>
+
+#include <vpi/OpenCVInterop.hpp>
+#include <vpi/Image.h>
+#include <vpi/Status.h>
+#include <vpi/Stream.h>
+#include <vpi/algo/ConvertImageFormat.h>
+#include <vpi/algo/Rescale.h>
+
+#include <cstring>
+#include <iostream>
+#include <sstream>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+#define IN_WIDTH 128
+#define IN_HEIGHT 128
+#define OUT_WIDTH 64
+#define OUT_HEIGHT 64
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+
+STATIC VPIImage imageNV12   = NULL;
+STATIC VPIImage outputNV12  = NULL;
+STATIC VPIStream img4_stream = NULL;
+STATIC VPIBackend backend = VPI_BACKEND_CPU;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    vpiStreamCreate(0, &img4_stream);
+
+    // Create a temporary image to hold the input converted to NV12.
+    vpiImageCreate(IN_WIDTH, IN_HEIGHT, VPI_IMAGE_FORMAT_NV12_ER, 0, &imageNV12);
+    
+    // Create the output image.
+    vpiImageCreate(OUT_WIDTH, OUT_HEIGHT, VPI_IMAGE_FORMAT_NV12_ER, 0, &outputNV12);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&imageNV12, sizeof(VPIImage));
+    
+    // Now we downsample
+    vpiSubmitRescale(img4_stream, backend, imageNV12, outputNV12, VPI_INTERP_LINEAR, VPI_BORDER_CLAMP, 0);
+    
+    vpiStreamSync(img4_stream);
+    
+    MQ_SEND(port_out, (unsigned char*)&outputNV12, sizeof(VPIImage));
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    vpiImageDestroy(imageNV12);
+    vpiStreamDestroy(img4_stream);
+}
+
+TASK_CODE_END

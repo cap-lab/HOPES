@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_GPUSetup xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <tasks>
+        <task clustering="No" pipelining="No" maxStream="0" name="SobelFilter">
+            <globalWorkSize depth="1" width="44" height="20"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="TVFilter">
+            <globalWorkSize depth="1" width="44" height="20"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="BoxFilter">
+            <globalWorkSize depth="1" width="44" height="20"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="SharpeningFilter">
+            <globalWorkSize depth="1" width="44" height="20"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="LaplacianFilter">
+            <globalWorkSize depth="1" width="44" height="20"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+        </task>
+        <task clustering="No" pipelining="No" maxStream="0" name="MedianFilter">
+            <globalWorkSize depth="1" width="44" height="20"/>
+            <localWorkSize depth="1" width="16" height="16"/>
+        </task>
+    </tasks>
+</CIC_GPUSetup>

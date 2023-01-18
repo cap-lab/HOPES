@@ -1,0 +1,125 @@
+/************************************
+ *
+ * File : sobel_kernel.cic
+ * Date : Mar 21, 2022 11:02 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+
+using namespace std;
+using namespace cv;
+
+STATIC unsigned char* imgData;
+
+void sobelFilter_CPU(const Mat& input, Mat& output) {
+   Point anchor = Point( -1, -1 );
+   double delta = 0;
+   int ddepth = -1;
+   int kernel_size;
+
+   /// Update kernel size for a normalized box filter
+   kernel_size = 3; 
+   
+   Mat output1;
+   Mat kernel1 = (Mat_<double>(kernel_size,kernel_size) << -1, 0, 1, -2, 0, 2, -1, 0, 1);
+   /// Apply 2D filter
+   filter2D(input, output1, ddepth, kernel1, anchor, delta, BORDER_DEFAULT );
+
+  
+   Mat output2;
+   Mat kernel2 = (Mat_<double>(kernel_size,kernel_size) << 1, 2, 1, 0, 0, 0, -1, -2, -1);
+   /// Apply 2D filter
+   filter2D(input, output2, ddepth, kernel2, anchor, delta, BORDER_DEFAULT );
+
+   output = output1 + output2;
+
+   output.convertTo(output, CV_32F, 1.0 / 255, 0);
+   output*=255;
+
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    imgData = (unsigned char*)malloc(IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+    
+    Mat srcImage(IMG_HEIGHT, IMG_WIDTH, CV_8UC1, imgData);
+
+    // Declare the output image  
+    Mat dstImage (srcImage.size(), srcImage.type());
+    
+    // run sobel filter on CPU  
+    sobelFilter_CPU(srcImage, dstImage);
+    
+    dstImage.convertTo(dstImage, CV_8UC1);
+    
+    memcpy(imgData, dstImage.data, IMG_HEIGHT*IMG_WIDTH);
+    
+    MQ_SEND(port_out, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

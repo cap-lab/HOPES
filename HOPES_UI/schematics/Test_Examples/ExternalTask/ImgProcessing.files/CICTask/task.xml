@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cic_manual name="ImgProcessing">
+  <setting_list>
+    <setting cycle="0" unit="s" FuncTarget="PTHREAD" ThreadSetting="MULTI_THREAD" TaskGraphProperty="ProcessNetwork" />
+  </setting_list>
+  <task_list>
+    <task name="ImgProcessing_1" type="Computational">
+      <config>
+        <location x="268" y="68" width="80" height="40" />
+        <parameter name="CICFile" value="ImgProcessing_1/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="ImgProcessing_1" macroNodePort="in" direction="In" insideTask="Img1_ReadImage" insideTaskPort="in" portType="" />
+        <portMap macroNode="ImgProcessing_1" macroNodePort="out" direction="Out" insideTask="Img1_cvt_NV12_BGR1" insideTaskPort="out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Jedi_1" type="External">
+      <config>
+        <location x="460" y="68" width="80" height="40" />
+        <parameter name="CICFile" value="Jedi_1.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="100000" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="100000" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="2" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/local/cuda/include -I/usr/local/include/tkDNN" />
+        <parameter name="LinkFlags" value="-L/usr/lib -L/usr/local/lib -lm -lconfig++ -lnvinfer -ltkDNN -ltinyJEDI -lstdc++ -lkernels -lpthread" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+        <parameter name="networkFile" value="schematics/ImgProcessing.files/CICTask/yolov4.prototxt" />
+        <parameter name="architectureFile" value="schematics/ImgProcessing.files/CICTask/architecture.xml" />
+        <parameter name="profileFile" value="schematics/ImgProcessing.files/CICTask/yolov4_profile.xml" />
+        <parameter name="mappingFile" value="schematics/ImgProcessing.files/CICTask/yolov4_mapping.xml" />
+        <parameter name="UseCICFile" value="Yes" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Control" type="Control">
+      <config>
+        <location x="56" y="148" width="80" height="100" />
+        <parameter name="CICFile" value="Control.cic" />
+        <parameter name="RunCondition" value="time-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="100000" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="100000" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="1" />
+        <parameter name="Language" value="C" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="ProcessNetwork" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list />
+      <outport_list>
+        <port id="0" export="false" name="out_1" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="1" export="false" name="out_2" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="2" export="false" name="out_3" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+        <port id="3" export="false" name="out_4" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="false">
+        <control_params />
+        <slaves />
+      </control>
+      <variable_list />
+    </task>
+    <task name="ImgProcessing_2" type="Computational">
+      <config>
+        <location x="268" y="144" width="80" height="40" />
+        <parameter name="CICFile" value="ImgProcessing_2/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="17" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="ImgProcessing_2" macroNodePort="in" direction="In" insideTask="Img2_ReadImage" insideTaskPort="in" portType="" />
+        <portMap macroNode="ImgProcessing_2" macroNodePort="out" direction="Out" insideTask="Img2_cvt_NV12_BGR1" insideTaskPort="out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Jedi_2" type="External">
+      <config>
+        <location x="460" y="144" width="80" height="40" />
+        <parameter name="CICFile" value="Jedi_2.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="100000" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="100000" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="4" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/local/cuda/include -I/usr/local/include/tkDNN" />
+        <parameter name="LinkFlags" value="-L/usr/lib -L/usr/local/lib -lm -lconfig++ -lnvinfer -ltkDNN -ltinyJEDI -lstdc++ -lkernels -lpthread" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+        <parameter name="networkFile" value="schematics/ImgProcessing.files/CICTask/yolov2tiny.prototxt" />
+        <parameter name="architectureFile" value="schematics/ImgProcessing.files/CICTask/architecture.xml" />
+        <parameter name="profileFile" value="schematics/ImgProcessing.files/CICTask/yolov2tiny_profile.xml" />
+        <parameter name="mappingFile" value="schematics/ImgProcessing.files/CICTask/yolov2tiny_mapping.xml" />
+        <parameter name="UseCICFile" value="Yes" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="ImgProcessing_3" type="Computational">
+      <config>
+        <location x="268" y="236" width="80" height="40" />
+        <parameter name="CICFile" value="ImgProcessing_3/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="25" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="ImgProcessing_3" macroNodePort="in" direction="In" insideTask="Img3_ReadImage" insideTaskPort="in" portType="" />
+        <portMap macroNode="ImgProcessing_3" macroNodePort="out" direction="Out" insideTask="Img3_cvt_NV12_BGR1" insideTaskPort="out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="ImgProcessing_4" type="Computational">
+      <config>
+        <location x="268" y="320" width="80" height="40" />
+        <parameter name="CICFile" value="ImgProcessing_4/CICTask/task.xml" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="1" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="1" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="9" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="" />
+        <parameter name="LinkFlags" value="" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="Yes" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list>
+        <port id="0" export="false" name="out" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </outport_list>
+      <portMap_list>
+        <portMap macroNode="ImgProcessing_4" macroNodePort="in" direction="In" insideTask="Img4_ReadImage" insideTaskPort="in" portType="" />
+        <portMap macroNode="ImgProcessing_4" macroNodePort="out" direction="Out" insideTask="Img4_cvt_NV12_BGR1" insideTaskPort="out" portType="" />
+      </portMap_list>
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+      <faultTolerance enable="No" type="Re-execution" taskType="Automatic" path="" reexecutionNumber="0" activeReplicationNumber="0" />
+    </task>
+    <task name="Jedi_3" type="External">
+      <config>
+        <location x="460" y="236" width="80" height="40" />
+        <parameter name="CICFile" value="Jedi_3.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="100000" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="100000" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="6" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/local/cuda/include -I/usr/local/include/tkDNN" />
+        <parameter name="LinkFlags" value="-L/usr/lib -L/usr/local/lib -lm -lconfig++ -lnvinfer -ltkDNN -ltinyJEDI -lstdc++ -lkernels -lpthread" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+        <parameter name="networkFile" value="schematics/ImgProcessing.files/CICTask/yolov3tiny.prototxt" />
+        <parameter name="architectureFile" value="schematics/ImgProcessing.files/CICTask/architecture.xml" />
+        <parameter name="profileFile" value="schematics/ImgProcessing.files/CICTask/yolov3tiny_profile.xml" />
+        <parameter name="mappingFile" value="schematics/ImgProcessing.files/CICTask/yolov3tiny_mapping.xml" />
+        <parameter name="UseCICFile" value="Yes" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+    <task name="Jedi_4" type="External">
+      <config>
+        <location x="460" y="320" width="80" height="40" />
+        <parameter name="CICFile" value="Jedi_4.cic" />
+        <parameter name="RunCondition" value="data-driven" />
+        <parameter name="HasInternalStates" value="Yes" />
+        <parameter name="Deadline" value="100000" />
+        <parameter name="DeadlineUnit" value="us" />
+        <parameter name="Period" value="100000" />
+        <parameter name="PeriodUnit" value="us" />
+        <parameter name="Priority" value="8" />
+        <parameter name="Language" value="C++" />
+        <parameter name="CompileFlags" value="-I/usr/local/cuda/include -I/usr/local/include/tkDNN" />
+        <parameter name="LinkFlags" value="-L/usr/lib -L/usr/local/lib -lm -lconfig++ -lnvinfer -ltkDNN -ltinyJEDI -lstdc++ -lkernels -lpthread" />
+        <parameter name="HasMTM" value="No" />
+        <parameter name="HasSubGraph" value="No" />
+        <parameter name="IsDependency" value="No" />
+        <parameter name="LoopType" value="NONE" />
+        <parameter name="LoopCount" value="0" />
+        <parameter name="IsLoopSubTask" value="No" />
+        <parameter name="IsDesignatedTask" value="No" />
+        <parameter name="SubgraphProperty" value="Dataflow" />
+        <parameter name="Description" value="" />
+        <parameter name="networkFile" value="schematics/ImgProcessing.files/CICTask/yolov4csp.prototxt" />
+        <parameter name="architectureFile" value="schematics/ImgProcessing.files/CICTask/architecture.xml" />
+        <parameter name="profileFile" value="schematics/ImgProcessing.files/CICTask/yolov4csp_profile.xml" />
+        <parameter name="mappingFile" value="schematics/ImgProcessing.files/CICTask/yolov4csp_mapping.xml" />
+        <parameter name="UseCICFile" value="Yes" />
+      </config>
+      <inport_list>
+        <port id="0" export="false" name="in" type="fifo" sample_size="4" sample_rate="Fixed" description="">
+          <rate id="0" mode="Default" rate="1" />
+        </port>
+      </inport_list>
+      <outport_list />
+      <portMap_list />
+      <libraryPort_list />
+      <multicast_port_list />
+      <extraSetting_list />
+      <control priority="0" controller="true">
+        <control_params />
+        <slaves />
+      </control>
+    </task>
+  </task_list>
+  <library_list />
+  <channel_list>
+    <channel src_task="Control" src_port="out_1" dst_task="ImgProcessing_1" dst_port="in" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="136" y="168" />
+        <edge id="1" x="268" y="88" />
+      </edge_list>
+    </channel>
+    <channel src_task="Control" src_port="out_2" dst_task="ImgProcessing_2" dst_port="in" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="136" y="188" />
+        <edge id="1" x="268" y="164" />
+      </edge_list>
+    </channel>
+    <channel src_task="ImgProcessing_1" src_port="out" dst_task="Jedi_1" dst_port="in" size="327680" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="88" />
+        <edge id="1" x="460" y="88" />
+      </edge_list>
+    </channel>
+    <channel src_task="ImgProcessing_2" src_port="out" dst_task="Jedi_2" dst_port="in" size="327680" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="164" />
+        <edge id="1" x="460" y="164" />
+      </edge_list>
+    </channel>
+    <channel src_task="Control" src_port="out_3" dst_task="ImgProcessing_3" dst_port="in" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="136" y="208" />
+        <edge id="1" x="268" y="256" />
+      </edge_list>
+    </channel>
+    <channel src_task="Control" src_port="out_4" dst_task="ImgProcessing_4" dst_port="in" size="4" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="136" y="228" />
+        <edge id="1" x="268" y="340" />
+      </edge_list>
+    </channel>
+    <channel src_task="ImgProcessing_3" src_port="out" dst_task="Jedi_3" dst_port="in" size="327680" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="256" />
+        <edge id="1" x="460" y="256" />
+      </edge_list>
+    </channel>
+    <channel src_task="ImgProcessing_4" src_port="out" dst_task="Jedi_4" dst_port="in" size="327680" init_size="0" sampleType="" sampleSize="1">
+      <edge_list>
+        <edge id="0" x="348" y="340" />
+        <edge id="1" x="460" y="340" />
+      </edge_list>
+    </channel>
+  </channel_list>
+  <taskLibraryConnection_list />
+  <libraryLibraryConnection_list />
+  <taskGroupList />
+  <multicast_group_list />
+</cic_manual>
+

@@ -1,0 +1,1095 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CIC_Mapping xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+  <task name="Pre">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="i7" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_1">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_2">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_3">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_4">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_5">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_6">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_7">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_8">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_9">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_10">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_11">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_12">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_13">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_14">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_15">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_16">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_17">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_18">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_19">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_20">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_21">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_22">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_23">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_24">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_25">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_26">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_27">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_28">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_29">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_30">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_31">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_32">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_33">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_34">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_35">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_36">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_37">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_38">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_39">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_40">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_41">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_42">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_43">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_44">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_45">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_46">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_47">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_48">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_49">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_50">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_51">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="dla_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_52">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_53">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_54">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_55">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_56">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_57">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_58">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_59">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_60">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_61">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_62">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_63">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_64">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_65">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_66">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_67">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_68">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_69">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_70">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_71">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_72">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_73">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_74">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_75">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_76">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_77">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_78">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_79">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_80">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_81">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_82">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_83">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_84">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_85">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_86">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_87">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_88">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_89">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_90">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_91">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_92">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_93">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_94">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_95">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_96">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_97">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_98">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_99">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_100">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_101">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_102">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_103">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_104">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_105">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_106">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_107">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_108">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_109">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_110">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_111">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_112">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_113">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_114">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_115">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_116">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_117">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_118">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_119">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_120">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_121">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_122">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_123">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_124">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_125">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_126">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_127">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_128">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_129">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_130">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_131">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_132">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_133">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_134">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_135">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_136">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_137">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_138">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_139">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_140">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_141">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_142">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_143">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_144">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_145">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_146">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_147">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_148">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_149">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_150">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_151">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_152">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_153">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Kernel_154">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="cuda_virtual" localId="0" />
+      </mappingSet>
+    </device>
+  </task>
+  <task name="Post">
+    <device name="Jetson_Xavier">
+      <mappingSet name="Default">
+        <processor pool="i7" localId="1" />
+      </mappingSet>
+    </device>
+  </task>
+</CIC_Mapping>

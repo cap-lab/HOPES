@@ -1,0 +1,135 @@
+/************************************
+ *
+ * File : Control.cic
+ * Date : Apr 26, 2022 12:18 PM
+ *
+*************************************/
+
+//-----------------------------------
+// include header section
+//-----------------------------------
+#include <stdio.h>
+
+// ##DEFINE_SECTION::START
+#define ID_STATE_STATE1 0
+#define ID_STATE_STATE0 1
+#define ID_TRANSITION_TRANSITION_0_3 0
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+//-----------------------------------
+// global definition
+//-----------------------------------
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out_1;
+STATIC int port_out_2;
+STATIC int port_out_3;
+STATIC int port_out_4;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+// ##VARIABLE_SECTION::START
+static int current_state_0;
+// ##VARIABLE_SECTION::END
+static int sig;
+static int exit;
+static int iteration;
+
+//-----------------------------------
+// init code
+//-----------------------------------
+
+TASK_INIT
+{
+// This is automatically generated code. do not edit this part.
+// ##INIT_PORT_SECTION::START
+    port_out_1 = PORT_INITIALIZE(TASK_ID, "out_1");
+    port_out_2 = PORT_INITIALIZE(TASK_ID, "out_2");
+    port_out_3 = PORT_INITIALIZE(TASK_ID, "out_3");
+    port_out_4 = PORT_INITIALIZE(TASK_ID, "out_4");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+// ##INIT_SECTION::START
+	current_state_0 = ID_STATE_STATE0;
+// ##INIT_SECTION::END
+
+
+    // TODO: task initialize code
+    sig = 1;
+    exit = 0;
+    iteration = 0;
+}
+
+//-----------------------------------
+// hierarchical code
+//-----------------------------------
+// ##HIERARCHICAL_SECTION::START
+// ##HIERARCHICAL_SECTION::END
+
+//-----------------------------------
+// go code
+//-----------------------------------
+
+TASK_GO
+{
+// This is automatically generated code. do not edit this part.
+// ##GO_SECTION::START
+	// Add trigerring code here.
+
+	switch( current_state_0 )
+	{
+	case ID_STATE_STATE0:
+		{
+            if(iteration >= 300)  {
+                current_state_0 = ID_STATE_STATE1;
+                iteration = 0;
+            }
+            if(exit == 1 && iteration >= 75)
+                UFSystem_Kill(THIS_TASK_ID);
+		}
+		break;
+	case ID_STATE_STATE1:
+		{              
+            MQ_SEND(port_out_1, (unsigned char*)&sig, sizeof(int));
+            MQ_SEND(port_out_2, (unsigned char*)&sig, sizeof(int));
+            MQ_SEND(port_out_3, (unsigned char*)&sig, sizeof(int));             
+            MQ_SEND(port_out_4, (unsigned char*)&sig, sizeof(int));
+           
+            if(iteration >= 300) {
+                current_state_0 = ID_STATE_STATE0;
+                iteration = 0;
+                exit = 1;
+            }
+		}
+		break;
+	}
+	iteration++;
+// ##GO_SECTION::END
+
+
+    // TODO: task main code
+}
+
+//-----------------------------------
+// wrapup code
+//-----------------------------------
+
+TASK_WRAPUP
+{
+// This is automatically generated code. do not edit this part.
+// ##WRAPUP_SECTION::START
+// ##WRAPUP_SECTION::END
+
+
+	// TODO: task wrapup code
+
+}
+
+TASK_CODE_END

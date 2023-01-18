@@ -1,0 +1,110 @@
+/************************************
+ *
+ * File : convert2.cic
+ * Date : Apr 5, 2022 8:29 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include <vpi/OpenCVInterop.hpp>
+#include <vpi/Image.h>
+#include <vpi/Status.h>
+#include <vpi/Stream.h>
+#include <vpi/algo/ConvertImageFormat.h>
+#include <vpi/algo/TemporalNoiseReduction.h>
+
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <vector>
+#include <sstream>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+#define WIDTH 256
+#define HEIGHT 256
+#define CHANNEL 3
+#define STEP 768
+#define IMG_SIZE (HEIGHT*STEP)
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC VPIStream img1_stream     = NULL;
+STATIC VPIImage imgOutput = NULL;
+STATIC VPIImage frameBGR = NULL;
+STATIC VPIImageData imgdata;
+STATIC VPIBackend backend = VPI_BACKEND_CPU;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    vpiImageCreate(WIDTH, HEIGHT, VPI_IMAGE_FORMAT_NV12_ER, 0, &imgOutput);
+    vpiImageCreate(WIDTH, HEIGHT, VPI_IMAGE_FORMAT_BGR8, 0, &frameBGR);
+    vpiStreamCreate(0, &img1_stream);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&imgOutput, sizeof(VPIImage));
+    
+    // Convert output back to BGR
+    vpiSubmitConvertImageFormat(img1_stream, backend, imgOutput, frameBGR, NULL);
+    vpiStreamSync(img1_stream);
+        
+    // Now add it to the output stream
+    vpiImageLock(frameBGR, VPI_LOCK_READ, &imgdata);
+    vpiImageUnlock(frameBGR);
+            
+    MQ_SEND(port_out, (unsigned char*)imgdata.planes[0].data, IMG_SIZE);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    vpiStreamDestroy(img1_stream);
+    vpiImageDestroy(imgOutput);
+}
+
+TASK_CODE_END

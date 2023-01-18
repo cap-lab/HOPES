@@ -1,0 +1,120 @@
+/************************************
+ *
+ * File : laplacian_kernel.cic
+ * Date : Mar 18, 2022 4:03 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#include "cuda.h"
+#include "cuda_runtime.h"
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+#define BLOCK_SIZE 16
+#define FILTER_WIDTH 3
+#define FILTER_HEIGHT 3
+
+using namespace std;
+using namespace cv;
+
+STATIC unsigned char* srcImage;
+STATIC unsigned char* dstImage;
+
+__global__ void laplacianFilter(unsigned char *srcImage, unsigned char *dstImage, unsigned int width, unsigned int height)
+{
+   int x = blockIdx.x*blockDim.x + threadIdx.x;
+   int y = blockIdx.y*blockDim.y + threadIdx.y;
+
+   float kernel[3][3] = {0, -1, 0, -1, 4, -1, 0, -1, 0};
+   //float kernel[3][3] = {-1, -1, -1, -1, 8, -1, -1, -1, -1};   
+   // only threads inside image will write results
+   if((x>=FILTER_WIDTH/2) && (x<(width-FILTER_WIDTH/2)) && (y>=FILTER_HEIGHT/2) && (y<(height-FILTER_HEIGHT/2)))
+   {
+         // Sum of pixel values 
+         float sum = 0;
+         // Loop inside the filter to average pixel values
+         for(int ky=-FILTER_HEIGHT/2; ky<=FILTER_HEIGHT/2; ky++) {
+            for(int kx=-FILTER_WIDTH/2; kx<=FILTER_WIDTH/2; kx++) {
+               float fl = srcImage[((y+ky)*width + (x+kx))]; 
+               sum += fl*kernel[ky+FILTER_HEIGHT/2][kx+FILTER_WIDTH/2];
+            }
+         }
+         dstImage[(y*width+x)] =  sum;
+   }
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    cudaMalloc<unsigned char>(&srcImage, IMG_SIZE);
+    cudaMalloc<unsigned char>(&dstImage, IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)srcImage, IMG_HEIGHT*IMG_WIDTH);
+    
+    // Run LaplacianFilter kernel on CUDA
+    KERNEL_CALL(laplacianFilter, srcImage, dstImage, IMG_WIDTH, IMG_HEIGHT);
+        
+    MQ_SEND(port_out, (unsigned char*)dstImage, IMG_HEIGHT*IMG_WIDTH);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    cudaFree(srcImage);
+    cudaFree(dstImage);
+}
+
+TASK_CODE_END

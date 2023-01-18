@@ -1,0 +1,114 @@
+layer {
+  name: "Pre"
+  top: "Pre"
+}
+layer {
+  name: "Kernel_1"
+  bottom: "Pre"
+  top: "Kernel_1"
+}
+layer {
+  name: "Kernel_2"
+  bottom: "Kernel_1"
+  top: "Kernel_2"
+}
+layer {
+  name: "Kernel_3"
+  bottom: "Kernel_2"
+  top: "Kernel_3"
+}
+layer {
+  name: "Kernel_4"
+  bottom: "Kernel_3"
+  top: "Kernel_4"
+}
+layer {
+  name: "Kernel_5"
+  bottom: "Kernel_4"
+  top: "Kernel_5"
+}
+layer {
+  name: "Kernel_6"
+  bottom: "Kernel_5"
+  top: "Kernel_6"
+}
+layer {
+  name: "Kernel_7"
+  bottom: "Kernel_6"
+  top: "Kernel_7"
+}
+layer {
+  name: "Kernel_8"
+  bottom: "Kernel_7"
+  top: "Kernel_8"
+}
+layer {
+  name: "Kernel_9"
+  bottom: "Kernel_8"
+  top: "Kernel_9"
+}
+layer {
+  name: "Kernel_10"
+  bottom: "Kernel_9"
+  top: "Kernel_10"
+}
+layer {
+  name: "Kernel_11"
+  bottom: "Kernel_10"
+  top: "Kernel_11"
+}
+layer {
+  name: "Kernel_12"
+  bottom: "Kernel_11"
+  top: "Kernel_12"
+}
+layer {
+  name: "Kernel_13"
+  bottom: "Kernel_12"
+  top: "Kernel_13"
+}
+layer {
+  name: "Kernel_14"
+  bottom: "Kernel_13"
+  top: "Kernel_14"
+}
+layer {
+  name: "Kernel_15"
+  bottom: "Kernel_14"
+  top: "Kernel_15"
+}
+layer {
+  name: "Kernel_16"
+  bottom: "Kernel_15"
+  top: "Kernel_16"
+}
+layer {
+  name: "Kernel_17"
+  bottom: "Kernel_16"
+  top: "Kernel_17"
+}
+layer {
+  name: "Kernel_18"
+  bottom: "Kernel_17"
+  top: "Kernel_18"
+}
+layer {
+  name: "Kernel_19"
+  bottom: "Kernel_18"
+  top: "Kernel_19"
+}
+layer {
+  name: "Kernel_20"
+  bottom: "Kernel_19"
+  top: "Kernel_20"
+}
+layer {
+  name: "Kernel_21"
+  bottom: "Kernel_20"
+  top: "Kernel_21"
+}
+layer {
+  name: "Post"
+  bottom: "Kernel_21"
+  top: "Post"
+}

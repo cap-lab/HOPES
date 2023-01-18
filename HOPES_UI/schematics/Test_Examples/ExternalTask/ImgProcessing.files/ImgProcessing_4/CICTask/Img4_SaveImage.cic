@@ -1,0 +1,93 @@
+/************************************
+ *
+ * File : SaveImage.cic
+ * Date : Apr 25, 2022 11:30 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <fstream>
+#include <iterator>
+#include <sys/stat.h>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+#define WIDTH 64
+#define HEIGHT 64
+#define CHANNEL 3
+#define STEP 768
+#define IMG_SIZE (HEIGHT*STEP)
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC int idx;
+STATIC char* srcData;
+STATIC std::vector<uchar> buff;
+STATIC std::vector<int> param = std::vector<int>(2);
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    idx = 0;
+    srcData = (char *)malloc(IMG_SIZE);
+
+    param[0]=cv::IMWRITE_JPEG_QUALITY;
+    param[1] = 90;
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)srcData, IMG_SIZE);
+
+    cv::Mat img(HEIGHT, WIDTH, CV_8UC3, srcData, STEP);
+    
+    cv::imencode(".jpg", img, buff, param);
+    std::ofstream outFile("../data/results/IMG4_Encoded/encodedData" + std::to_string(idx) + ".dat");
+    
+    for (const auto &e : buff) outFile << e;
+    idx++;
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(srcData);
+}
+
+TASK_CODE_END

@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CIC_Profile xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+  <task name="Pre">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="665" />
+      <profile processorType="cuda_virtual_2" unit="us" value="99999999" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_1">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="116" />
+      <profile processorType="dla_virtual_4" unit="us" value="348" />
+    </mode>
+  </task>
+  <task name="Kernel_2">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="180" />
+      <profile processorType="dla_virtual_4" unit="us" value="540" />
+    </mode>
+  </task>
+  <task name="Kernel_3">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="35" />
+      <profile processorType="dla_virtual_4" unit="us" value="105" />
+    </mode>
+  </task>
+  <task name="Kernel_4">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="79" />
+      <profile processorType="dla_virtual_4" unit="us" value="237" />
+    </mode>
+  </task>
+  <task name="Kernel_5">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="23" />
+      <profile processorType="dla_virtual_4" unit="us" value="69" />
+    </mode>
+  </task>
+  <task name="Kernel_6">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="13" />
+      <profile processorType="dla_virtual_4" unit="us" value="39" />
+    </mode>
+  </task>
+  <task name="Kernel_7">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="47" />
+      <profile processorType="dla_virtual_4" unit="us" value="141" />
+    </mode>
+  </task>
+  <task name="Kernel_8">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="13" />
+      <profile processorType="dla_virtual_4" unit="us" value="39" />
+    </mode>
+  </task>
+  <task name="Kernel_9">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="54" />
+      <profile processorType="dla_virtual_4" unit="us" value="162" />
+    </mode>
+  </task>
+  <task name="Kernel_10">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="7" />
+      <profile processorType="dla_virtual_4" unit="us" value="21" />
+    </mode>
+  </task>
+  <task name="Kernel_11">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="45" />
+      <profile processorType="dla_virtual_4" unit="us" value="135" />
+    </mode>
+  </task>
+  <task name="Kernel_12">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="8" />
+      <profile processorType="dla_virtual_4" unit="us" value="24" />
+    </mode>
+  </task>
+  <task name="Kernel_13">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="60" />
+      <profile processorType="dla_virtual_4" unit="us" value="180" />
+    </mode>
+  </task>
+  <task name="Kernel_14">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="9" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_15">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="18" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_16">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="11" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_17">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="129" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_18">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="31" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_19">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="57" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_20">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="18" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_21">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="6" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_22">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="45" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_23">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="18" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_24">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="9" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_25">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="22" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_26">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="8" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_27">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="95" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_28">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="27" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_29">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="8" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Kernel_30">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="99999999" />
+      <profile processorType="cuda_virtual_2" unit="us" value="43" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+  <task name="Post">
+    <mode name="Default">
+      <profile processorType="i7_0" unit="us" value="233" />
+      <profile processorType="cuda_virtual_2" unit="us" value="99999999" />
+      <profile processorType="dla_virtual_4" unit="us" value="99999999" />
+    </mode>
+  </task>
+</CIC_Profile>

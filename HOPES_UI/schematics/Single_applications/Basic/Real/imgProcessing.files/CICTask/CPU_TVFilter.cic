@@ -1,0 +1,121 @@
+/************************************
+ *
+ * File : tv_kernel.cic
+ * Date : Mar 21, 2022 11:17 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+
+using namespace std;
+using namespace cv;
+
+STATIC unsigned char* imgData;
+
+void tvFilter_CPU(const Mat& input, Mat& output) {
+   Point anchor = Point( -1, -1 );
+   double delta = 0;
+   int ddepth = -1;
+   int kernel_size = 3;
+
+   Mat outputi;
+   Mat kernel[8];
+
+   kernel[0] = (Mat_<double>(kernel_size,kernel_size) << -1, 0, 0, 0, 1, 0, 0, 0, 0);
+   kernel[1] = (Mat_<double>(kernel_size,kernel_size) << 0, -1, 0, 0, 1, 0, 0, 0, 0);
+   kernel[2] = (Mat_<double>(kernel_size,kernel_size) << 0, 0, -1, 0, 1, 0, 0, 0, 0);
+   kernel[3] = (Mat_<double>(kernel_size,kernel_size) << 0, 0, 0, -1, 1, 0, 0, 0, 0);
+   kernel[4] = (Mat_<double>(kernel_size,kernel_size) << 0, 0, 0, 0, 1, -1, 0, 0, 0);
+   kernel[5] = (Mat_<double>(kernel_size,kernel_size) << 0, 0, 0, 0, 1, 0, -1, 0, 0);
+   kernel[6] = (Mat_<double>(kernel_size,kernel_size) << 0, 0, 0, 0, 1, 0, 0, -1, 0);
+   kernel[7] = (Mat_<double>(kernel_size,kernel_size) << 0, 0, 0, 0, 1, 0, 0, 0, -1);
+   
+   for(int i=0 ; i<8 ; i++){
+      // Apply 2D filter
+      filter2D(input, outputi, ddepth, kernel[i], anchor, delta, BORDER_DEFAULT );
+      output += outputi;
+   }
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    imgData = (unsigned char*)malloc(IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+    
+    Mat srcImage(IMG_HEIGHT, IMG_WIDTH, CV_8UC1, imgData);
+        
+    // Declare the output image  
+    Mat dstImage (srcImage.size(), srcImage.type());
+    
+    // run tv filter on CPU  
+    tvFilter_CPU(srcImage, dstImage);
+    
+    memcpy(imgData, dstImage.data, IMG_HEIGHT*IMG_WIDTH);
+    
+    MQ_SEND(port_out, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

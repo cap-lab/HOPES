@@ -11,6 +11,26 @@
       "mRelativeCost": 1.0
     },
     {
+      "mProcessorModelName": "vic_virtual",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
+      "mProcessorModelName": "dla_virtual",
+      "mProcessorOS": "LINUX",
+      "mCoreSize": 1,
+      "mMaxCoreSize": 1,
+      "mClockSpeed": 3400,
+      "mActivePowerConsumption": 80000,
+      "mSleepPowerConsumption": 80000,
+      "mRelativeCost": 1.0
+    },
+    {
       "mProcessorModelName": "xeonPhi",
       "mProcessorOS": "LINUX",
       "mCoreSize": 64,
@@ -21,7 +41,7 @@
       "mRelativeCost": 1.0
     },
     {
-      "mProcessorModelName": "cuda_cpu",
+      "mProcessorModelName": "cuda_virtual",
       "mProcessorOS": "LINUX",
       "mCoreSize": 1,
       "mMaxCoreSize": 1,

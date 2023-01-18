@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project>
+  <project_type>ManualCICDesignFlow</project_type>
+  <name>codesignFlow.xml</name>
+  <version>0.2</version>
+  <step_list>
+    <step>
+      <title>Func.</title>
+      <selected>yes</selected>
+      <name>sim</name>
+      <target_list>
+        <target>
+          <name>CIC-TaskEditor</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-TaskEditor"
+TargetParameter "SimulationTarget" STRING "PTHREAD ##PThread-C++,PThread,NONE"
+TargetParameter "ThreadSetting" String "MULTI_THREAD"
+TargetParameter "TaskGraphProperty" String "DataFlow"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>H/W Platform</title>
+      <selected>no</selected>
+      <name>arch</name>
+      <target_list>
+        <target>
+          <name>platform</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<CIC_Architecture target="cuda" xmlns="http://peace.snu.ac.kr/CICXMLSchema">
+    <elementTypes>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" model="cuda_cpu" subcategory="CPU" category="processor" name="cuda_cpu_0"/>
+        <elementType sleepPower="80000" activePower="80000" relativeCost="1.0" clock="3400" model="cuda_gpu_sm20" subcategory="GPU" category="processor" name="cuda_gpu_sm20_2"/>
+        <elementType category="memory" name="SHARED_MEMORY_4">
+            <slavePort metric="MiB" size="64000" name="Slave"/>
+        </elementType>
+    </elementTypes>
+    <devices>
+        <device scheduler="other" runtime="native" platform="linux" architecture="x86_64" name="cuda">
+            <elements>
+                <element poolSize="4" type="cuda_cpu_0" name="cuda_cpu_0"/>
+                <element poolSize="1" type="cuda_gpu_sm20_2" name="cuda_gpu_sm20_2"/>
+                <element type="SHARED_MEMORY_4" name="SHARED_MEMORY_4"/>
+            </elements>
+            <connections/>
+            <modules/>
+            <environmentVariables/>
+        </device>
+    </devices>
+    <connections/>
+</CIC_Architecture>
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Xml-Gen</title>
+      <selected>no</selected>
+      <name>codegen</name>
+      <target_list>
+        <target>
+          <name>CIC-ManualGen</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-ManualGen"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>DSE</title>
+      <selected>no</selected>
+      <name>dse</name>
+      <target_list>
+        <target>
+          <name>CIC-DSE</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "CIC-DSE"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+    <step>
+      <title>Synthesis</title>
+      <selected>no</selected>
+      <name>cosim</name>
+      <target_list>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>HSim</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "HSim"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>no</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+        <target>
+          <name>Translation</name>
+          <select>yes</select>
+          <schematic>
+            <![CDATA[Domain "BP"
+Target "Translation"
+Run 10
+]]>
+          </schematic>
+        </target>
+      </target_list>
+    </step>
+  </step_list>
+</project>
+

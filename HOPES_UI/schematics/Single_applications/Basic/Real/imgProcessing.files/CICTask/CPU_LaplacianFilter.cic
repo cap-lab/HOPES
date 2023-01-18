@@ -1,0 +1,112 @@
+/************************************
+ *
+ * File : laplacian_kernel.cic
+ * Date : Mar 18, 2022 4:03 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+
+using namespace std;
+using namespace cv;
+
+STATIC unsigned char* imgData;
+
+void laplacianFilter_CPU(const Mat& input, Mat& output) {
+   Mat input_gray;
+   int kernel_size = 3;
+   int scale = 1;
+   int delta = 0;
+ 
+   /// Remove noise by blurring with a Gaussian filter
+   GaussianBlur(input, input, Size(3,3), 0, 0, BORDER_DEFAULT);
+
+   // laplacian filter
+   Laplacian(input, output, CV_16S, kernel_size, scale, delta, BORDER_DEFAULT);
+}
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    imgData = (unsigned char*)malloc(IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    
+    MQ_RECEIVE(port_in, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+    
+    Mat srcImage(IMG_HEIGHT, IMG_WIDTH, CV_8UC1, imgData);
+
+    // Declare the output image  
+    Mat dstImage (srcImage.size(), srcImage.type());
+    
+    // Run laplacian filter on CPU  
+    laplacianFilter_CPU(srcImage, dstImage);
+    
+    dstImage.convertTo(dstImage, CV_8UC1);
+    
+    memcpy(imgData, dstImage.data, IMG_HEIGHT*IMG_WIDTH);
+    
+    MQ_SEND(port_out, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

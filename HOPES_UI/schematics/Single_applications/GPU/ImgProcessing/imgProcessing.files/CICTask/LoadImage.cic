@@ -1,0 +1,91 @@
+/************************************
+ *
+ * File : LoadImage.cic
+ * Date : Mar 2, 2022 4:16 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+
+STATIC unsigned char* imgData;
+
+using namespace std;
+using namespace cv;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    imgData = (unsigned char*)malloc(IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    string input_file = "sample.jpeg";
+        
+    Mat srcImage = imread(input_file, IMREAD_UNCHANGED);
+    if(srcImage.empty()) {
+        cout<<"Image Not Found: "<<input_file<<endl;
+    }
+    cout <<"input image size: "<<srcImage.cols<<" "<<srcImage.rows<<" "<<srcImage.channels()<<"\n";
+        
+    memcpy(imgData, srcImage.data, IMG_SIZE);
+    
+    MQ_SEND(port_out, (unsigned char*) imgData, IMG_SIZE);
+}    
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

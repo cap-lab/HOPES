@@ -1,0 +1,110 @@
+/************************************
+ *
+ * File : readImage.cic
+ * Date : Mar 29, 2022 1:40 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <opencv2/imgcodecs.hpp>
+#include <iostream>
+#include <fstream>
+#include <vector>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+#define WIDTH 128
+#define HEIGHT 128
+#define IMG_SIZE (WIDTH*HEIGHT*3)
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+STATIC int port_out;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC int sig;
+STATIC int idx;
+STATIC char* imgData;
+STATIC std::vector<std::string> input_file_list;
+STATIC std::string image_path = "/sdcard/data/coco2017resized128/all_images.txt";
+
+STATIC void readImagePath(std::string image_path, std::vector<std::string> &input_file_list) {
+    std::ifstream input_file(image_path);
+    std::string line;
+    if(!input_file.is_open()) {
+        std::cerr <<"Could not open the input file"<<std::endl;
+        return;
+    }
+    while (getline(input_file, line)){
+        input_file_list.push_back(line);
+    }
+    input_file.close();
+} 
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+    port_out = PORT_INITIALIZE(TASK_ID, "out");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    sig = 0;
+    idx = 0;
+    imgData = (char *)malloc(IMG_SIZE);
+    readImagePath(image_path, input_file_list);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    MQ_RECEIVE(port_in, (unsigned char*)&sig, sizeof(int));
+
+    if(sig > 0) {                    
+        cv::Mat img = cv::imread((char *)input_file_list[idx].c_str());
+        
+        // For Debugging
+        // std::string out = "Img2_Read" + std::to_string(idx) + ".jpg";
+        // cv::imwrite(out, img);
+        
+        memcpy(imgData, img.data, IMG_SIZE);
+        
+        MQ_SEND(port_out, (unsigned char*)imgData, IMG_SIZE);
+    
+        idx++;
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

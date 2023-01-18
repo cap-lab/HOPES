@@ -1,0 +1,146 @@
+/************************************
+ *
+ * File : saveImage.cic
+ * Date : Mar 18, 2022 4:04 PM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in_laplacian;
+STATIC int port_in_sobel;
+STATIC int port_in_tv;
+STATIC int port_in_box;
+STATIC int port_in_median;
+STATIC int port_in_sharpening;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+#define IMG_HEIGHT 298
+#define IMG_WIDTH 690
+#define IMG_CHANNEL 3
+#define IMG_SIZE IMG_HEIGHT*IMG_WIDTH*IMG_CHANNEL
+
+STATIC unsigned char* imgData;
+
+using namespace std;
+using namespace cv;
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in_laplacian = PORT_INITIALIZE(TASK_ID, "in_laplacian");
+    port_in_sobel = PORT_INITIALIZE(TASK_ID, "in_sobel");
+    port_in_tv = PORT_INITIALIZE(TASK_ID, "in_tv");
+    port_in_box = PORT_INITIALIZE(TASK_ID, "in_box");
+    port_in_median = PORT_INITIALIZE(TASK_ID, "in_median");
+    port_in_sharpening = PORT_INITIALIZE(TASK_ID, "in_sharpening");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    imgData = (unsigned char*)malloc(IMG_SIZE);
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    string output_file_laplacian = "Laplacian.jpeg";
+    string output_file_sobel = "Sobel.jpeg";
+    string output_file_tv = "TV.jpeg";
+    string output_file_box = "Box.jpeg";
+    string output_file_median = "Median.jpeg";
+    string output_file_sharpen = "Sharpening.jpeg";
+
+    cout << "---------------------------" << "\n";
+
+    // LaplacianFilter
+    MQ_RECEIVE(port_in_laplacian, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+    Mat dstImage(IMG_HEIGHT, IMG_WIDTH, CV_8UC1, imgData);    
+    // normalization to 0-255
+    dstImage.convertTo(dstImage, CV_32F, 1.0 / 255, 0);
+    dstImage*=255;
+    cout <<"save "<<output_file_laplacian<<"\n";
+    imwrite(output_file_laplacian, dstImage);
+    
+    // SobelFilter
+    MQ_RECEIVE(port_in_sobel, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+    Mat dstImage1(IMG_HEIGHT, IMG_WIDTH, CV_8UC1, imgData);
+    // normalization to 0-255
+    dstImage1.convertTo(dstImage1, CV_32F, 1.0 / 255, 0);
+    dstImage1*=255;      
+    cout <<"save "<<output_file_sobel<<"\n";
+    imwrite(output_file_sobel, dstImage1);
+
+    // TVFilter
+    MQ_RECEIVE(port_in_tv, (unsigned char*)imgData, IMG_HEIGHT*IMG_WIDTH);
+    Mat dstImage2(IMG_HEIGHT, IMG_WIDTH, CV_8UC1, imgData);
+    // normalization to 0-255
+    dstImage2.convertTo(dstImage2, CV_32F, 1.0 / 255, 0);
+    dstImage2*=255;
+    cout <<"save "<<output_file_tv<<"\n";
+    imwrite(output_file_tv, dstImage2);
+
+    // BoxFilter
+    MQ_RECEIVE(port_in_box, (unsigned char*)imgData, IMG_SIZE);
+    Mat dstImage3(IMG_HEIGHT, IMG_WIDTH, CV_8UC3, imgData);
+    cout <<"save "<<output_file_box<<"\n";
+    imwrite(output_file_box, dstImage3);
+    
+    // MedianFilter
+    MQ_RECEIVE(port_in_median, (unsigned char*)imgData, IMG_SIZE);
+    Mat dstImage4(IMG_HEIGHT, IMG_WIDTH, CV_8UC3, imgData);         
+    cout <<"save "<<output_file_median<<"\n";
+    imwrite(output_file_median, dstImage4);
+        
+    // SharpeningFilter
+    MQ_RECEIVE(port_in_sharpening, (unsigned char*)imgData, IMG_SIZE);
+    Mat dstImage5(IMG_HEIGHT, IMG_WIDTH, CV_8UC3, imgData);        
+    cout <<"save "<<output_file_sharpen<<"\n";
+    imwrite(output_file_sharpen, dstImage5);
+    
+    cout << "---------------------------" << "\n";
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    free(imgData);
+}
+
+TASK_CODE_END

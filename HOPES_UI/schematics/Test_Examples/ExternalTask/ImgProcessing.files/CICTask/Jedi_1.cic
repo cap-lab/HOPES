@@ -1,0 +1,94 @@
+/************************************
+ *
+ * File : Jedi_1.cic
+ * Date : Apr 26, 2022 11:00 AM
+ *
+*************************************/
+
+/////////////////////////////////////
+// include header section
+/////////////////////////////////////
+#include "tinyJEDI/runner.h"
+#include <opencv2/imgcodecs.hpp>
+#include <iostream>
+#include <string>
+#include <sys/stat.h>
+// ##DEFINE_SECTION::START
+// ##DEFINE_SECTION::END
+
+
+TASK_CODE_BEGIN
+
+/////////////////////////////////////
+// global definition
+/////////////////////////////////////
+#define WIDTH 256
+#define HEIGHT 256
+#define CHANNEL 3
+#define STEP 768
+#define IMG_SIZE (HEIGHT*STEP)
+// ##DEFINE_PORT_SECTION::START
+STATIC int port_in;
+// ##DEFINE_PORT_SECTION::END
+
+// ##DEFINE_MULTICAST_PORT_SECTION::START
+// ##DEFINE_MULTICAST_PORT_SECTION::END
+
+/////////////////////////////////////
+// init code
+/////////////////////////////////////
+STATIC int idx;
+STATIC Runner *runner = nullptr;
+STATIC char* srcData;
+std::string config_file_name = "../data/jedi_cfgs/yolov4.cfg";
+
+TASK_INIT
+{
+// ##INIT_PORT_SECTION::START
+    port_in = PORT_INITIALIZE(TASK_ID, "in");
+// ##INIT_PORT_SECTION::END
+
+// ##INIT_MULTICAST_PORT_SECTION::START
+// ##INIT_MULTICAST_PORT_SECTION::END
+
+    // TODO: task initialize code
+    idx = 0;
+    srcData = (char *)malloc(IMG_SIZE);
+    runner = new Runner(config_file_name, WIDTH, HEIGHT, CHANNEL, STEP);
+    runner->init();
+    runner->setThreadCores(0, 1);    
+}
+
+
+/////////////////////////////////////
+// go code
+/////////////////////////////////////
+
+TASK_GO
+{
+    // TODO: task main code
+    int nReadData = MQ_RECEIVE(port_in, (unsigned char*)srcData, IMG_SIZE);
+    
+    if(nReadData > 0) {
+        std::string outImage = "../data/results/JEDI1/Img1_Jedi_Image" + std::to_string(idx) + ".jpg";
+    
+        runner->run(srcData, (char *)outImage.c_str());
+        idx++;
+    }
+}
+
+
+
+/////////////////////////////////////
+// wrapup code
+/////////////////////////////////////
+
+TASK_WRAPUP
+{
+    // TODO: task wrapup code
+    runner->wrapup();
+    free(srcData);
+    delete(runner);
+}
+
+TASK_CODE_END
